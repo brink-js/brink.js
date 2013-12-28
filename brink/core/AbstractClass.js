@@ -90,14 +90,7 @@ module.exports = (function () {
 				}
 
 				else if (props[p] !== null) {
-
-					if (p === "vars" || p === "opts") {
-						proto[p] = extend({}, true, this.prototype[p], props[p]);
-					}
-
-					else {
-						proto[p] = extend({}, props[p]);
-					}
+					proto[p] = extend({}, props[p]);
 				}
 			}
 		}

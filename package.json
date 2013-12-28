@@ -1,0 +1,28 @@
+{
+  "name": "brink.js",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./brink/brink.js",
+  "directories": {
+    "lib" : "./brink"
+  },
+  "scripts": {
+    "test": "node ./tests/run-tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gigafied/brink.js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gigafied/brink.js/issues"
+  },
+  "homepage": "https://github.com/gigafied/brink.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "mocha": "~1.16.2",
+    "chai": "~1.8.1"
+  }
+}

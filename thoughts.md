@@ -8,6 +8,16 @@ Route
 	model 
 	template
 
+Client and Server-Side
+
+Anything client/server specific is very clearly delineated.
+
+All Client/Server logic should be abstracted as much as possible.
+
+Models should be identical between client/server. Adapters change.
+
+Client : Model.find("1") > Server > Model.find(1)
+
 {{outlet}}
 {{link-to}}
 {{partial}}
