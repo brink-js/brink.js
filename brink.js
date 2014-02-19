@@ -7,8 +7,25 @@
 		CONFIG;
 	
 	_global = typeof window !== 'undefined' ? window : global;
-	CONFIG = (_global.Brink || _global.$b || {}).CONFIG || {};
-	$b = _global.$b = _global.Brink = {};
+	CONFIG = _global.Brink || _global.$b || {};
+	
+	$b = _global.$b = _global.Brink = function () {
+	
+		if (arguments.length) {
+	
+			if (arguments.length === 1 && typeof arguments[0] === 'string') {
+				if ($b.require) {
+					return $b.require.apply(_global, arguments);
+				}
+			}
+	
+			if ($b.define) {
+				return $b.define.apply(_global, arguments);
+			}
+		}
+	
+		return $b;
+	};
 	
 	if (typeof window === 'undefined' && module && module.exports) {
 		module.exports = $b;
@@ -190,6 +207,9 @@
 		
 		            return {
 		
+		                id : null,
+		                module : null,
+		                url : null,
 		                attachTo : null,
 		                attachPath : null,
 		
@@ -207,21 +227,39 @@
 		                        this.attachTo = this.attachTo[s[i]] = this.attachTo[s[i]] || {};
 		                    }
 		
+		                    if (this.id) {
+		                        this.resolve();
+		                    }
+		
 		                },
 		
 		                resolve : function (id, module) {
 		
-		                    module = module.exports || module;
+		                    var idPart;
+		
+		                    if (id) {
+		                        this.id = id;
+		                    }
+		
+		                    if (module) {
+		                        this.module = module;
+		                    }
 		
 		                    _metas[id] = {
-		                        module : module,
-		                        id : id,
-		                        url : _getURL(id),
+		                        module : this.module,
+		                        id : this.id,
+		                        url : this.url,
 		                        attachPath : this.attachPath
 		                    };
 		
 		                    if (this.attachTo) {
-		                        this.attachTo[id.split('/').pop()] = module;
+		                        idPart = this.id.split('/').pop();
+		
+		                        if (this.attachPath === '$b') {
+		                            _module(idPart, this.module);
+		                        }
+		
+		                        this.attachTo[idPart] = this.module.exports || this.module;
 		                    }
 		                }
 		            }
@@ -282,7 +320,7 @@
 		        * Invokes the first anonymous item in _defineQ.
 		        * Called from script.onLoad, and loader plugins .fromText() method.
 		        */
-		        function _invokeAnonymousDefine (id, q) {
+		        function _invokeAnonymousDefine (id, url, q) {
 		
 		            if (_defineQ.length) {
 		
@@ -296,6 +334,10 @@
 		                    q.splice(0, 0, id); // set the module id
 		                    q.splice(3, 0, 1); // set alreadyQed to true
 		                    q.splice(4, 0, 0); // set depsLoaded to false
+		
+		                    if (url) {
+		                        q[5].url = url;
+		                    }
 		
 		                    define.apply(root, q);
 		                }
@@ -312,7 +354,7 @@
 		
 		                setTimeout(function () {
 		                    origRequire(f);
-		                    _invokeAnonymousDefine(m);
+		                    _invokeAnonymousDefine(m, f);
 		                }, 0);
 		
 		                return 1;
@@ -334,7 +376,7 @@
 		                    clearTimeout(timeoutID);
 		                    script.onload = script.onreadystatechange = script.onerror = null;
 		
-		                    _invokeAnonymousDefine(m);
+		                    _invokeAnonymousDefine(m, f);
 		                }
 		            };
 		
@@ -464,7 +506,7 @@
 		                    /*jslint evil: true */
 		                    new Function(definition)();
 		
-		                    if(_defineQ.length-dqL) {
+		                    if (_defineQ.length - dqL) {
 		                        // Looks like there was a define call in the eval'ed text.
 		                        _invokeAnonymousDefine(pluginPath);
 		                    }
@@ -593,7 +635,6 @@
 		                factory = dependencies;
 		                dependencies = id;
 		                id = 0;
-		
 		                _defineQ.push([dependencies, factory, meta]);
 		
 		                return meta;
@@ -620,6 +661,7 @@
 		            * No dependencies, but the factory function is expecting arguments?
 		            * This means that this is a CommonJS-type module...
 		            */
+		
 		            if (!dependencies.length && factory.length && typeof factory === "function") {
 		
 		                /**
@@ -710,7 +752,6 @@
 		            * Make the call to define the module.
 		            */
 		            _module(id, module);
-		
 		            meta.resolve(id, module);
 		
 		            /**
@@ -877,7 +918,7 @@
 	
 	$b.define('$b', $b);
 	
-	$b.config = $b.configure = function (o) {
+	$b.configure = function (o) {
 	
 		var p;
 	
@@ -926,12 +967,7 @@
 				/********* ALIASES *********/
 	
 				$b.merge($b, {
-					C : $b.Class.extend.bind($b.Class),
-					F : function () {},
-					O : $b.Object.extend.bind($b.Object),
-	
-					class : $b.Class.create.bind($b.Class),
-					object : $b.Object.create.bind($b.Object)
+					F : function () {}
 				});
 	
 				$b.merge($b.config, CONFIG);
@@ -941,7 +977,8 @@
 				}
 	
 				if ($b.isFunction(deps)) {
-					deps($b);
+					cb = deps;
+					cb($b);
 				}
 	
 				else {
@@ -952,4 +989,1619 @@
 		);
 	};
 
-})()
+	$b.define('brink/config', 
+	
+	    function () {
+	
+	        'use strict';
+	
+	        var IS_IE,
+	            IE_VERSION,
+	            DIRTY_CHECK;
+	
+	        IE_VERSION = (function (rv, ua, re) {
+	
+	            if (typeof navigator !== 'undefined' && navigator && navigator.appName == 'Microsoft Internet Explorer') {
+	
+	                ua = navigator.userAgent;
+	                re = new RegExp('MSIE ([0-9]{1,}[\.0-9]{0,})');
+	
+	                if (re.exec(ua) != null) {
+	                    rv = parseFloat( RegExp.$1);
+	                }
+	            }
+	
+	            return rv || -1;
+	        })();
+	
+	        IS_IE = IE_VERSION > -1;
+	
+	        DIRTY_CHECK = (IS_IE && IE_VERSION < 9) || (!Object.defineProperty && !Object.__defineGetter__);
+	
+	        return ({
+	            DIRTY_CHECK : DIRTY_CHECK,
+	            IS_IE : IS_IE,
+	            IE_VERSION : IE_VERSION
+	        });
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/error', 
+	
+	    function () {
+	
+	        'use strict';
+	
+	        return function (msg) {
+	            throw new Error(msg);
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/assert', 
+	
+	    [
+	        './error'
+	    ],
+	
+	    function (error) {
+	
+	        'use strict';
+	
+	        return function (msg, test) {
+	
+	            if (!test) {
+	                error(msg);
+	            }
+	        };
+	    }
+	
+	).attach('$b');
+	
+
+	$b('brink/utils/expandProps', 
+	
+	    function () {
+	
+	        'use strict';
+	
+	        return function (a, b, i, j, p, n, s) {
+	
+	            s = [];
+	
+	            for (i = 0; i < a.length; i ++) {
+	
+	                p = a[i];
+	
+	                if (~p.indexOf(',')) {
+	                    p = p.split('.');
+	                    n = p[0];
+	                    b = p[1].split(',');
+	                    p = [];
+	
+	                    for (j = 0; j < b.length; j ++) {
+	                        p.push([n, b[j]].join('.'));
+	                    }
+	                }
+	
+	                s = s.concat(p);
+	            }
+	
+	            return s;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/intersect', 
+	
+	    [
+	
+	    ],
+	
+	    function () {
+	
+	        'use strict';
+	
+	        return function () {
+	
+	
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/isBrinkInstance', 
+	
+	    [
+	
+	    ],
+	
+	    function () {
+	
+	        'use strict';
+	
+	        return function (obj) {
+	            return obj.constructor.__isObject;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/defineProperty', 
+	
+	    [
+	        './assert',
+	        './isBrinkInstance'
+	    ],
+	
+	    function (assert, isBrinkInstance) {
+	
+	        'use strict';
+	
+	        return function (obj, prop, descriptor) {
+	
+	            assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
+	
+	            descriptor.configurable = descriptor.configurable !== 'undefined' ? descriptor.configurable : false;
+	            descriptor.enumerable = descriptor.enumerable !== 'undefined' ? descriptor.enumerable : true;
+	
+	            if (prop.indexOf('__') === 0) {
+	                descriptor.configurable = false;
+	                descriptor.enumerable = false;
+	            }
+	
+	            obj.__defaults[prop] = typeof descriptor.value === 'undefined' ? descriptor.defaultValue : descriptor.value;
+	
+	            descriptor.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
+	            descriptor.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
+	
+	            delete descriptor.value;
+	            delete descriptor.writable;
+	
+	            return descriptor;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/isBrinkObject', 
+	
+	    function () {
+	
+	        'use strict';
+	
+	        return function (obj) {
+	            return obj.__isObject;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/isFunction', 
+	
+	    function () {
+	
+	        'use strict';
+	
+	        return function (obj) {
+	            return typeof obj == 'function';
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/isObject', 
+	
+	    function () {
+	
+	        'use strict';
+	
+	        var objectTypes = {
+	            'function': true,
+	            'object': true,
+	            'unknown': true
+	        };
+	
+	        return function (obj) {
+	            return obj ? !!objectTypes[typeof obj] : false;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/extend', 
+	
+	    [
+	        './isObject',
+	        './isFunction'
+	    ],
+	
+	    function (isObject, isFunction) {
+	
+	        'use strict';
+	
+	        return function (target) {
+	
+				var i,
+					l,
+					src,
+					clone,
+					copy,
+					deep,
+					name,
+					options,
+					copyIsArray;
+	
+				// Handle case when target is a string or something (possible in deep copy)
+				if (typeof target !== "object" && !isFunction(target)) {
+				    target = {};
+				}
+	
+				i = isObject(arguments[1]) ? 1 : 2;
+				deep = (arguments[1] === true);
+	
+				for (l = arguments.length; i < l; i ++) {
+	
+				    // Only deal with non-null/undefined values
+				    if ((options = arguments[i]) != null) {
+	
+				        // Extend the base object
+				        for (name in options) {
+	
+				            src = target[name];
+				            copy = options[name];
+	
+				            // Prevent never-ending loop
+				            if (target === copy) {
+				                continue;
+				            }
+	
+				            // Recurse if we're merging plain objects or arrays
+				            if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+	
+				                if (copyIsArray) {
+				                    copyIsArray = false;
+				                    clone = src && isArray(src) ? src : [];
+	
+				                }
+	
+				                else {
+				                    clone = src && isPlainObject(src) ? src : {};
+				                }
+	
+				                // Never move original objects, clone them
+				                target[name] = extend(clone, deep, copy);
+				            }
+	
+				            // Don't bring in undefined values
+				            else if (copy !== undefined) {
+				                target[name] = copy;
+				            }
+				        }
+				    }
+				}
+	
+				return target;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/merge', 
+	
+	    [
+	        './assert',
+	        './isObject'
+	    ],
+	
+	    function (assert, isObject) {
+	
+	        'use strict';
+	
+	        return function merge (a, b, deep) {
+	
+	            var p,
+	                o,
+	                d;
+	
+	            function arrayOrObject (o, r) {
+	                return Array.isArray(o) ? [] : isObject(o) ? {} : false;
+	            }
+	
+	            if (Array.isArray(a) || Array.isArray(b)) {
+	
+	                a = a || [];
+	                b = b || [];
+	
+	                for (p = 0; p < b.length; p ++) {
+	
+	                    o = b[p];
+	
+	                    if (!~a.indexOf(o)) {
+	                        d = deep ? arrayOrObject(o) : null;
+	                        a.push(d ? merge(d, o, true) : o);
+	                    }
+	                }
+	                return a;
+	            }
+	
+	            else if (isObject(a) || isObject(b)) {
+	
+	                a = a || {};
+	                b = b || {};
+	
+	                for (p in b) {
+	
+	                    o = b[p];
+	
+	                    if (!b.hasOwnProperty(p)) {
+	                        continue;
+	                    }
+	
+	                    d = deep ? arrayOrObject(o) : null;
+	                    a[p] = d ? merge(d, o, true) : o;
+	                }
+	
+	                return a;
+	            }
+	
+	            return null;
+	
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/flatten', 
+	
+	    [
+	        './merge'
+	    ],
+	
+	    function (merge) {
+	
+	        'use strict';
+	
+	        return function flatten (a, duplicates) {
+	
+	            var i,
+	                b,
+	                c;
+	
+	            b = [];
+	
+	            for (i = 0; i < a.length; i ++) {
+	
+	                c = a[i];
+	
+	                if (Array.isArray(c)) {
+	                    c = flatten(c);
+	                }
+	
+	                b = b.concat(c);
+	            }
+	
+	            if (!duplicates) {
+	                merge([], b);
+	            }
+	
+	            return b;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/configure', 
+	
+	    [
+	        './merge',
+	        '../config'
+	    ],
+	
+	    function (merge, config) {
+	
+	        'use strict';
+	
+	        return function (o) {
+	            $b.merge(config, o);
+	            return config;
+	        };
+	    }
+	
+	).attach('$b');
+	
+
+	$b('brink/utils/computed', 
+	
+	    [
+	        './flatten',
+	        './isFunction',
+	        './expandProps'
+	    ],
+	
+	    function (flatten, isFunction, expandProps) {
+	
+	        'use strict';
+	
+	        return function (o, v) {
+	
+	            if (isFunction(o)) {
+	                o = {
+	                    watch : flatten([].slice.call(arguments, 1)),
+	                    get : o
+	                };
+	            }
+	
+	            o.watch = expandProps(o.watch ? [].concat(o.watch) : []);
+	            o.__isComputed = true;
+	
+	            return o;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/clone', 
+	
+	    [
+	        './merge',
+	        './isObject'
+	    ],
+	
+	    function (merge, isObject) {
+	
+	        'use strict';
+	
+	        return function (o, deep, a) {
+	
+	            function arrayOrObject (o, r) {
+	                return Array.isArray(o) ? [] : isObject(o) ? {} : null;
+	            }
+	
+	            a = arrayOrObject(o);
+	
+	            return a ? merge(a, o, deep) : null;
+	        };
+	    }
+	
+	).attach('$b');
+
+	$b('brink/utils/alias', 
+	
+	    [
+	        './computed'
+	    ],
+	
+	    function (computed) {
+	
+	        'use strict';
+	
+	        return function (s) {
+	
+	            return computed({
+	
+	                watch : [s],
+	
+	                get : function () {
+	                    return this.get(s);
+	                },
+	
+	                set : function (val) {
+	                    return this.set(s, val);
+	                }
+	            });
+	        };
+	    }
+	
+	).attach('$b');
+	
+
+	$b('brink/core/CoreObject', 
+	
+	    [
+	    	'../utils/extend',
+	    	'../utils/isBrinkObject'
+	    ],
+	
+	    function (extend, isBrinkObject) {
+	
+	        'use strict';
+	
+			var CoreObject,
+				Prototype;
+	
+			CoreObject = function () {};
+	
+			CoreObject.extend = function () {
+	
+				var A,
+					i,
+					o,
+					props,
+					proto;
+	
+				if (arguments.length > 1) {
+	
+					i = 0;
+	
+					while (i < arguments.length - 1) {
+						o = arguments[i];
+						A = A || (isBrinkObject(o) ? o : this);
+						A = A.extend(arguments[++ i]);
+					}
+	
+					return A;
+				}
+	
+				proto = this.buildPrototype.apply(this, arguments);
+	
+				function Obj (callInit) {
+	
+					var fn;
+	
+					if (callInit === true || callInit === false) {
+	
+						this.__iid = CoreObject.IID ++;
+	
+						if (callInit) {
+							fn = this.__init || this.init || this.constructor;
+							fn.apply(this, arguments);
+						}
+	
+						return this;
+					}
+	
+					return Obj.extend.apply(Obj, arguments);
+				}
+	
+				Obj.prototype = proto;
+				extend(Obj, this, proto.classProps || {});
+	
+				Obj.__isObject = true;
+				Obj.prototype.constructor = Obj;
+	
+				return Obj;
+			};
+	
+			CoreObject.buildPrototype = function (props) {
+				var F = function () {};
+				F.prototype = this.prototype;
+				return extend(new F(), props);
+			};
+	
+			CoreObject.reopen = function (o) {
+				extend(this.prototype, o);
+				return Obj;
+			};
+	
+			CoreObject.reopenObject = function (o) {
+				extend(this, o);
+				return Obj;
+			};
+	
+			CoreObject.create = function (o) {
+	
+				var p,
+					args,
+					init,
+					instance;
+	
+				args = arguments;
+	
+				if (typeof o === 'function') {
+					instance = new this(true);
+					o.call(instance);
+					args = [];
+				}
+	
+				instance = instance || new this(false);
+	
+				init = instance.__init || instance.init;
+	
+				if (init) {
+					init.apply(instance, args);
+				}
+	
+				return instance;
+			};
+	
+			CoreObject.IID = 1;
+	
+	        return CoreObject;
+	    }
+	
+	).attach('$b');
+	
+
+	$b('brink/core/RunLoop', 
+	
+	    [
+	        "./CoreObject"
+	    ],
+	
+	    function (CoreObject) {
+	
+	        'use strict';
+	
+	        return CoreObject.extend({
+	
+	            __interval : 'raf',
+	            __timerID : null,
+	
+	            init : function (interval) {
+	
+	                this.clear();
+	
+	                if (typeof interval !== 'undefined') {
+	                    this.setInterval.call(this, interval);
+	                }
+	
+	                return this;
+	            },
+	
+	            setInterval : function (val) {
+	
+	                val = isNaN(val) ? val.toLowerCase() : val;
+	                this.__interval = (val === 'raf' || val === 'requestanimationframe') ? 'raf' : val;
+	
+	                if(this.stopTimer()) {
+	                    this.start();
+	                }
+	            },
+	
+	            startTimer : function (fn) {
+	
+	                fn = fn.bind(this);
+	
+	                if (this.__interval === 'raf') {
+	                    return requestAnimationFrame(fn);
+	                }
+	
+	                return setTimeout(fn, this.__interval);
+	            },
+	
+	            stopTimer : function () {
+	
+	                if (!this.__timerID) {
+	                    return false;
+	                }
+	
+	                if (this.__interval === 'raf') {
+	                    cancelAnimationFrame(this.__timerID);
+	                }
+	
+	                else {
+	                    clearTimeout(this.__timerID);
+	                }
+	
+	                this.__timerID = null;
+	
+	                return true;
+	            },
+	
+	            start : function (restart) {
+	                if (!this.__timerID || restart) {
+	                    this.stopTimer();
+	                    return this.__timerID = this.startTimer(this.run);
+	                }
+	            },
+	
+	            restart : function () {
+	                this.start(true);
+	            },
+	
+	            stop : function () {
+	                return this.stopTimer();
+	            },
+	
+	            defer : function () {
+	                return this.start();
+	            },
+	
+	            deferOnce : function () {
+	                this.stopTimer();
+	                return this.__timerID = this.startTimer(function () {
+	                    this.stopTimer();
+	                    this.run(false);
+	                }.bind(this));
+	            },
+	
+	            run : function (repeat) {
+	
+	                var i,
+	                    fn,
+	                    args,
+	                    scope;
+	
+	                if (repeat !== false) {
+	                    this.start(true);
+	                }
+	
+	                for (i = 0; i < this.__once.length; i ++) {
+	
+	                    fn = this.__once[i];
+	                    args = this.__onceArgs[i][0];
+	                    scope = this.__onceArgs[i][1];
+	
+	                    fn.call(scope, args);
+	                }
+	
+	                for (i = 0; i < this.__loop.length; i ++) {
+	
+	                    fn = this.__loop[i];
+	                    args = this.__loopArgs[i][0];
+	                    scope = this.__loopArgs[i][1];
+	
+	                    fn.call(scope, args);
+	                }
+	
+	                this.__once = [];
+	                this.__onceArgs = [];
+	            },
+	
+	            once : function (fn, args, scope) {
+	
+	                var idx = this.__once.indexOf(fn);
+	
+	                if (idx < 0) {
+	
+	                    this.__once.push(fn);
+	                    idx = this.__once.length - 1;
+	                }
+	
+	                this.__onceArgs[idx] = [args || null, scope || null];
+	            },
+	
+	            loop : function (fn, args, scope) {
+	
+	                var idx = this.__loop.indexOf(fn);
+	
+	                if (idx < 0) {
+	
+	                    this.__loop.push(fn);
+	                    idx = this.__loop.length - 1;
+	                }
+	
+	                this.__loopArgs[idx] = [args || null, scope || null];
+	            },
+	
+	            remove : function (fn) {
+	
+	                var i;
+	
+	                i = this.__once.indexOf(fn);
+	
+	                if (i >= 0) {
+	                    this.__once.splice(i, 1);
+	                }
+	
+	                i = this.__loop.indexOf(fn);
+	
+	                if (i >= 0) {
+	                    this.__loop.splice(i, 1);
+	                }
+	            },
+	
+	            clear : function () {
+	                this.__loop = [];
+	                this.__once = [];
+	
+	                this.__loopArgs = [];
+	                this.__onceArgs = [];
+	            }
+	
+	        });
+	    }
+	
+	).attach('$b.__');
+
+	$b('brink/core/DirtyChecker', 
+	
+	    [
+	        './RunLoop',
+	        './CoreObject'
+	    ],
+	
+	    function (RunLoop, CoreObject) {
+	
+	        'use strict';
+	
+	        RunLoop = RunLoop.create();
+	
+	        var DirtyChecker = CoreObject.extend({
+	
+	            init : function () {
+	                RunLoop.loop(this.run.bind(this));
+	                return this;
+	            },
+	
+	            addInstance : function (obj) {
+	
+	                var p,
+	                    cache;
+	
+	                INSTANCES[obj.__iid] = obj;
+	                cache = CACHED[obj.__iid] = CACHED[obj.__iid] || {};
+	
+	                for (p in obj.__properties) {
+	                    cache[p] = obj[p];
+	                }
+	            },
+	
+	            removeInstance : function (obj) {
+	                delete INSTANCES[obj.__iid];
+	                delete CACHED[obj.__iid];
+	            },
+	
+	            updateCache : function (obj, prop) {
+	                CACHED[obj.__iid][prop] = obj[prop];
+	            },
+	
+	            run : function () {
+	
+	                var i,
+	                    j,
+	                    p,
+	                    obj,
+	                    cache;
+	
+	                for (i in INSTANCES) {
+	
+	                    obj = INSTANCES[i];
+	                    cache = CACHED[i];
+	
+	                    for (j = 0; j < obj.__allWatchedProps.length; j ++) {
+	
+	                        p = obj.__allWatchedProps[j];
+	                        if (cache[p] !== obj[p]) {
+	                            obj.set(p, obj[p], false, true);
+	                        }
+	                    }
+	                }
+	            },
+	
+	            start : function () {
+	                RunLoop.start();
+	            }
+	
+	        });
+	
+	        return DirtyChecker.create();
+	    }
+	
+	).attach('$b.__');
+	
+
+	$b('brink/core/Object', 
+	
+	    [
+	        '../config',
+	        './RunLoop',
+	        './CoreObject',
+	        './DirtyChecker',
+	        '../utils/clone',
+	        '../utils/error',
+	        '../utils/merge',
+	        '../utils/flatten',
+	        '../utils/isFunction',
+	        '../utils/defineProperty'
+	    ],
+	
+	    function (
+	        config,
+	        RunLoop,
+	        CoreObject,
+	        DirtyChecker,
+	        clone,
+	        error,
+	        merge,
+	        flatten,
+	        isFunction,
+	        defineProperty
+	    ) {
+	
+	        'use strict';
+	
+	        var Obj,
+	            bindLoop = RunLoop.create();
+	
+	        Obj = CoreObject.extend({
+	
+	            __init : function (o) {
+	
+	                var i,
+	                    p,
+	                    d;
+	
+	                this.__watchers = [];
+	                this.__allWatchedProps = [];
+	                this.__watchedProps = [];
+	                this.__changedProps = [];
+	                this.__values = {};
+	
+	                merge(this.__defaults, o);
+	
+	                for (i = 0; i < this.__methods.length; i ++) {
+	                    p = this.__methods[i];
+	                    this[p] = this[p].bind(this);
+	                }
+	
+	                for (p in this.__properties) {
+	
+	                    d = this.__properties[p];
+	
+	                    if (!config.DIRTY_CHECK) {
+	                        d = clone(d);
+	                        d.get = d.get.bind(this);
+	                        d.set = d.set.bind(this);
+	
+	                       // Modern browsers, IE9 +
+	                        if (Object.defineProperty) {
+	                            Object.defineProperty(this, p, d);
+	                        }
+	
+	                        // Old FF
+	                        else if (this.__defineGetter__) {
+	                            this.__defineGetter__(prop, d.get);
+	                            this.__defineSetter__(prop, d.set);
+	                        }
+	
+	                        if (typeof this.__defaults[p] !== 'undefined') {
+	                            this.set(p, this.__defaults[p], true);
+	                        }
+	                    }
+	
+	                    else {
+	                        this[p] = this.__defaults[p];
+	                        DirtyChecker.addInstance(this);
+	                    }
+	
+	                    if (d.watch && d.watch.length) {
+	                        this.watch(this.propertyDidChange, d.watch);
+	                    }
+	                }
+	
+	                if (isFunction(this.init)) {
+	                    this.init.apply(this, arguments);
+	                }
+	
+	                return this;
+	            },
+	
+	            __readOnly : function (p) {
+	
+	                return function (val) {
+	
+	                    if (!config.DIRTY_CHECK) {
+	                        return error('Tried to write to a read-only property `' + p + '` on ' + this);
+	                    }
+	
+	                    return this[p] = val;
+	                };
+	            },
+	
+	            __writeOnly : function (p) {
+	
+	                return function () {
+	
+	                    if (!config.DIRTY_CHECK) {
+	                        return error('Tried to read a write-only property `' + p + '` on ' + this);
+	                    }
+	
+	                    return this[p];
+	                };
+	            },
+	
+	            __defineGetter : function (p, fn) {
+	
+	                if (fn && isFunction(fn)) {
+	                    this.__getters[p] = fn;
+	                }
+	
+	                return function () {
+	                    return this.get.call(this, p);
+	                }
+	            },
+	
+	            __defineSetter : function (p, fn) {
+	
+	                if (fn && isFunction(fn)) {
+	                    this.__setters[p] = fn;
+	                }
+	
+	                return function (val) {
+	                    return this.set.call(this, p, val);
+	                }
+	            },
+	
+	            __notifyPropertyListeners : function () {
+	
+	                var i,
+	                    j,
+	                    p,
+	                    fn,
+	                    fns,
+	                    idx,
+	                    args,
+	                    props,
+	                    watchers;
+	
+	                fns = bindLoop.__once;
+	                props = this.__changedProps;
+	
+	                for (i = 0; i < this.__watchers.length; i ++) {
+	
+	                    fn = this.__watchers[i];
+	                    idx = fns.indexOf(fn);
+	
+	                    if (idx < 0) {
+	                        bindLoop.once(fn, this.__watchedProps[i]);
+	                    }
+	
+	                    else {
+	                        args = bindLoop.__onceArgs[idx];
+	                        bindLoop.__onceArgs[idx] = [merge(args[0], this.__watchedProps[i]), args[1]];
+	                    }
+	                }
+	
+	                this.__changedProps = [];
+	            },
+	
+	            propertyDidChange : function (p) {
+	
+	                var i,
+	                    p,
+	                    d,
+	                    p2,
+	                    watchers;
+	
+	                if (Array.isArray(p)) {
+	
+	                    for (i = 0; i < p.length; i ++) {
+	                        this.propertyDidChange(p[i]);
+	                    }
+	
+	                    return;
+	                }
+	
+	                if (config.DIRTY_CHECK) {
+	
+	                    this[p] = this.get(p);
+	                    DirtyChecker.updateCache(this, p);
+	
+	                    for (p2 in this.__properties) {
+	
+	                        d = this.__properties[p2];
+	
+	                        if (~(d.watch || []).indexOf(p)) {
+	                            this.propertyDidChange(p2);
+	                        }
+	                    }
+	                }
+	
+	                this.__changedProps = merge(this.__changedProps, [p]);
+	                bindLoop.once(this.__notifyPropertyListeners);
+	                bindLoop.start();
+	            },
+	
+	            get : function (key) {
+	
+	                if (this.__getters[key]) {
+	                    return this.__getters[key].call(this, key);
+	                }
+	
+	                return this.__values[key];
+	            },
+	
+	            set : function (key, val, quiet, skipCompare) {
+	
+	                var i,
+	                    old;
+	
+	                if (typeof key === 'string') {
+	
+	                    old = this.get(key);
+	
+	                    if (skipCompare || old !== val) {
+	
+	                        if (this.__setters[key]) {
+	                            val = this.__setters[key].call(this, val, key);
+	                        }
+	
+	                        else {
+	                            this.__values[key] = val;
+	                        }
+	
+	                        if (!quiet) {
+	                            this.propertyDidChange(key);
+	                        }
+	                    }
+	
+	                    return val;
+	                }
+	
+	                else if (arguments.length === 1) {
+	
+	                    for (i in key) {
+	                        this.set(i, key[i], val);
+	                    }
+	
+	                    return this;
+	                }
+	
+	                error('Tried to call set with unsupported arguments', arguments);
+	            },
+	
+	            watch : function (fn, props) {
+	
+	                var idx;
+	
+	                props = [].concat(props);
+	                props = props.concat(Array.prototype.slice.call(arguments, 2));
+	
+	                idx = this.__watchers.indexOf(fn);
+	
+	                if (idx < 0) {
+	                    this.__watchers.push(fn);
+	                    this.__watchedProps[this.__watchers.length - 1] = props;
+	                }
+	
+	                else {
+	                    this.__watchedProps[idx] = merge(this.__watchedProps[idx], props);
+	                }
+	
+	                this.__allWatchedProps = flatten(this.__watchedProps);
+	            },
+	
+	            unwatch : function (fns) {
+	
+	                var i,
+	                    fn,
+	                    idx;
+	
+	                fns = [].concat(fns);
+	
+	                for (i = 0; i < fns.length; i ++) {
+	
+	                    fn = fns[i];
+	
+	                    idx = this.__watchers.indexOf(fn);
+	
+	                    if (idx > -1) {
+	                        this.__watchers.splice(idx, 1);
+	                        this.__watchedProps.splice(idx, 1);
+	                    }
+	                }
+	
+	                this.__allWatchedProps = flatten(this.__watchedProps);
+	            },
+	
+	            unwatchAll : function () {
+	                this.__watchers = [];
+	                this.__watchedProps = [];
+	                this.__allWatchedProps = [];
+	            },
+	
+	            destroy : function () {
+	
+	                var i;
+	
+	                if (config.DIRTY_CHECK) {
+	                    DirtyChecker.removeInstance(this);
+	                }
+	
+	                this.unwatchAll();
+	            }
+	        });
+	
+	        Obj.extend = function () {
+	
+	            var p,
+	                v,
+	                d,
+	                c,
+	                proto,
+	                SubObj,
+	                methods,
+	                properties,
+	                dependencies;
+	
+	            SubObj = CoreObject.extend.apply(this, arguments);
+	            proto = SubObj.prototype;
+	
+	            proto.__getters = {};
+	            proto.__setters = {};
+	            proto.__dependencies = [];
+	            proto.__properties = {};
+	            proto.__defaults = {};
+	            proto.__methods = [];
+	
+	            methods = [];
+	            dependencies = [];
+	            properties = clone(proto.__properties || {});
+	
+	            for (p in proto) {
+	
+	                v = proto[p];
+	
+	                if (isFunction(v) && p !== 'constructor') {
+	                    methods.push(p);
+	                }
+	
+	                else if (proto.hasOwnProperty(p)) {
+	
+	                    if (p.indexOf('__') !== 0) {
+	
+	                        if (v.__isRequire) {
+	                            dependencies.push(p);
+	                        }
+	
+	                        else if (v.__isComputed) {
+	                            d = v;
+	                        }
+	
+	                        else {
+	                            d = {
+	                                get : true,
+	                                set : true,
+	                                value : v
+	                            };
+	                        }
+	
+	                        properties[p] = defineProperty(proto, p, d);
+	                    }
+	                }
+	            }
+	
+	            proto.__properties = properties;
+	            proto.__methods = merge((proto.__methods || []).concat(), methods);
+	            proto.__dependencies = merge((proto.__dependencies || []).concat(), dependencies);
+	
+	            return SubObj;
+	        };
+	
+	        Obj.define = function () {
+	            $b.define(this.prototype.__dependencies, this.resolveDependencies.bind(this));
+	            return this;
+	        };
+	
+	        Obj.resolveDependencies = function () {
+	
+	            var proto,
+	                p;
+	
+	            proto = this.prototype;
+	
+	            for (p in proto.__dependencies) {
+	                proto[p] = proto.__dependencies[p].resolve();
+	            }
+	
+	            this.__dependenciesResolved = true;
+	
+	            return this;
+	        };
+	
+	        Obj.load = function (cb) {
+	
+	            cb = typeof cb === 'function' ? cb : function () {};
+	
+	            if (this.__dependenciesResolved) {
+	                cb(this);
+	            }
+	
+	            $b.require(this.prototype.__dependencies, function () {
+	                this.resolveDependencies.call(this);
+	                cb(this);
+	            }.bind(this));
+	
+	            return this;
+	        };
+	
+	        return Obj;
+	    }
+	
+	).attach('$b');
+
+	$b('brink/core/NotificationManager', 
+	
+	    [
+	    	'../utils/isFunction'
+	    ],
+	
+	    function (isFunction) {
+	
+	        'use strict';
+	
+	        var _interests,
+	        	_pendingNotifications,
+	
+	        	Notification,
+	        	NotificationManager;
+	
+			_pendingNotifications = [];
+			_interests = {};
+	
+	
+			Notification = function (name, args, callback) {
+				this.name = name;
+				this.args = args;
+				this.data = args && args.length === 1 ? args[0] : null;
+				this.callback = callback;
+				return this;
+			};
+	
+			Notification.prototype.data = {};
+			Notification.prototype.name = "";
+			Notification.prototype.dispatcher = null;
+			Notification.prototype.status = 0;
+			Notification.prototype.pointer = 0;
+			Notification.prototype.callback = null;
+	
+			Notification.prototype.hold = function () {
+				this.status = 2;
+			};
+	
+			Notification.prototype.release = function () {
+				this.status = 1;
+				NotificationManager.releaseNotification(this);
+			};
+	
+			Notification.prototype.cancel = function () {
+				this.data = {};
+				this.name = "";
+				this.status = 0;
+				this.pointer = 0;
+				this.dispatcher = null;
+				this.callback = null;
+	
+				NotificationManager.cancelNotification(this);
+			};
+	
+			Notification.prototype.dispatch = function (obj) {
+				this.status = 1;
+				this.pointer = 0;
+				this.dispatcher = obj;
+				NotificationManager.publishNotification(this);
+			};
+	
+	
+			Notification.prototype.respond = function () {
+				if (this.callback) {
+					this.callback.apply(this.dispatcher, arguments);
+					this.cancel();
+				}
+			};
+	
+	
+			function _publishNotification(notification) {
+				_pendingNotifications.push(notification);
+				_notifyObjects(notification);
+			}
+	
+			function _notifyObjects(notification) {
+	
+				var name,
+					subs,
+					len;
+	
+				name = notification.name;
+	
+				if (_interests[name]) {
+	
+					subs = _interests[name].slice(0);
+					len = subs.length;
+	
+					while (notification.pointer < len) {
+						if (notification.status === 1) {
+							subs[notification.pointer].apply(null, [].concat(notification, notification.args));
+							notification.pointer ++;
+						} else {
+							return;
+						}
+					}
+	
+					subs = null;
+	
+					/**
+					* Notified all subscribers, notification is no longer needed,
+					* unless it has a callback to be called later via notification.respond()
+					*/
+					if (notification.status === 1 && !notification.callback) {
+						notification.cancel();
+					}
+				}
+			}
+	
+			NotificationManager = {};
+	
+			NotificationManager.subscribe = function (name, fn, priority) {
+	
+				priority = isNaN(priority) ? -1 : priority;
+				_interests[name] = _interests[name] || [];
+	
+				if (priority <= -1 || priority >= _interests[name].length) {
+					_interests[name].push(fn);
+				} else {
+					_interests[name].splice(priority, 0, fn);
+				}
+			};
+	
+			NotificationManager.unsubscribe = function (name, fn) {
+				var fnIndex = _interests[name].indexOf(fn);
+				if (fnIndex > -1) {
+					_interests[name].splice(fnIndex, 1);
+				}
+			};
+	
+			NotificationManager.publish = function () {
+	
+				var notification,
+					args = Array.prototype.slice.call(arguments),
+					name = args[0],
+					dispatcher = args[args.length - 1],
+					callback = args[args.length - 2];
+	
+				callback = isFunction(callback) ? callback : null;
+	
+				args = args.slice(1, (callback ? args.length - 2 : args.length - 1));
+	
+				notification = new Notification(name, args, callback);
+				notification.status = 1;
+				notification.pointer = 0;
+				notification.dispatcher = dispatcher;
+				_publishNotification(notification);
+			};
+	
+			NotificationManager.releaseNotification = function (notification) {
+				notification.status = 1;
+				if (_pendingNotifications.indexOf(notification) > -1) {
+					_notifyObjects(notification);
+				}
+			};
+	
+			NotificationManager.cancelNotification = function (notification) {
+				_pendingNotifications.splice(_pendingNotifications.indexOf(notification), 1);
+				notification = null;
+			};
+	
+	        return NotificationManager;
+	    }
+	
+	).attach('$b.__');
+
+	$b('brink/core/Class', 
+	
+	    [
+	    	'./Object',
+	    	'./NotificationManager'
+	    ],
+	
+	    function (Obj, NotificationManager) {
+	
+	        'use strict';
+	
+	        var Class,
+	        	superfy,
+	        	doesCallSuper;
+	
+			superfy = function (fn, superFn) {
+				return function () {
+					var r, tmp = this._super || null;
+	
+					// Reference the prototypes method, as super temporarily
+					this._super = superFn;
+	
+					r = fn.apply(this, arguments);
+	
+					// Reset this._super
+					this._super = tmp;
+					return r;
+				};
+			};
+	
+			/*
+			If Function.toString() works as expected, return a regex that checks for `this._super`
+			otherwise return a regex that passes everything.
+			*/
+	
+			doesCallSuper = (/xyz/).test(function () {
+				var xyz;
+				xyz = true;
+			}) ? (/\bthis\._super\b/) : (/.*/);
+	
+			Class = Obj.extend({
+	
+				subscribe : function (name, handler, priority) {
+	
+					this._interestHandlers = this._interestHandlers || {};
+	
+					if (handler && !this._interestHandlers[name]) {
+						handler = handler;
+						NotificationManager.subscribe(name, handler, priority);
+						this._interestHandlers[name] = handler;
+					}
+				},
+	
+				unsubscribe : function (name) {
+	
+					if (this._interestHandlers && this._interestHandlers[name]) {
+						NotificationManager.unsubscribe(name, this._interestHandlers[name]);
+						delete this._interestHandlers[name];
+					}
+				},
+	
+				unsubscribeAll : function () {
+	
+					var interest;
+	
+					for (interest in this._interestHandlers) {
+						if (this._interestHandlers.hasOwnProperty(interest)) {
+							this.unsubscribe(interest);
+						}
+					}
+	
+					this._interestHandlers = [];
+				},
+	
+				publish : function (/*name, arg1, arg2, arg3..., callback*/) {
+					var args = Array.prototype.slice.call(arguments);
+					NotificationManager.publish.apply(NotificationManager, [].concat(args, this));
+				},
+	
+				setTimeout : function (func, delay) {
+					return setTimeout(func.bind(this), delay);
+				},
+	
+				setInterval : function (func, delay) {
+					return setInterval(func.bind(this), delay);
+				},
+	
+				destroy : function () {
+					this.unsubscribeAll();
+					return this._super.apply(this, arguments);
+				}
+			});
+	
+			Class.buildPrototype = function (props) {
+	
+				var p,
+					props,
+					proto;
+	
+				proto = Obj.buildPrototype.call(this, props);
+	
+				for (p in props) {
+	
+					if (
+						typeof props[p] === 'function' &&
+						typeof this.prototype[p] === 'function' &&
+						doesCallSuper.test(props[p])
+					) {
+						// this._super() magic, as-needed
+						proto[p] = superfy(props[p], this.prototype[p]);
+					}
+	
+	
+					else if (
+						typeof props[p] === 'object' && (
+							p === 'concatProps' ||
+							~(props.concatProps || []).indexOf(p) ||
+							~(this.prototype.concatProps || []).indexOf(p)
+						)
+					) {
+						proto[p] = merge(this.prototype[p], props[p]);
+					}
+				}
+	
+				return proto;
+			};
+	
+	        return Class;
+	    }
+	
+	).attach('$b');
+
+})();

@@ -3,28 +3,70 @@ var fs = require('fs'),
     wrench = require('wrench'),
     uglify = require('uglify-js');
 
+function replaceAnonymousDefine (id, src) {
+
+    // Replace the first instance of '$b(' or '$b.define('
+    src = src.replace(/(\$b)(\.define)?(\s)?(\()/, "$1$2$3$4'" + id + "', ");
+    return src;
+};
+
+function wrap (src) {
+    return '\n\t' + src.replace(/\n/g, '\n\t') + '\n';
+}
+
 includer(
 
     './src/brink/brink.js',
 
     {
-        wrap : function (src) {
-            return '\n\t' + src.replace(/\n/g, '\n\t') + '\n';
-        }
+        wrap : wrap
     },
 
     function (err, src) {
 
+        var $b,
+            moduleSrc;
+
+
         fs.writeFileSync('./brink.js', ';(function () {\n' + src + '\n})()');
 
-        var $b = require('./brink');
+        $b = require('./brink');
 
         $b.configure({
             baseUrl : './src'
         });
 
         $b.init(function () {
-            console.dir($b.require.metas());
+
+            var p,
+                meta,
+                metas;
+
+            metas = $b.require.metas();
+
+            for (p in metas) {
+
+                meta = metas[p];
+
+                if (meta.url) {
+
+                    moduleSrc = fs.readFileSync(meta.url, {encoding : 'utf8'});
+                    moduleSrc = replaceAnonymousDefine(meta.id, moduleSrc);
+
+                    src += wrap(moduleSrc);
+                }
+            }
+
+            src = ';(function () {\n' + src + '\n})();';
+
+            wrench.mkdirSyncRecursive('./dist');
+
+            fs.writeFileSync('./brink.js', src);
+
+            fs.writeFileSync('./dist/brink.js', src);
+            fs.writeFileSync('./dist/brink.min.js', uglify.minify('./brink.js').code);
+
+            console.log("Build complete!");
         });
 
     }
