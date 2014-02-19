@@ -3,6 +3,8 @@ var fs = require('fs'),
     wrench = require('wrench'),
     uglify = require('uglify-js');
 
+process.chdir(__dirname);
+
 function replaceAnonymousDefine (id, src) {
 
     // Replace the first instance of '$b(' or '$b.define('
@@ -16,7 +18,7 @@ function wrap (src) {
 
 includer(
 
-    './src/brink/brink.js',
+    '../src/brink/brink.js',
 
     {
         wrap : wrap
@@ -27,13 +29,12 @@ includer(
         var $b,
             moduleSrc;
 
+        fs.writeFileSync('../brink.js', ';(function () {\n' + src + '\n})()');
 
-        fs.writeFileSync('./brink.js', ';(function () {\n' + src + '\n})()');
-
-        $b = require('./brink');
+        $b = require('../brink.js');
 
         $b.configure({
-            baseUrl : './src'
+            baseUrl : '../src'
         });
 
         $b.init(function () {
@@ -59,12 +60,12 @@ includer(
 
             src = ';(function () {\n' + src + '\n})();';
 
-            wrench.mkdirSyncRecursive('./dist');
+            wrench.mkdirSyncRecursive('../dist');
 
-            fs.writeFileSync('./brink.js', src);
+            fs.writeFileSync('../brink.js', src);
 
-            fs.writeFileSync('./dist/brink.js', src);
-            fs.writeFileSync('./dist/brink.min.js', uglify.minify('./brink.js').code);
+            fs.writeFileSync('../dist/brink.js', src);
+            fs.writeFileSync('../dist/brink.min.js', uglify.minify('../brink.js').code);
 
             console.log("Build complete!");
         });
