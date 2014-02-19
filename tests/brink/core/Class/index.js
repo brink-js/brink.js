@@ -1,4 +1,4 @@
-describe("Brink.Class", function () {
+describe("$b.Class", function () {
 
     $b.define('tests/TestClass', $b.Class({
 
@@ -15,5 +15,4 @@ describe("Brink.Class", function () {
 	require("./construction");
 	require("./destruction");
 	require("./publish-subscribe");
-
 });
