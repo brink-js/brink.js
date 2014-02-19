@@ -2559,10 +2559,10 @@
     				return setInterval(func.bind(this), delay);
     			},
     
-    			destroy : function () {
+    			destroy : superfy(function () {
     				this.unsubscribeAll();
     				return this._super.apply(this, arguments);
-    			}
+    			}, Obj.prototype.destroy)
     		});
     
     		Class.buildPrototype = function (props) {

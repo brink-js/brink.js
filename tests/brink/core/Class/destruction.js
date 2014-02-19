@@ -2,16 +2,19 @@ describe("destruction", function () {
 
 	it("should run the destroy method", function (done) {
 
-		var TestClass = SubClass.extend({
+		var TestClass = $b('tests/TestClass')({
 
 			init : function () {
 				this.initialized = true;
 			},
 
+			unwatchAll : function () {
+				this._super();
+			},
+
 			destroy : function () {
 
 				var p;
-
 				this.x = this.y = this.z = null;
 				this.initialized = false;
 
@@ -26,18 +29,18 @@ describe("destruction", function () {
 			}
 		});
 
-		var testInstance = new TestClass();
+		var testInstance = TestClass.create();
 
-		expect(testInstance).to.be.an.instanceof(SubClass);
-		expect(testInstance).to.be.an.instanceof(Brink.Class);
+		expect(testInstance).to.be.an.instanceof(TestClass);
+		expect(testInstance).to.be.an.instanceof($b.Class);
 
 		testInstance.destroy();
 	});
 
 	it("should unsubscribe to all notifications", function (done) {
 
-		var TestClass = SubClass.extend({
-			
+		var TestClass = $b('tests/TestClass')({
+
 			x : 0,
 			y : 0,
 			z : 0,
@@ -69,10 +72,10 @@ describe("destruction", function () {
 			}
 		});
 
-		var testInstance = new TestClass();
+		var testInstance = TestClass.create();
 
-		expect(testInstance).to.be.an.instanceof(SubClass);
-		expect(testInstance).to.be.an.instanceof(Brink.Class);
+		expect(testInstance).to.be.an.instanceof(TestClass);
+		expect(testInstance).to.be.an.instanceof($b.Class);
 
 		testInstance.destroy();
 	});

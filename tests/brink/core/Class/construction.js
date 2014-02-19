@@ -2,26 +2,26 @@ describe("construction", function () {
 
 	it("should run the init method", function (done) {
 
-		var TestClass = SubClass.extend({
+		var TestClass = $b('tests/TestClass')({
 
 			init : function () {
 				this.initialized = true;
 			}
 		});
 
-		var testInstance = new TestClass();
+		var testInstance = TestClass().create();
 
 		expect(testInstance.initialized).to.be.ok;
 
 		done();
 
 	});
-	
-	it("should run the `__init__` method before `init`", function (done) {
 
-		var TestClass = SubClass.extend({
+	it("should run the `__init` method before `init`", function (done) {
 
-			__init__ : function () {
+		var TestClass = $b('tests/TestClass')({
+
+			__init : function () {
 				this.y = 5;
 				this._super();
 			},
@@ -32,7 +32,7 @@ describe("construction", function () {
 			}
 		});
 
-		new TestClass();
+		TestClass().create();
 
 	});
 
