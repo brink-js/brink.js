@@ -6,12 +6,12 @@ var fs = require('fs'),
 function replaceAnonymousDefine (id, src) {
 
     // Replace the first instance of '$b(' or '$b.define('
-    src = src.replace(/(\$b)(\.define)?(\s)?(\()/, "$1$2$3$4'" + id + "', ");
+    src = src.replace(/(\$b|\.define)?(\s)?(\()/, "$1$2$3'" + id + "', ");
     return src;
 };
 
 function wrap (src) {
-    return '\n\t' + src.replace(/\n/g, '\n\t') + '\n';
+    return '\n    ' + src.replace(/\n/g, '\n    ') + '\n';
 }
 
 includer(
