@@ -5,7 +5,7 @@ Router
 	QueryParamRouter
 
 Route
-	model 
+	model
 	template
 
 Client and Server-Side
@@ -34,6 +34,7 @@ var viewRouter,
 historyRouter = Brink.HistoryRouter.create();
 
 viewRouter = Brink.ViewRouter.create(function () {
+	this.register("main");
 	this.connectOutlet("main");
 	this.link(historyRouter);
 	this.add("about", About);
@@ -102,4 +103,99 @@ transitionOut : function () {
 }
 
 <a href="{{urls.about}}"></a>
+
+
+
+<nav>
+
+    {{#each link|format}}
+        <li class="{{link.className|cssClass}}">
+            <a href="{{link.href|href}}">
+                {{link.name|capitalize}}
+            </a>
+        </li>
+    {{/each}}
+
+    {{#if 1}}
+        <div>So cool!</div>
+    {{else}}
+        <div>Oooooh la la!</div>
+    {{/if}}
+
+</nav>
+
+{{#some-component/}}
+
+{{#/some-component}}
+
+$b.computed({
+
+	watch : ['prop', 'prop2|a,b,c,d,e,f,g']
+
+	get : function () {
+		return this._super();
+	},
+
+	set : function (val) {
+
+		return this._super(val);
+	}
+});
+
+$B >
+    assert
+    alias
+    intersect
+    merge
+    computed
+    watch
+    unwatch
+    parseTemplateString
+
+
+
+$B : {
+    assert,
+}
+
+
+$b.Controller.extend({
+
+    view        : $b.r('views/PostView'),
+    template    : $b.r('templates/post'),
+    model       : $b.r('models/Post'),
+    config      : $b.r('config'),
+
+    init : function () {
+
+    }
+
+}).define()
+
+
+$b.define(
+
+    [
+        'views/PostView',
+        'templates/post',
+        'models/Post',
+        'config'
+    ],
+
+    function (View, template, Model, config) {
+
+        return $b.Controller.extend({
+
+            view : View,
+            template : template,
+            model : Model,
+            config : config,
+
+            init : function () {
+
+            }
+
+        })
+    }
+);
 

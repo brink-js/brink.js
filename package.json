@@ -4,7 +4,7 @@
   "description": "",
   "main": "./brink/brink.js",
   "directories": {
-    "lib" : "./brink"
+    "lib": "./brink"
   },
   "scripts": {
     "test": "node ./tests/run-tests.js"
@@ -19,10 +19,13 @@
     "url": "https://github.com/gigafied/brink.js/issues"
   },
   "homepage": "https://github.com/gigafied/brink.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "mocha": "~1.16.2",
-    "chai": "~1.8.1"
+    "chai": "~1.8.1",
+    "includer": "0.0.2",
+    "wrench": "~1.5.7",
+    "browserify": "~3.30.1",
+    "uglify-js": "~2.4.12"
   }
 }
