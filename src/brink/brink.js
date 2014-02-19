@@ -5,8 +5,25 @@ var $b,
 	CONFIG;
 
 _global = typeof window !== 'undefined' ? window : global;
-CONFIG = (_global.Brink || _global.$b || {}).CONFIG || {};
-$b = _global.$b = _global.Brink = {};
+CONFIG = _global.Brink || _global.$b || {};
+
+$b = _global.$b = _global.Brink = function () {
+
+	if (arguments.length) {
+
+		if (arguments.length === 1 && typeof arguments[0] === 'string') {
+			if ($b.require) {
+				return $b.require.apply(_global, arguments);
+			}
+		}
+
+		if ($b.define) {
+			return $b.define.apply(_global, arguments);
+		}
+	}
+
+	return $b;
+};
 
 if (typeof window === 'undefined' && module && module.exports) {
 	module.exports = $b;
@@ -27,7 +44,7 @@ $b.require.config(CONFIG);
 
 $b.define('$b', $b);
 
-$b.config = $b.configure = function (o) {
+$b.configure = function (o) {
 
 	var p;
 
@@ -76,12 +93,7 @@ $b.init = function (deps, cb) {
 			/********* ALIASES *********/
 
 			$b.merge($b, {
-				C : $b.Class.extend.bind($b.Class),
-				F : function () {},
-				O : $b.Object.extend.bind($b.Object),
-
-				class : $b.Class.create.bind($b.Class),
-				object : $b.Object.create.bind($b.Object)
+				F : function () {}
 			});
 
 			$b.merge($b.config, CONFIG);
@@ -91,7 +103,8 @@ $b.init = function (deps, cb) {
 			}
 
 			if ($b.isFunction(deps)) {
-				deps($b);
+				cb = deps;
+				cb($b);
 			}
 
 			else {

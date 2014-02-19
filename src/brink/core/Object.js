@@ -1,4 +1,4 @@
-$b.define(
+$b(
 
     [
         '../config',
@@ -29,11 +29,11 @@ $b.define(
         'use strict';
 
         var Obj,
-            bindLoop = new RunLoop();
+            bindLoop = RunLoop.create();
 
         Obj = CoreObject.extend({
 
-            __init : function () {
+            __init : function (o) {
 
                 var i,
                     p,
@@ -44,6 +44,8 @@ $b.define(
                 this.__watchedProps = [];
                 this.__changedProps = [];
                 this.__values = {};
+
+                merge(this.__defaults, o);
 
                 for (i = 0; i < this.__methods.length; i ++) {
                     p = this.__methods[i];

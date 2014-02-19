@@ -1,4 +1,4 @@
-$b.define(
+$b(
 
     [
         './flatten',

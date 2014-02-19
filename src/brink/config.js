@@ -27,11 +27,11 @@ $b.define(
 
         DIRTY_CHECK = (IS_IE && IE_VERSION < 9) || (!Object.defineProperty && !Object.__defineGetter__);
 
-        return {
+        return ({
             DIRTY_CHECK : DIRTY_CHECK,
             IS_IE : IS_IE,
             IE_VERSION : IE_VERSION
-        };
+        });
     }
 
 ).attach('$b');

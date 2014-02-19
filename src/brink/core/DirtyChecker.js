@@ -1,4 +1,4 @@
-$b.define(
+$b(
 
     [
         './RunLoop',
@@ -9,7 +9,7 @@ $b.define(
 
         'use strict';
 
-        RunLoop = new RunLoop();
+        RunLoop = RunLoop.create();
 
         var DirtyChecker = CoreObject.extend({
 

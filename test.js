@@ -1,10 +1,9 @@
-var $b = require('./src/brink/brink.js');
+require('./dist/brink.js');
 
 $b.init(function () {
 
-    console.dir($b);
 
-    var Test = $b.C({
+    var Test = $b.Class({
 
         prop1 : 'test',
         prop2 : 'test2',
@@ -16,7 +15,9 @@ $b.init(function () {
         classProps : {
             __name : "fdfadsf"
         }
-    }).define();
+    });
+
+    console.dir(Test);
 
     var a,
         i,

@@ -57,6 +57,9 @@
 
             return {
 
+                id : null,
+                module : null,
+                url : null,
                 attachTo : null,
                 attachPath : null,
 
@@ -74,21 +77,39 @@
                         this.attachTo = this.attachTo[s[i]] = this.attachTo[s[i]] || {};
                     }
 
+                    if (this.id) {
+                        this.resolve();
+                    }
+
                 },
 
                 resolve : function (id, module) {
 
-                    module = module.exports || module;
+                    var idPart;
+
+                    if (id) {
+                        this.id = id;
+                    }
+
+                    if (module) {
+                        this.module = module;
+                    }
 
                     _metas[id] = {
-                        module : module,
-                        id : id,
-                        url : _getURL(id),
+                        module : this.module,
+                        id : this.id,
+                        url : this.url,
                         attachPath : this.attachPath
                     };
 
                     if (this.attachTo) {
-                        this.attachTo[id.split('/').pop()] = module;
+                        idPart = this.id.split('/').pop();
+
+                        if (this.attachPath === '$b') {
+                            _module(idPart, this.module);
+                        }
+
+                        this.attachTo[idPart] = this.module.exports || this.module;
                     }
                 }
             }
@@ -149,7 +170,7 @@
         * Invokes the first anonymous item in _defineQ.
         * Called from script.onLoad, and loader plugins .fromText() method.
         */
-        function _invokeAnonymousDefine (id, q) {
+        function _invokeAnonymousDefine (id, url, q) {
 
             if (_defineQ.length) {
 
@@ -163,6 +184,10 @@
                     q.splice(0, 0, id); // set the module id
                     q.splice(3, 0, 1); // set alreadyQed to true
                     q.splice(4, 0, 0); // set depsLoaded to false
+
+                    if (url) {
+                        q[5].url = url;
+                    }
 
                     define.apply(root, q);
                 }
@@ -179,7 +204,7 @@
 
                 setTimeout(function () {
                     origRequire(f);
-                    _invokeAnonymousDefine(m);
+                    _invokeAnonymousDefine(m, f);
                 }, 0);
 
                 return 1;
@@ -201,7 +226,7 @@
                     clearTimeout(timeoutID);
                     script.onload = script.onreadystatechange = script.onerror = null;
 
-                    _invokeAnonymousDefine(m);
+                    _invokeAnonymousDefine(m, f);
                 }
             };
 
@@ -331,7 +356,7 @@
                     /*jslint evil: true */
                     new Function(definition)();
 
-                    if(_defineQ.length-dqL) {
+                    if (_defineQ.length - dqL) {
                         // Looks like there was a define call in the eval'ed text.
                         _invokeAnonymousDefine(pluginPath);
                     }
@@ -460,7 +485,6 @@
                 factory = dependencies;
                 dependencies = id;
                 id = 0;
-
                 _defineQ.push([dependencies, factory, meta]);
 
                 return meta;
@@ -487,6 +511,7 @@
             * No dependencies, but the factory function is expecting arguments?
             * This means that this is a CommonJS-type module...
             */
+
             if (!dependencies.length && factory.length && typeof factory === "function") {
 
                 /**
@@ -577,7 +602,6 @@
             * Make the call to define the module.
             */
             _module(id, module);
-
             meta.resolve(id, module);
 
             /**

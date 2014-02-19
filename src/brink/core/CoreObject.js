@@ -1,12 +1,11 @@
-$b.define(
+$b(
 
     [
-    	'../utils/merge',
     	'../utils/extend',
     	'../utils/isBrinkObject'
     ],
 
-    function (merge, extend, isBrinkObject) {
+    function (extend, isBrinkObject) {
 
         'use strict';
 
@@ -42,14 +41,19 @@ $b.define(
 
 				var fn;
 
-				this.__iid = CoreObject.IID ++;
+				if (callInit === true || callInit === false) {
 
-				if (callInit !== false) {
-					fn = this.__init || this.init || this.constructor;
-					fn.apply(this, arguments);
+					this.__iid = CoreObject.IID ++;
+
+					if (callInit) {
+						fn = this.__init || this.init || this.constructor;
+						fn.apply(this, arguments);
+					}
+
+					return this;
 				}
 
-				return this;
+				return Obj.extend.apply(Obj, arguments);
 			}
 
 			Obj.prototype = proto;
@@ -80,25 +84,24 @@ $b.define(
 		CoreObject.create = function (o) {
 
 			var p,
+				args,
 				init,
 				instance;
 
+			args = arguments;
+
 			if (typeof o === 'function') {
-				instance = new this();
+				instance = new this(true);
 				o.call(instance);
-				return instance;
+				args = [];
 			}
 
-			instance = new this(false);
-
-			if (o) {
-				instance.__defaults = merge(instance.__defaults, o);
-			}
+			instance = instance || new this(false);
 
 			init = instance.__init || instance.init;
 
 			if (init) {
-				init.call(instance);
+				init.apply(instance, args);
 			}
 
 			return instance;
