@@ -32,7 +32,7 @@ a = $b.Object.create({
 };
 
 b = $b.Object.create({
-    color : a.binding('green')
+    color : $b.bindTo(a, 'green')
 });
 
 console.log(b.color); // 'green'
