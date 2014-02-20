@@ -1,21 +1,23 @@
 # brink.js
+#####A highly-modular and extendable M*C framework.
 
-Brink is a highly-modular and extendable MVC framework.
+- Solves low-level problems with as little magic and opinion as possible.
+- Is NOT a monolothic framework. The web is ever-evolving and maintaining a large code base is just not practical.
+- Is less than 10kb minified and gzipped.
+- Focuses on extensibiity and granularity. Use as much or as little of it as you want.
+- Plays nice with other frameworks. Easily use side-by-side with ReactJS or Angular.
 
-The web is ever-evolving and maintaining a monolithic JS framework is just not practical.
-
-Brink's focus is on solving low-level problems with as little magic and opinion as possible.
-Brink will never solve everything, nor should it. 
-
-## Features
+#### Features
 
 - Models/Collections
 - Computed properties
 - Two-way data binding
-- Pub/sub model for loose coupling
+- Pub/sub for loose coupling
 - DOM-aware client-side templating
 
-## Data Binding
+-----------------------------
+
+#### Data Binding
 
 Bindings enable you to keep two or more properties in sync.
 Declare the binding and Brink makes sure that chnages are
@@ -31,7 +33,7 @@ a = $b.Object.create({
 };
 
 b = $b.Object.create({
-    color : $b.binding(a, 'green');
+    color : a.binding('green')
 });
 
 console.log(b.color); // 'green'
@@ -60,6 +62,16 @@ a = $b.Object.create({
 };
 
 ````
+
+######How it works.
+
+Data binding works by using `Object.defineProperty()` in browsers that support it (IE9+ and evergreen browsers), and falling back to dirty-checking for browsers that don't. The dirty-checking is still highy efficient as it only checks properties that are bound or watched.
+
+What this means though is that for browers that don't support `Object.defineProperty()` bindings are not propagated instantly.
+
+To work around this in older browers, you can call `a.set('color', 'blue')`. Or, if you don't need instantaneous bindings (usually you don't) and don't mind the fallback to dirty-checking you can just set values like you normally would and bindings will update on the next run loop.
+
+Watchers are not invoked immediately when a property changes, they are called every run loop if their watched properties have changed. This means that even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
 ## Computed Properties
 
