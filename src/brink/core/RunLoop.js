@@ -12,6 +12,7 @@ $b(
 
             __interval : 'raf',
             __timerID : null,
+            __started : false,
 
             init : function (interval) {
 
@@ -65,6 +66,7 @@ $b(
             },
 
             start : function (restart) {
+                this.__started = true;
                 if (!this.__timerID || restart) {
                     this.stopTimer();
                     return this.__timerID = this.startTimer(this.run);
@@ -76,6 +78,7 @@ $b(
             },
 
             stop : function () {
+                this.__started = false;
                 return this.stopTimer();
             },
 
@@ -97,6 +100,10 @@ $b(
                     fn,
                     args,
                     scope;
+
+                if (!this.__once.length && !this.__loop.length) {
+                    return;
+                }
 
                 if (repeat !== false) {
                     this.start(true);
@@ -135,6 +142,10 @@ $b(
                 }
 
                 this.__onceArgs[idx] = [args || null, scope || null];
+
+                if (this.__started) {
+                    this.start();
+                }
             },
 
             loop : function (fn, args, scope) {
@@ -148,6 +159,10 @@ $b(
                 }
 
                 this.__loopArgs[idx] = [args || null, scope || null];
+
+                if (this.__started) {
+                    this.start();
+                }
             },
 
             remove : function (fn) {
