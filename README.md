@@ -20,8 +20,7 @@
 #### Data Binding
 
 Bindings enable you to keep two or more properties in sync.
-Declare the binding and Brink makes sure that chnages are
-propagated.
+Declare the binding and Brink makes sure that changes get propagated.
 
 ```javascript
 
@@ -73,7 +72,7 @@ To work around this in older browers, you can call `a.set('color', 'blue')`. Or,
 
 Watchers are not invoked immediately when a property changes, they are called every run loop if their watched properties have changed. This means that even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
-## Computed Properties
+#### Computed Properties
 
 Computed properties are properties that are dependent on other values.
 
