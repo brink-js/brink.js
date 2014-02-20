@@ -1,5 +1,38 @@
 describe('bindings', function () {
 
+    it('should property bind properties', function (done) {
+
+        var Obj,
+            Obj2,
+            instance,
+            instance2;
+
+        Obj = $b('TestObj')({
+            test : 1
+        });
+
+        instance = Obj().create();
+
+        Obj2 = $b('TestObj')({
+            test : $b.bindTo(instance, 'test')
+        });
+
+        instance2 = Obj2().create();
+
+        expect(instance.test).to.equal(1);
+        instance.test = 2;
+
+        expect(instance.test).to.equal(2);
+        expect(instance2.test).to.equal(2);
+
+        instance2.test = 10;
+        expect(instance2.test).to.equal(10);
+        expect(instance.test).to.equal(10);
+
+        done();
+
+        //instance.destroy();
+    });
     it('should watch for property changes', function (done) {
 
         var Obj,
