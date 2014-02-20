@@ -14,7 +14,7 @@ mocha = new mocha({
     reporter : 'spec'
 });
 
-require('../brink.js');
+require('../src/brink/brink.js');
 
 global.expect = chai.expect;
 
@@ -36,6 +36,10 @@ function addTests(folder, p) {
 }
 
 addTests(path.join(__dirname, 'brink'));
+
+$b.configure({
+    baseUrl : __dirname + '/../src'
+});
 
 $b.init(function () {
     mocha.run(function(failures) {

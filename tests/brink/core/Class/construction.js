@@ -1,39 +1,62 @@
-describe("construction", function () {
+describe('construction', function () {
 
-	it("should run the init method", function (done) {
+	it('should run the init method', function (done) {
 
-		var TestClass = $b('tests/TestClass')({
+		var Class,
+			instance;
+
+		Class = $b('TestClass')({
 
 			init : function () {
 				this.initialized = true;
 			}
 		});
 
-		var testInstance = TestClass().create();
+		instance = Class().create();
 
-		expect(testInstance.initialized).to.be.ok;
+		expect(instance.initialized).to.be.ok;
 
 		done();
 
 	});
 
-	it("should run the `__init` method before `init`", function (done) {
+	it('should run the __init() method before init()', function (done) {
 
-		var TestClass = $b('tests/TestClass')({
+		var Class,
+			y = 0;
+
+		Class = $b('TestClass')({
 
 			__init : function () {
-				this.y = 5;
+				expect(y).to.equal(0);
 				this._super();
+				expect(y).to.equal(1);
 			},
 
 			init : function () {
-				expect(this.y).to.equal(5);
+				y = 1;
 				done();
 			}
 		});
 
-		TestClass().create();
+		Class().create();
 
+	});
+
+	it('should be an instance of it\'s parent Classes', function (done) {
+
+		var Class,
+			instance;
+
+		Class = $b('TestClass')({});
+
+		instance = Class().create();
+
+		expect(instance).to.be.an.instanceof(Class);
+		expect(instance).to.be.an.instanceof($b('TestClass'));
+		expect(instance).to.be.an.instanceof($b.Class);
+
+		done();
 	});
 
 });

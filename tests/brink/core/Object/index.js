@@ -1,8 +1,8 @@
-describe("$b.Class", function () {
+describe("$b.Object", function () {
 
     before (function () {
 
-        $b.define('TestClass', $b.Class({
+        $b.define('TestObj', $b.Object({
 
             x : 1,
             y : 2,
@@ -18,11 +18,11 @@ describe("$b.Class", function () {
 
 	require("./construction");
 	require("./destruction");
-	require("./publish-subscribe");
+	require("./bindings");
 
     after (function () {
 
-        $b.undefine('TestClass');
+        $b.undefine('TestObject');
 
     });
 });

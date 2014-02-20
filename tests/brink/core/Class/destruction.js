@@ -1,8 +1,11 @@
-describe("destruction", function () {
+describe('destruction', function () {
 
-	it("should run the destroy method", function (done) {
+	it('should run the destroy method', function (done) {
 
-		var TestClass = $b('tests/TestClass')({
+		var Class,
+			instance;
+
+		Class = $b('TestClass')({
 
 			init : function () {
 				this.initialized = true;
@@ -29,54 +32,38 @@ describe("destruction", function () {
 			}
 		});
 
-		var testInstance = TestClass.create();
-
-		expect(testInstance).to.be.an.instanceof(TestClass);
-		expect(testInstance).to.be.an.instanceof($b.Class);
-
-		testInstance.destroy();
+		instance = Class.create();
+		instance.destroy();
 	});
 
-	it("should unsubscribe to all notifications", function (done) {
+	it('destroy()\'s super method should unsubscribe to all notifications', function (done) {
 
-		var TestClass = $b('tests/TestClass')({
+		var Class,
+			instance;
+
+		Class = $b('TestClass')({
 
 			x : 0,
-			y : 0,
-			z : 0,
 
 			init : function () {
-				this.subscribe("test-1", function () {
+				this.subscribe('test', function () {
 					this.x = 1;
-				});
-				this.subscribe("test-2", function () {
-					this.y = 2;
-				});
-				this.subscribe("test-3", function () {
-					this.z = 3;
-				});
+				}.bind(this));
 			},
 
 			destroy : function () {
+
 				this._super();
 
-				this.publish("test-1");
-				this.publish("test-2");
-				this.publish("test-3");
+				this.publish('test');
 
 				expect(this.x).to.not.be.ok;
-				expect(this.y).to.not.be.ok;
-				expect(this.z).to.not.be.ok;
 
 				done();
 			}
 		});
 
-		var testInstance = TestClass.create();
-
-		expect(testInstance).to.be.an.instanceof(TestClass);
-		expect(testInstance).to.be.an.instanceof($b.Class);
-
-		testInstance.destroy();
+		instance = Class.create();
+		instance.destroy();
 	});
 });
