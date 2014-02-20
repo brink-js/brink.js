@@ -186,3 +186,15 @@ b.lastName; // Doe
 ````
 
 You can bind properties to computed properties.
+
+----------------------------
+
+#### Building
+
+    $ npm install
+    $ node tasks/build.js
+        
+#### Running Unit Tests
+
+    $ npm install
+    $ node tasks/test.js
