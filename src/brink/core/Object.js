@@ -335,23 +335,22 @@ $b(
             SubObj = CoreObject.extend.apply(this, arguments);
             proto = SubObj.prototype;
 
-            proto.__getters = {};
-            proto.__setters = {};
-            proto.__dependencies = [];
-            proto.__properties = {};
-            proto.__defaults = {};
-            proto.__methods = [];
-
-            methods = [];
-            dependencies = [];
+            methods = clone(proto.__methods || []);
+            dependencies = clone(proto.__dependencies || []);
             properties = clone(proto.__properties || {});
+
+            proto.__getters = clone(proto.__getters || {});
+            proto.__setters = clone(proto.__setters || {});
+            proto.__defaults = clone(proto.__defaults || {});
 
             for (p in proto) {
 
                 v = proto[p];
 
-                if (isFunction(v) && p !== 'constructor') {
-                    methods.push(p);
+                if (isFunction(v)) {
+                    if (p !== 'constructor') {
+                        methods.push(p);
+                    }
                 }
 
                 else if (proto.hasOwnProperty(p)) {
@@ -380,8 +379,8 @@ $b(
             }
 
             proto.__properties = properties;
-            proto.__methods = merge((proto.__methods || []).concat(), methods);
-            proto.__dependencies = merge((proto.__dependencies || []).concat(), dependencies);
+            proto.__methods = methods;
+            proto.__dependencies = dependencies;
 
             return SubObj;
         };
