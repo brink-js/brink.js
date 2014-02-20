@@ -195,9 +195,9 @@
 
             // If in a CJS environment, resolve immediately.
             if (typeof window === 'undefined') {
+                origRequire(f);
 
                 setTimeout(function () {
-                    origRequire(f);
                     _invokeAnonymousDefine(m, f);
                 }, 0);
 
@@ -618,6 +618,12 @@
         */
         define.amd = {};
 
+        function undefine (id) {
+            _modules[id] = _metas[id] = null;
+            delete _modules[id];
+            delete _metas[id];
+        }
+
         /**
         * Asynchronously loads in js files for the modules specified.
         * If all modules are already defined, the callback function is invoked immediately.
@@ -746,13 +752,15 @@
 
         return {
             require : require,
-            define  : define
+            define  : define,
+            undefine : undefine
         };
 
     })();
 
-    $b.define = resolver.define;
     $b.require = resolver.require;
+    $b.define = resolver.define;
+    $b.undefine = resolver.undefine;
 
     require = origRequire;
 
