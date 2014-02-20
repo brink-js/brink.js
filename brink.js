@@ -942,7 +942,6 @@
                 "brink/utils/error",
                 "brink/utils/assert",
                 "brink/utils/expandProps",
-                "brink/utils/intersect",
                 "brink/utils/isBrinkInstance",
                 "brink/utils/defineProperty",
                 "brink/utils/isBrinkObject",
@@ -951,9 +950,11 @@
                 "brink/utils/extend",
                 "brink/utils/merge",
                 "brink/utils/flatten",
+                "brink/utils/intersect",
                 "brink/utils/configure",
                 "brink/utils/computed",
                 "brink/utils/clone",
+                "brink/utils/bindTo",
                 "brink/utils/alias",
                 "brink/node/build",
                 "brink/core/CoreObject",
@@ -1111,24 +1112,6 @@
     
     ).attach('$b');
 
-    $b('brink/utils/intersect', 
-    
-        [
-    
-        ],
-    
-        function () {
-    
-            'use strict';
-    
-            return function () {
-    
-    
-            };
-        }
-    
-    ).attach('$b');
-
     $b('brink/utils/isBrinkInstance', 
     
         [
@@ -1161,7 +1144,7 @@
     
                 assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
     
-                descriptor.configurable = descriptor.configurable !== 'undefined' ? descriptor.configurable : false;
+                descriptor.configurable = true;
                 descriptor.enumerable = descriptor.enumerable !== 'undefined' ? descriptor.enumerable : true;
     
                 if (prop.indexOf('__') === 0) {
@@ -1169,10 +1152,10 @@
                     descriptor.enumerable = false;
                 }
     
-                obj.__defaults[prop] = typeof descriptor.value === 'undefined' ? descriptor.defaultValue : descriptor.value;
-    
                 descriptor.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
                 descriptor.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
+    
+                descriptor.defaultValue = typeof descriptor.defaultValue !== 'undefined' ? descriptor.defaultValue : descriptor.value;
     
                 delete descriptor.value;
                 delete descriptor.writable;
@@ -1410,6 +1393,37 @@
     
     ).attach('$b');
 
+    $b('brink/utils/intersect', 
+    
+        [
+            './flatten'
+        ],
+    
+        function (flatten) {
+    
+            'use strict';
+    
+            return function (a, b) {
+    
+                var i,
+                    c;
+    
+                b = flatten([].slice.call(arguments, 1));
+                c = [];
+    
+                for (i = 0; i < b.length; i ++) {
+                    if (~a.indexOf(b[i])) {
+                        c.push(b[i]);
+                    }
+                }
+    
+                return c;
+            };
+        }
+    
+    ).attach('$b');
+    
+
     $b('brink/utils/configure', 
     
         [
@@ -1451,7 +1465,12 @@
                     };
                 }
     
+                if (typeof o.value === 'undefined') {
+                    o.value = o.defaultValue;
+                }
+    
                 o.watch = expandProps(o.watch ? [].concat(o.watch) : []);
+    
                 o.__isComputed = true;
     
                 return o;
@@ -1480,6 +1499,61 @@
                 a = arrayOrObject(o);
     
                 return a ? merge(a, o, deep) : null;
+            };
+        }
+    
+    ).attach('$b');
+
+    $b('brink/utils/bindTo', 
+    
+        [
+            './assert',
+            './computed',
+            './isBrinkInstance'
+        ],
+    
+        function (assert, computed, isBrinkInstance) {
+    
+            'use strict';
+    
+            return function (a, prop, isDefined) {
+    
+                var b,
+                    val;
+    
+                assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
+    
+                val = a.get(prop);
+    
+                if (!isDefined) {
+                    a.property(prop);
+                }
+    
+                b = computed({
+    
+                    get : function () {
+                        return a ? a.get(prop) : val;
+                    },
+    
+                    set : function (val) {
+                        val = val;
+                        return a ? a.set(prop, val) : val;
+                    },
+    
+                    __didChange : function () {
+                        return b.didChange();
+                    },
+    
+                    didChange : function () {
+    
+                    },
+    
+                    value : val
+                });
+    
+                a.watch(b.__didChange, prop);
+    
+                return b;
             };
         }
     
@@ -2070,10 +2144,13 @@
             './RunLoop',
             './CoreObject',
             './DirtyChecker',
+            '../utils/bindTo',
             '../utils/clone',
             '../utils/error',
             '../utils/merge',
             '../utils/flatten',
+            '../utils/intersect',
+            '../utils/expandProps',
             '../utils/isFunction',
             '../utils/defineProperty'
         ],
@@ -2083,10 +2160,13 @@
             RunLoop,
             CoreObject,
             DirtyChecker,
+            bindTo,
             clone,
             error,
             merge,
             flatten,
+            intersect,
+            expandProps,
             isFunction,
             defineProperty
         ) {
@@ -2110,7 +2190,24 @@
                     this.__changedProps = [];
                     this.__values = {};
     
-                    merge(this.__defaults, o);
+                    if (typeof o === 'object') {
+                        o = clone(o);
+                    }
+    
+                    else {
+                        o = {};
+                    }
+    
+                    if (!this.__isExtended) {
+                        merge(this, o);
+                        this.__parsePrototype();
+                    }
+    
+                    else {
+                        for (p in o) {
+                            this.property(p, o[p]);
+                        }
+                    }
     
                     for (i = 0; i < this.__methods.length; i ++) {
                         p = this.__methods[i];
@@ -2118,45 +2215,97 @@
                     }
     
                     for (p in this.__properties) {
-    
-                        d = this.__properties[p];
-    
-                        if (!config.DIRTY_CHECK) {
-                            d = clone(d);
-                            d.get = d.get.bind(this);
-                            d.set = d.set.bind(this);
-    
-                           // Modern browsers, IE9 +
-                            if (Object.defineProperty) {
-                                Object.defineProperty(this, p, d);
-                            }
-    
-                            // Old FF
-                            else if (this.__defineGetter__) {
-                                this.__defineGetter__(prop, d.get);
-                                this.__defineSetter__(prop, d.set);
-                            }
-    
-                            if (typeof this.__defaults[p] !== 'undefined') {
-                                this.set(p, this.__defaults[p], true);
-                            }
-                        }
-    
-                        else {
-                            this[p] = this.__defaults[p];
-                            DirtyChecker.addInstance(this);
-                        }
-    
-                        if (d.watch && d.watch.length) {
-                            this.watch(this.propertyDidChange, d.watch);
-                        }
+                        this.__defineProperty(p);
                     }
     
                     if (isFunction(this.init)) {
                         this.init.apply(this, arguments);
                     }
     
+                    this.__isInitialized = true;
+    
                     return this;
+                },
+    
+                __parsePrototype : function () {
+    
+                    var p,
+                        v,
+                        methods,
+                        dependencies;
+    
+                    methods = clone(this.__methods || []);
+                    dependencies = clone(this.__dependencies || []);
+    
+                    this.__getters = clone(this.__getters || {});
+                    this.__setters = clone(this.__setters || {});
+    
+                    this.__properties = clone(this.__properties || {});
+    
+                    for (p in this) {
+    
+                        v = this[p];
+    
+                        if (isFunction(v)) {
+                            if (p !== 'constructor') {
+                                methods.push(p);
+                            }
+                        }
+    
+                        else if (this.hasOwnProperty(p)) {
+    
+                            if (p.indexOf('__') !== 0) {
+    
+                                if (v.__isRequire) {
+                                    dependencies.push(p);
+                                }
+    
+                                else {
+                                    this.property.call(this, p, v);
+                                }
+                            }
+                        }
+                    }
+    
+                    this.__methods = methods;
+                    this.__dependencies = dependencies;
+                },
+    
+                __defineProperty : function (p) {
+    
+                    var d;
+    
+                    d = this.__properties[p];
+    
+                    if (!config.DIRTY_CHECK) {
+    
+                        d = clone(d);
+    
+                        d.get = d.get.bind(this);
+                        d.set = d.set.bind(this);
+    
+                       // Modern browsers, IE9 +
+                        if (Object.defineProperty) {
+                            Object.defineProperty(this, p, d);
+                        }
+    
+                        // Old FF
+                        else if (this.__defineGetter__) {
+                            this.__defineGetter__(prop, d.get);
+                            this.__defineSetter__(prop, d.set);
+                        }
+    
+                        this.set(p, d.defaultValue, true);
+                    }
+    
+                    else {
+                        this[p] = d.defaultValue;
+                        DirtyChecker.addInstance(this);
+                    }
+    
+                    if (d.watch && d.watch.length) {
+                        this.watch(this.propertyDidChange, d.watch);
+                    }
                 },
     
                 __readOnly : function (p) {
@@ -2225,6 +2374,10 @@
                         fn = this.__watchers[i];
                         idx = fns.indexOf(fn);
     
+                        if (!intersect(this.__watchedProps[i], props).length) {
+                            continue;
+                        }
+    
                         if (idx < 0) {
                             bindLoop.once(fn, this.__watchedProps[i]);
                         }
@@ -2270,9 +2423,47 @@
                         }
                     }
     
-                    this.__changedProps = merge(this.__changedProps, [p]);
-                    bindLoop.once(this.__notifyPropertyListeners);
+                    merge(this.__changedProps,[p]);
+                    bindLoop.once(this.__notifyPropertyListeners, this.__changedProps);
                     bindLoop.start();
+                },
+    
+                property : function (key, val) {
+    
+                    if (typeof this.__properties[key] !== 'undefined') {
+                        if (typeof val === 'undefined') {
+                            return this.__properties[key];
+                        }
+                    }
+    
+                    if (this.__isInitialized && this.hasOwnProperty('__properties')) {
+                        this.__properties = clone(this.__properties);
+                    }
+    
+                    if (!val || !val.__isComputed) {
+    
+                        val = {
+                            get : true,
+                            set : true,
+                            value : val
+                        };
+                    }
+    
+                    val = this.__properties[key] = defineProperty(this, key, val);
+    
+                    val.bindTo = function (o, p) {
+                        o.property(p, bindTo(this, key, true));
+                    }.bind(this);
+    
+                    val.didChange = function () {
+                        this.propertyDidChange(key)
+                    }.bind(this);
+    
+                    if (this.__isInitialized) {
+                        this.__defineProperty(key);
+                    }
+    
+                    return val;
                 },
     
                 get : function (key) {
@@ -2328,7 +2519,7 @@
                     var idx;
     
                     props = [].concat(props);
-                    props = props.concat(Array.prototype.slice.call(arguments, 2));
+                    props = expandProps(props.concat([].slice.call(arguments, 2)));
     
                     idx = this.__watchers.indexOf(fn);
     
@@ -2387,65 +2578,15 @@
     
             Obj.extend = function () {
     
-                var p,
-                    v,
-                    d,
-                    c,
-                    proto,
-                    SubObj,
-                    methods,
-                    properties,
-                    dependencies;
+    
+                var proto,
+                    SubObj;
     
                 SubObj = CoreObject.extend.apply(this, arguments);
                 proto = SubObj.prototype;
     
-                methods = clone(proto.__methods || []);
-                dependencies = clone(proto.__dependencies || []);
-                properties = clone(proto.__properties || {});
-    
-                proto.__getters = clone(proto.__getters || {});
-                proto.__setters = clone(proto.__setters || {});
-                proto.__defaults = clone(proto.__defaults || {});
-    
-                for (p in proto) {
-    
-                    v = proto[p];
-    
-                    if (isFunction(v)) {
-                        if (p !== 'constructor') {
-                            methods.push(p);
-                        }
-                    }
-    
-                    else if (proto.hasOwnProperty(p)) {
-    
-                        if (p.indexOf('__') !== 0) {
-    
-                            if (v.__isRequire) {
-                                dependencies.push(p);
-                            }
-    
-                            else if (v.__isComputed) {
-                                d = v;
-                            }
-    
-                            else {
-                                d = {
-                                    get : true,
-                                    set : true,
-                                    value : v
-                                };
-                            }
-    
-                            properties[p] = defineProperty(proto, p, d);
-                        }
-                    }
-                }
-    
-                proto.__properties = properties;
-                proto.__methods = methods;
-                proto.__dependencies = dependencies;
+                proto.__parsePrototype.call(proto);
+                proto.__isExtended = true;
     
                 return SubObj;
             };
