@@ -5,10 +5,13 @@ $b(
         './RunLoop',
         './CoreObject',
         './DirtyChecker',
+        '../utils/bindTo',
         '../utils/clone',
         '../utils/error',
         '../utils/merge',
         '../utils/flatten',
+        '../utils/intersect',
+        '../utils/expandProps',
         '../utils/isFunction',
         '../utils/defineProperty'
     ],
@@ -18,10 +21,13 @@ $b(
         RunLoop,
         CoreObject,
         DirtyChecker,
+        bindTo,
         clone,
         error,
         merge,
         flatten,
+        intersect,
+        expandProps,
         isFunction,
         defineProperty
     ) {
@@ -45,7 +51,24 @@ $b(
                 this.__changedProps = [];
                 this.__values = {};
 
-                merge(this.__defaults, o);
+                if (typeof o === 'object') {
+                    o = clone(o);
+                }
+
+                else {
+                    o = {};
+                }
+
+                if (!this.__isExtended) {
+                    merge(this, o);
+                    this.__parsePrototype();
+                }
+
+                else {
+                    for (p in o) {
+                        this.property(p, o[p]);
+                    }
+                }
 
                 for (i = 0; i < this.__methods.length; i ++) {
                     p = this.__methods[i];
@@ -53,45 +76,97 @@ $b(
                 }
 
                 for (p in this.__properties) {
-
-                    d = this.__properties[p];
-
-                    if (!config.DIRTY_CHECK) {
-                        d = clone(d);
-                        d.get = d.get.bind(this);
-                        d.set = d.set.bind(this);
-
-                       // Modern browsers, IE9 +
-                        if (Object.defineProperty) {
-                            Object.defineProperty(this, p, d);
-                        }
-
-                        // Old FF
-                        else if (this.__defineGetter__) {
-                            this.__defineGetter__(prop, d.get);
-                            this.__defineSetter__(prop, d.set);
-                        }
-
-                        if (typeof this.__defaults[p] !== 'undefined') {
-                            this.set(p, this.__defaults[p], true);
-                        }
-                    }
-
-                    else {
-                        this[p] = this.__defaults[p];
-                        DirtyChecker.addInstance(this);
-                    }
-
-                    if (d.watch && d.watch.length) {
-                        this.watch(this.propertyDidChange, d.watch);
-                    }
+                    this.__defineProperty(p);
                 }
 
                 if (isFunction(this.init)) {
                     this.init.apply(this, arguments);
                 }
 
+                this.__isInitialized = true;
+
                 return this;
+            },
+
+            __parsePrototype : function () {
+
+                var p,
+                    v,
+                    methods,
+                    dependencies;
+
+                methods = clone(this.__methods || []);
+                dependencies = clone(this.__dependencies || []);
+
+                this.__getters = clone(this.__getters || {});
+                this.__setters = clone(this.__setters || {});
+
+                this.__properties = clone(this.__properties || {});
+
+                for (p in this) {
+
+                    v = this[p];
+
+                    if (isFunction(v)) {
+                        if (p !== 'constructor') {
+                            methods.push(p);
+                        }
+                    }
+
+                    else if (this.hasOwnProperty(p)) {
+
+                        if (p.indexOf('__') !== 0) {
+
+                            if (v.__isRequire) {
+                                dependencies.push(p);
+                            }
+
+                            else {
+                                this.property.call(this, p, v);
+                            }
+                        }
+                    }
+                }
+
+                this.__methods = methods;
+                this.__dependencies = dependencies;
+            },
+
+            __defineProperty : function (p) {
+
+                var d;
+
+                d = this.__properties[p];
+
+                if (!config.DIRTY_CHECK) {
+
+                    d = clone(d);
+
+                    d.get = d.get.bind(this);
+                    d.set = d.set.bind(this);
+
+                   // Modern browsers, IE9 +
+                    if (Object.defineProperty) {
+                        Object.defineProperty(this, p, d);
+                    }
+
+                    // Old FF
+                    else if (this.__defineGetter__) {
+                        this.__defineGetter__(prop, d.get);
+                        this.__defineSetter__(prop, d.set);
+                    }
+
+                    this.set(p, d.defaultValue, true);
+                }
+
+                else {
+                    this[p] = d.defaultValue;
+                    DirtyChecker.addInstance(this);
+                }
+
+                if (d.watch && d.watch.length) {
+                    this.watch(this.propertyDidChange, d.watch);
+                }
             },
 
             __readOnly : function (p) {
@@ -160,6 +235,10 @@ $b(
                     fn = this.__watchers[i];
                     idx = fns.indexOf(fn);
 
+                    if (!intersect(this.__watchedProps[i], props).length) {
+                        continue;
+                    }
+
                     if (idx < 0) {
                         bindLoop.once(fn, this.__watchedProps[i]);
                     }
@@ -205,9 +284,47 @@ $b(
                     }
                 }
 
-                this.__changedProps = merge(this.__changedProps, [p]);
-                bindLoop.once(this.__notifyPropertyListeners);
+                merge(this.__changedProps,[p]);
+                bindLoop.once(this.__notifyPropertyListeners, this.__changedProps);
                 bindLoop.start();
+            },
+
+            property : function (key, val) {
+
+                if (typeof this.__properties[key] !== 'undefined') {
+                    if (typeof val === 'undefined') {
+                        return this.__properties[key];
+                    }
+                }
+
+                if (this.__isInitialized) {
+                    this.__properties = clone(this.__properties);
+                }
+
+                if (!val || !val.__isComputed) {
+
+                    val = {
+                        get : true,
+                        set : true,
+                        value : val
+                    };
+                }
+
+                val = this.__properties[key] = defineProperty(this, key, val);
+
+                val.bindTo = function (o, p) {
+                    o.property(p, bindTo(this, key));
+                }.bind(this);
+
+                val.didChange = function () {
+                    this.propertyDidChange(key)
+                }.bind(this);
+
+                if (this.__isInitialized) {
+                    this.__defineProperty(key);
+                }
+
+                return val;
             },
 
             get : function (key) {
@@ -263,7 +380,7 @@ $b(
                 var idx;
 
                 props = [].concat(props);
-                props = props.concat(Array.prototype.slice.call(arguments, 2));
+                props = expandProps(props.concat([].slice.call(arguments, 2)));
 
                 idx = this.__watchers.indexOf(fn);
 
@@ -322,65 +439,15 @@ $b(
 
         Obj.extend = function () {
 
-            var p,
-                v,
-                d,
-                c,
-                proto,
-                SubObj,
-                methods,
-                properties,
-                dependencies;
+
+            var proto,
+                SubObj;
 
             SubObj = CoreObject.extend.apply(this, arguments);
             proto = SubObj.prototype;
 
-            methods = clone(proto.__methods || []);
-            dependencies = clone(proto.__dependencies || []);
-            properties = clone(proto.__properties || {});
-
-            proto.__getters = clone(proto.__getters || {});
-            proto.__setters = clone(proto.__setters || {});
-            proto.__defaults = clone(proto.__defaults || {});
-
-            for (p in proto) {
-
-                v = proto[p];
-
-                if (isFunction(v)) {
-                    if (p !== 'constructor') {
-                        methods.push(p);
-                    }
-                }
-
-                else if (proto.hasOwnProperty(p)) {
-
-                    if (p.indexOf('__') !== 0) {
-
-                        if (v.__isRequire) {
-                            dependencies.push(p);
-                        }
-
-                        else if (v.__isComputed) {
-                            d = v;
-                        }
-
-                        else {
-                            d = {
-                                get : true,
-                                set : true,
-                                value : v
-                            };
-                        }
-
-                        properties[p] = defineProperty(proto, p, d);
-                    }
-                }
-            }
-
-            proto.__properties = properties;
-            proto.__methods = methods;
-            proto.__dependencies = dependencies;
+            proto.__parsePrototype.call(proto);
+            proto.__isExtended = true;
 
             return SubObj;
         };

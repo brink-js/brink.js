@@ -1,64 +1,112 @@
 describe('bindings', function () {
 
-    it('should property bind properties', function (done) {
+    it('should two-way data bind between $b.Object instances when using $b.bindTo()', function (done) {
 
-        var Obj,
-            Obj2,
-            instance,
-            instance2;
+        var a,
+            b;
 
-        Obj = $b('TestObj')({
+        a = $b.Object.create({
             test : 1
         });
 
-        instance = Obj().create();
-
-        Obj2 = $b('TestObj')({
-            test : $b.bindTo(instance, 'test')
+        b = $b.Object.create({
+            test : $b.bindTo(a, 'test')
         });
 
-        instance2 = Obj2().create();
+        expect(a.test).to.equal(1);
+        a.test = 2;
 
-        expect(instance.test).to.equal(1);
-        instance.test = 2;
+        expect(a.test).to.equal(2);
+        expect(b.test).to.equal(2);
 
-        expect(instance.test).to.equal(2);
-        expect(instance2.test).to.equal(2);
-
-        instance2.test = 10;
-        expect(instance2.test).to.equal(10);
-        expect(instance.test).to.equal(10);
+        b.test = 10;
+        expect(b.test).to.equal(10);
+        expect(a.test).to.equal(10);
 
         done();
-
-        //instance.destroy();
     });
-    it('should watch for property changes', function (done) {
 
-        var Obj,
-            instance;
+    it('should two-way data bind between $b.Object instances when using property().bindTo()', function (done) {
 
-        Obj = $b('TestObj')({
+        var a,
+            b;
 
-            prop1 : 1,
-            prop2: 2,
-
-            init : function () {
-                this.watch(this.prop1Changed, 'prop1');
-            },
-
-            prop1Changed : function () {
-                expect(instance.prop1).to.not.equal(1);
-                done();
-            }
+        a = $b.Object.create({
+            test : 1
         });
 
-        instance = Obj().create();
+        b = $b.Object.create({
+            test : 2
+        });
 
-        expect(instance.prop1).to.equal(1);
-        instance.prop1 = 2;
-        expect(instance.prop1).to.equal(2);
+        a.property('test').bindTo(b, 'test');
 
-        //instance.destroy();
+        expect(a.test).to.equal(1);
+        expect(b.test).to.equal(1);
+
+        a.test = 5;
+
+        expect(a.test).to.equal(5);
+        expect(b.test).to.equal(5);
+
+        b.test = 10;
+        expect(b.test).to.equal(10);
+        expect(a.test).to.equal(10);
+
+        done();
+    });
+
+    it('should be able to add watchers to $b.Object instances', function (done) {
+
+        var a;
+
+        a = $b.Object.create({
+            test : 1
+        });
+
+
+        a.watch(function () {
+            expect(a.test).to.equal(10);
+            a.test = 20;
+            a.unwatchAll();
+            done();
+        }, 'test');
+
+        expect(a.test).to.equal(1);
+        a.test = 10;
+        expect(a.test).to.equal(10);
+
+    });
+
+    it('should be able to add watchers to bound properties', function (done) {
+
+        var a,
+            b,
+            c;
+
+        a = $b.Object.create({
+            test1 : 1
+        });
+
+        b = $b.Object.create({
+            test2 : $b.bindTo(a, 'test1')
+        });
+
+        c = $b.Object.create({
+            test3 : $b.bindTo(b, 'test2')
+        });
+
+        c.watch(function () {
+
+            expect(a.test1).to.equal(b.test2);
+            expect(c.test3).to.equal(b.test2);
+            expect(c.test3).to.equal(10);
+
+            c.unwatchAll();
+            done();
+
+        }, 'test3');
+
+        a.test1 = 10;
     });
 });

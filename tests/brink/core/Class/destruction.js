@@ -47,6 +47,7 @@ describe('destruction', function () {
 
 			init : function () {
 				this.subscribe('test', function () {
+					console.log(this.x);
 					this.x = 1;
 				}.bind(this));
 			},
@@ -56,7 +57,7 @@ describe('destruction', function () {
 				this._super();
 
 				this.publish('test');
-
+				console.log(this.x);
 				expect(this.x).to.not.be.ok;
 
 				done();

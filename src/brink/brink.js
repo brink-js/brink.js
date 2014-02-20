@@ -67,10 +67,10 @@ $b.init = function (deps, cb) {
 
 			'brink/utils/alias',
 			'brink/utils/assert',
+			'brink/utils/bindTo',
 			'brink/utils/clone',
 			'brink/utils/computed',
 			'brink/utils/configure',
-
 			'brink/utils/defineProperty',
 			'brink/utils/error',
 			'brink/utils/expandProps',

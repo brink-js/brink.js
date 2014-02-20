@@ -10,29 +10,40 @@ $b(
 
         'use strict';
 
-        return function (o, prop) {
+        return function (a, prop) {
 
-            var value;
+            var b,
+                val;
 
-            assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(o));
+            assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
 
-            value = o.get(prop);
+            val = a.get(prop);
 
-            return computed({
+            b = computed({
 
                 get : function () {
-                    return o ? o.get(prop) : value;
+                    return a ? a.get(prop) : val;
                 },
 
                 set : function (val) {
-                    value = val;
-                    return o ? o.set(prop, val) : value;
+                    val = val;
+                    return a ? a.set(prop, val) : val;
                 },
 
-                value : value
+                __didChange : function () {
+                    return b.didChange();
+                },
+
+                didChange : function () {
+
+                },
+
+                value : val
             });
 
-            return o;
+            a.watch(b.__didChange, prop);
+
+            return b;
         };
     }
 

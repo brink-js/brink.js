@@ -19,7 +19,12 @@ $b(
                 };
             }
 
+            if (typeof o.value === 'undefined') {
+                o.value = o.defaultValue;
+            }
+
             o.watch = expandProps(o.watch ? [].concat(o.watch) : []);
+
             o.__isComputed = true;
 
             return o;
