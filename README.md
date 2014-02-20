@@ -115,7 +115,7 @@ A = $b.Object({
         watch : ['firstName', 'lastName'],
 
         get : function () {
-            return this.prop1 + this.prop2;
+            return [this.firstName, this.lastName].join(' ');
         },
         
         set : function (val) {
@@ -136,8 +136,8 @@ console.log(b.fullName); // Joe Schmoe
 
 b.fullName = 'John Doe';
 
-console.log(b.firstName); // Joe
-console.log(b.lastName); // Schmoe
+console.log(b.firstName); // John
+console.log(b.lastName); // Doe
 
 ````
 
