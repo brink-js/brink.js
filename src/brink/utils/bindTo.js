@@ -10,7 +10,7 @@ $b(
 
         'use strict';
 
-        return function (a, prop) {
+        return function (a, prop, isDefined) {
 
             var b,
                 val;
@@ -18,6 +18,10 @@ $b(
             assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
 
             val = a.get(prop);
+
+            if (!isDefined) {
+                a.property(prop);
+            }
 
             b = computed({
 

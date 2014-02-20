@@ -297,7 +297,7 @@ $b(
                     }
                 }
 
-                if (this.__isInitialized) {
+                if (this.__isInitialized && this.hasOwnProperty('__properties')) {
                     this.__properties = clone(this.__properties);
                 }
 
@@ -313,7 +313,7 @@ $b(
                 val = this.__properties[key] = defineProperty(this, key, val);
 
                 val.bindTo = function (o, p) {
-                    o.property(p, bindTo(this, key));
+                    o.property(p, bindTo(this, key, true));
                 }.bind(this);
 
                 val.didChange = function () {
