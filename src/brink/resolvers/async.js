@@ -24,16 +24,10 @@
 
             // Configurable properties...
             _config = {},
-            _cwd = "",
             _baseUrl = "",
             _urlArgs = "",
             _waitSeconds = 10,
             _paths = {};
-
-        if (process && process.cwd) {
-            _cwd = process.cwd() + '/';
-            _baseUrl = _normalize(_cwd + _baseUrl);
-        }
 
         /**
         * Normalizes a path/url, cleaning up duplicate slashes,
@@ -705,7 +699,7 @@
 
             _config = obj || {};
 
-            _baseUrl = _config.baseUrl ? _cwd + _config.baseUrl : _baseUrl;
+            _baseUrl = _config.baseUrl ? _config.baseUrl : _baseUrl;
 
             // Add a trailing slash to baseUrl if needed.
             _baseUrl += (_baseUrl && _baseUrl.charAt(_baseUrl.length-1) !== "/") ? "/" : "";

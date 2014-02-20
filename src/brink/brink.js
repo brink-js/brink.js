@@ -2,10 +2,13 @@
 
 var $b,
 	_global,
+	include,
 	CONFIG;
 
 _global = typeof window !== 'undefined' ? window : global;
 CONFIG = _global.Brink || _global.$b || {};
+
+include = _global.include || require;
 
 $b = _global.$b = _global.Brink = function () {
 
@@ -24,10 +27,6 @@ $b = _global.$b = _global.Brink = function () {
 
 	return $b;
 };
-
-if (typeof window === 'undefined' && module && module.exports) {
-	module.exports = $b;
-}
 
 /********* POLYFILLS *********/
 
@@ -62,6 +61,7 @@ $b.init = function (deps, cb) {
 
 	$b.require(
 
+        /*{{modules}}*/
 		[
 			'brink/config',
 
@@ -85,10 +85,13 @@ $b.init = function (deps, cb) {
 			'brink/utils/merge',
 
 			'brink/core/Object',
-			'brink/core/Class'
-		],
+			'brink/core/Class',
 
-		function () {
+			'brink/node/build'
+		]
+        /*{{/modules}}*/
+
+		, function () {
 
 			/********* ALIASES *********/
 
@@ -114,3 +117,17 @@ $b.init = function (deps, cb) {
 		}
 	);
 };
+
+if (typeof window === 'undefined' && module && module.exports) {
+
+	$b.build = function () {
+
+		var args = arguments;
+
+		$b.init(function () {
+			$b.build.apply(null, args);
+		});
+	};
+
+	module.exports = $b;
+}

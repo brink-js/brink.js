@@ -3,72 +3,31 @@ var fs = require('fs'),
     wrench = require('wrench'),
     uglify = require('uglify-js');
 
-process.chdir(__dirname);
+$b = require('../src/brink/brink.js');
 
-function replaceAnonymousDefine (id, src) {
+$b.configure({
+    baseUrl : __dirname + '/../src'
+});
 
-    // Replace the first instance of '$b(' or '$b.define('
-    src = src.replace(/(\$b|\.define)?(\s)?(\()/, "$1$2$3'" + id + "', ");
-    return src;
-};
+$b.build({
+    cwd : __dirname,
+    file : '../brink.js',
+    minify : false
+});
 
-function wrap (src) {
-    return '\n    ' + src.replace(/\n/g, '\n    ') + '\n';
-}
 
-includer(
+$b.build({
+    cwd : __dirname,
+    file : '../dist/brink-prod.js',
+    minifiedFile : '../dist/brink-prod.min.js',
+    exclude : ['brink/node/**', 'brink/dev/**'],
+    minify : false
+});
 
-    '../src/brink/brink.js',
 
-    {
-        wrap : wrap
-    },
-
-    function (err, src) {
-
-        var $b,
-            moduleSrc;
-
-        fs.writeFileSync('../brink.js', ';(function () {\n' + src + '\n})()');
-
-        $b = require('../brink.js');
-
-        $b.configure({
-            baseUrl : '../src'
-        });
-
-        $b.init(function () {
-
-            var p,
-                meta,
-                metas;
-
-            metas = $b.require.metas();
-
-            for (p in metas) {
-
-                meta = metas[p];
-
-                if (meta.url) {
-
-                    moduleSrc = fs.readFileSync(meta.url, {encoding : 'utf8'});
-                    moduleSrc = replaceAnonymousDefine(meta.id, moduleSrc);
-
-                    src += wrap(moduleSrc);
-                }
-            }
-
-            src = ';(function () {\n' + src + '\n})();';
-
-            wrench.mkdirSyncRecursive('../dist');
-
-            fs.writeFileSync('../brink.js', src);
-
-            fs.writeFileSync('../dist/brink.js', src);
-            fs.writeFileSync('../dist/brink.min.js', uglify.minify('../brink.js').code);
-
-            console.log("Build complete!");
-        });
-
-    }
-);
+$b.build({
+    cwd : __dirname,
+    file : '../dist/brink-dev.js',
+    exclude : ['brink/node/**'],
+    minify : false
+});
