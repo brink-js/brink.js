@@ -2,18 +2,21 @@
 #####A highly-modular and extendable M*C framework.
 
 - Solves low-level problems with as little magic and opinion as possible.
-- Is NOT a monolothic framework. The web is ever-evolving and maintaining a large code base is just not practical.
+- Is NOT a monolothic framework. Maintaining a large code base is just not practical.
 - Is less than 10kb minified and gzipped.
 - Focuses on extensibiity and granularity. Use as much or as little of it as you want.
 - Plays nice with other frameworks. Easily use side-by-side with ReactJS or Angular.
 
+---------------------
+
 #### Features
 
-- Models/Collections
-- Computed properties
 - Two-way data binding
-- Pub/sub for loose coupling
+- Computed properties
+- Promise based publish/subscribe
 - DOM-aware client-side templating
+- Models & Collections
+- Dependency management & injection
 
 -----------------------------
 
@@ -35,14 +38,33 @@ b = $b.Object.create({
     color : $b.bindTo(a, 'green')
 });
 
-console.log(b.color); // 'green'
-
+b.color; // 'green'
 b.color = 'red';
-
-console.log(a.color); // 'red'
+a.color; // 'red'
 
 ```
-You can also set up watcher functions:
+You can bind any property of a `$b.Object` instance to any other property of a `$b.Object` instance.
+The `$b.bindTo()` helper is there during object definition/creation, however you can bind properties at any time:
+
+```javascript
+
+var a,
+    b;
+
+a = $b.Object.create();
+b = $b.Object.create();
+
+a.property('color').bindTo(b, 'color');
+
+a.color = 'green';
+
+b.color; // 'green'
+b.color = 'red';
+a.color; // 'red'
+
+````
+
+You can also set up functions to watch for property changes:
 
 ```javascript
 
@@ -56,9 +78,11 @@ a = $b.Object.create({
     },
     
     colorChanged : function () {
-        console.log('The color has changed to ' + this.color + '!');
+        this.color; // red
     }
 };
+
+this.color = 'red';
 
 ````
 
@@ -68,7 +92,9 @@ Data binding works by using `Object.defineProperty()` in browsers that support i
 
 What this means though is that for browers that don't support `Object.defineProperty()` bindings are not propagated instantly.
 
-To work around this in older browers, you can call `a.set('color', 'blue')`. Or, if you don't need instantaneous bindings (usually you don't) and don't mind the fallback to dirty-checking you can just set values like you normally would and bindings will update on the next run loop.
+To support instant bindings in <= IE8, you can call `get()` to get properties and `set()` to set them. 
+
+Usually though, you don't need instantaneous bindings and you can get and set properties like any normal object in all browsers. Brink will make sure your changes get propagated on the next run looop.
 
 Watchers are not invoked immediately when a property changes, they are called every run loop if their watched properties have changed. This means that even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
