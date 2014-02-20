@@ -42,7 +42,7 @@ a = $b.Object.create({
 };
 
 b = $b.Object.create({
-    color : $b.bindTo(a, 'green')
+    color : $b.bindTo(a, 'color')
 });
 
 b.color; // 'green'
