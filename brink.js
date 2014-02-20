@@ -344,9 +344,9 @@
         
                     // If in a CJS environment, resolve immediately.
                     if (typeof window === 'undefined') {
+                        origRequire(f);
         
                         setTimeout(function () {
-                            origRequire(f);
                             _invokeAnonymousDefine(m, f);
                         }, 0);
         
@@ -767,6 +767,12 @@
                 */
                 define.amd = {};
         
+                function undefine (id) {
+                    _modules[id] = _metas[id] = null;
+                    delete _modules[id];
+                    delete _metas[id];
+                }
+        
                 /**
                 * Asynchronously loads in js files for the modules specified.
                 * If all modules are already defined, the callback function is invoked immediately.
@@ -895,13 +901,15 @@
         
                 return {
                     require : require,
-                    define  : define
+                    define  : define,
+                    undefine : undefine
                 };
         
             })();
         
-            $b.define = resolver.define;
             $b.require = resolver.require;
+            $b.define = resolver.define;
+            $b.undefine = resolver.undefine;
         
             require = origRequire;
         
@@ -1795,6 +1803,7 @@
     
                 __interval : 'raf',
                 __timerID : null,
+                __started : false,
     
                 init : function (interval) {
     
@@ -1848,6 +1857,7 @@
                 },
     
                 start : function (restart) {
+                    this.__started = true;
                     if (!this.__timerID || restart) {
                         this.stopTimer();
                         return this.__timerID = this.startTimer(this.run);
@@ -1859,6 +1869,7 @@
                 },
     
                 stop : function () {
+                    this.__started = false;
                     return this.stopTimer();
                 },
     
@@ -1880,6 +1891,10 @@
                         fn,
                         args,
                         scope;
+    
+                    if (!this.__once.length && !this.__loop.length) {
+                        return;
+                    }
     
                     if (repeat !== false) {
                         this.start(true);
@@ -1918,6 +1933,10 @@
                     }
     
                     this.__onceArgs[idx] = [args || null, scope || null];
+    
+                    if (this.__started) {
+                        this.start();
+                    }
                 },
     
                 loop : function (fn, args, scope) {
@@ -1931,6 +1950,10 @@
                     }
     
                     this.__loopArgs[idx] = [args || null, scope || null];
+    
+                    if (this.__started) {
+                        this.start();
+                    }
                 },
     
                 remove : function (fn) {
@@ -2377,23 +2400,22 @@
                 SubObj = CoreObject.extend.apply(this, arguments);
                 proto = SubObj.prototype;
     
-                proto.__getters = {};
-                proto.__setters = {};
-                proto.__dependencies = [];
-                proto.__properties = {};
-                proto.__defaults = {};
-                proto.__methods = [];
-    
-                methods = [];
-                dependencies = [];
+                methods = clone(proto.__methods || []);
+                dependencies = clone(proto.__dependencies || []);
                 properties = clone(proto.__properties || {});
+    
+                proto.__getters = clone(proto.__getters || {});
+                proto.__setters = clone(proto.__setters || {});
+                proto.__defaults = clone(proto.__defaults || {});
     
                 for (p in proto) {
     
                     v = proto[p];
     
-                    if (isFunction(v) && p !== 'constructor') {
-                        methods.push(p);
+                    if (isFunction(v)) {
+                        if (p !== 'constructor') {
+                            methods.push(p);
+                        }
                     }
     
                     else if (proto.hasOwnProperty(p)) {
@@ -2422,8 +2444,8 @@
                 }
     
                 proto.__properties = properties;
-                proto.__methods = merge((proto.__methods || []).concat(), methods);
-                proto.__dependencies = merge((proto.__dependencies || []).concat(), dependencies);
+                proto.__methods = methods;
+                proto.__dependencies = dependencies;
     
                 return SubObj;
             };
