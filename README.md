@@ -9,14 +9,21 @@
 
 ---------------------
 
-#### Features
+#### Core Features
 
 - Two-way data binding
 - Computed properties
-- Promise based publish/subscribe
-- DOM-aware client-side templating
-- Models & Collections
-- Dependency management & injection
+- Works in the browser and node.js
+
+#### Pluggable Features
+
+- Dependency management & injection (with build tool)
+
+
+- ###### Not yet implemented and/or documented:
+    - Models & Collections
+    - Promise based publish/subscribe
+    - DOM-aware client-side templating
 
 -----------------------------
 
@@ -131,7 +138,7 @@ b = A.create();
 b.prop1 = 5;
 b.prop2 = 10;
 
-console.log(b.sum); // 15
+b.sum; // 15
 
 ````
 
@@ -169,13 +176,13 @@ b = A.create({
     lastName : 'Schmoe'
 });
 
-console.log(b.fullName); // Joe Schmoe
+b.fullName; // Joe Schmoe
 
 b.fullName = 'John Doe';
 
-console.log(b.firstName); // John
-console.log(b.lastName); // Doe
+b.firstName; // John
+b.lastName; // Doe
 
 ````
 
-You can bind computed properties to other properties or other computed properties.
+You can bind properties to computed properties.
