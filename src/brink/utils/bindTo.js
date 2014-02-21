@@ -45,7 +45,7 @@ $b(
                 value : val
             });
 
-            a.watch(b.__didChange, prop);
+            a.watch(prop, b.__didChange);
 
             return b;
         };

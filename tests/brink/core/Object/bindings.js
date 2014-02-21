@@ -65,12 +65,12 @@ describe('bindings', function () {
         });
 
 
-        a.watch(function () {
+        a.watch('test', function () {
             expect(a.test).to.equal(10);
             a.test = 20;
             a.unwatchAll();
             done();
-        }, 'test');
+        });
 
         expect(a.test).to.equal(1);
         a.test = 10;
@@ -96,7 +96,7 @@ describe('bindings', function () {
             test3 : $b.bindTo(b, 'test2')
         });
 
-        c.watch(function () {
+        c.watch('test3', function () {
 
             expect(a.test1).to.equal(b.test2);
             expect(c.test3).to.equal(b.test2);
@@ -105,7 +105,7 @@ describe('bindings', function () {
             c.unwatchAll();
             done();
 
-        }, 'test3');
+        });
 
         a.test1 = 10;
     });
