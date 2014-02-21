@@ -1551,7 +1551,7 @@
                     value : val
                 });
     
-                a.watch(b.__didChange, prop);
+                a.watch(prop, b.__didChange);
     
                 return b;
             };
@@ -2174,7 +2174,7 @@
             'use strict';
     
             var Obj,
-                bindLoop = RunLoop.create();
+                watchLoop = RunLoop.create();
     
             Obj = CoreObject.extend({
     
@@ -2185,6 +2185,7 @@
                         d;
     
                     this.__watchers = [];
+                    this.__subWatchers = {};
                     this.__allWatchedProps = [];
                     this.__watchedProps = [];
                     this.__changedProps = [];
@@ -2304,7 +2305,7 @@
                     }
     
                     if (d.watch && d.watch.length) {
-                        this.watch(this.propertyDidChange, d.watch);
+                        this.watch(d.watch, this.propertyDidChange);
                     }
                 },
     
@@ -2366,7 +2367,7 @@
                         props,
                         watchers;
     
-                    fns = bindLoop.__once;
+                    fns = watchLoop.__once;
                     props = this.__changedProps;
     
                     for (i = 0; i < this.__watchers.length; i ++) {
@@ -2374,17 +2375,19 @@
                         fn = this.__watchers[i];
                         idx = fns.indexOf(fn);
     
-                        if (!intersect(this.__watchedProps[i], props).length) {
+                        if (this.__watchedProps[i].length && !intersect(this.__watchedProps[i], props).length) {
                             continue;
                         }
     
+                        args = (this.__watchedProps[i].length ? this.__watchedProps[i] : props).concat();
+    
                         if (idx < 0) {
-                            bindLoop.once(fn, this.__watchedProps[i]);
+                            watchLoop.once(fn, args);
                         }
     
                         else {
-                            args = bindLoop.__onceArgs[idx];
-                            bindLoop.__onceArgs[idx] = [merge(args[0], this.__watchedProps[i]), args[1]];
+                            merge(args, watchLoop.__onceArgs[idx]);
+                            watchLoop.__onceArgs[idx] = args;
                         }
                     }
     
@@ -2424,8 +2427,8 @@
                     }
     
                     merge(this.__changedProps,[p]);
-                    bindLoop.once(this.__notifyPropertyListeners, this.__changedProps);
-                    bindLoop.start();
+                    watchLoop.once(this.__notifyPropertyListeners, this.__changedProps);
+                    watchLoop.start();
                 },
     
                 property : function (key, val) {
@@ -2516,21 +2519,66 @@
     
                 watch : function (fn, props) {
     
-                    var idx;
+                    var i,
+                        k,
+                        p,
+                        t,
+                        idx,
+                        subFn,
+                        subWatchers;
     
-                    props = [].concat(props);
-                    props = expandProps(props.concat([].slice.call(arguments, 2)));
+                    subWatchers = [];
+    
+                    if (typeof fn !== 'function') {
+    
+                        fn = [].slice.call(arguments, arguments.length - 1, arguments.length)[0];
+    
+                        if (arguments.length === 1) {
+                            props = [];
+                        }
+    
+                        else {
+                            props = expandProps(flatten([].slice.call(arguments, 0, arguments.length - 1)));
+                        }
+                    }
+    
+                    else {
+                        props = [].concat(props);
+                    }
+    
+                    for (i = 0; i < props.length; i ++) {
+    
+                        p = props[i];
+    
+                        if (~p.indexOf('.')) {
+    
+                            t = p.split('.');
+                            k = t.pop();
+    
+                            subFn = function () {
+                                this.propertyDidChange([t,p].join('.'));
+                            }.bind(this);
+    
+                            t = this.get(t);
+    
+                            t.watch(k, subFn);
+    
+                            subWatchers.push({
+                                obj : t,
+                                fn : subFn
+                            });
+                        }
+                    }
     
                     idx = this.__watchers.indexOf(fn);
     
                     if (idx < 0) {
                         this.__watchers.push(fn);
-                        this.__watchedProps[this.__watchers.length - 1] = props;
+                        idx = this.__watchers.length - 1;
                     }
     
-                    else {
-                        this.__watchedProps[idx] = merge(this.__watchedProps[idx], props);
-                    }
+                    this.__watchedProps[idx] = merge(this.__watchedProps[idx] || [], props);
+                    this.__subWatchers[idx] = merge(this.__subWatchers[idx] || [], subWatchers);
     
                     this.__allWatchedProps = flatten(this.__watchedProps);
                 },
@@ -2538,6 +2586,8 @@
                 unwatch : function (fns) {
     
                     var i,
+                        p,
+                        t,
                         fn,
                         idx;
     
@@ -2549,19 +2599,39 @@
     
                         idx = this.__watchers.indexOf(fn);
     
-                        if (idx > -1) {
+                        if (~idx) {
+    
+                            for (p in this.__subWatchers[idx]) {
+                                t = this.__subWatchers[idx];
+                                t.obj.unwatch(t.fn);
+                            }
+    
                             this.__watchers.splice(idx, 1);
                             this.__watchedProps.splice(idx, 1);
+                            this.__subWatchers.splice(idx, 1);
+    
                         }
-                    }
+                   }
     
                     this.__allWatchedProps = flatten(this.__watchedProps);
                 },
     
                 unwatchAll : function () {
+    
+                    var i,
+                        t;
+    
+                    for (i = 0; i < this.__watchers.length; i ++) {
+                        for (p in this.__subWatchers[i]) {
+                            t = this.__subWatchers[i];
+                            t.obj.unwatch(t.fn);
+                        }
+                    }
+    
                     this.__watchers = [];
                     this.__watchedProps = [];
                     this.__allWatchedProps = [];
+                    this.__subWatchers = [];
                 },
     
                 destroy : function () {
