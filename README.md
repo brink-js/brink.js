@@ -81,7 +81,7 @@ a = $b.Object.create({
     color : 'green',
     
     init : function () {
-        this.watch(this.colorChanged, 'color');
+        this.watch('color', this.colorChanged);
     },
     
     colorChanged : function () {
