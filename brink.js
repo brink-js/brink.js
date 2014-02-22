@@ -10,7 +10,7 @@
     _global = typeof window !== 'undefined' ? window : global;
     CONFIG = _global.Brink || _global.$b || {};
     
-    include = _global.include || require || null;
+    include = _global.include || require ? require : null;
     
     $b = _global.$b = _global.Brink = function () {
     
@@ -332,7 +332,7 @@
                                 q[5].url = url;
                             }
         
-                            define.apply(root, q);
+                            define.apply($b, q);
                         }
                     }
                 }
@@ -838,7 +838,7 @@
                     * Otherwise, we know all modules are already defined.
                     * Invoke the callback immediately, swapping "require" with the actual require function
                     */
-                    return callback.apply(root, _swapValues(modules, {"require" : require}));
+                    return callback.apply($b, _swapValues(modules, {"require" : require}));
                 }
         
                 /**
@@ -2731,7 +2731,8 @@
     
                 init : function () {
     
-                    var a,
+                    var i,
+                        a,
                         keys,
                         vals;
     

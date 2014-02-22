@@ -17,7 +17,8 @@ $b(
 
             init : function () {
 
-                var a,
+                var i,
+                    a,
                     keys,
                     vals;
 
