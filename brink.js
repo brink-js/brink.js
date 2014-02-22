@@ -10,7 +10,7 @@
     _global = typeof window !== 'undefined' ? window : global;
     CONFIG = _global.Brink || _global.$b || {};
     
-    include = _global.include || require;
+    include = _global.include || require || null;
     
     $b = _global.$b = _global.Brink = function () {
     
