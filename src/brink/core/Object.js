@@ -247,6 +247,42 @@ $b(
                 }
             },
 
+            getProperties : function () {
+
+                var i,
+                    p,
+                    o,
+                    props;
+
+                props = arguments.length ? [].concat(arguments) : [];
+                o = {};
+
+                if (props.length) {
+
+                    for (i = 0; i < props.length; i ++) {
+                        o[props[i]] = this.get(props[i]);
+                    }
+
+                    return o;
+                }
+
+
+                for (p in this) {
+
+                    if ( p.indexOf('__') !== 0 && this.hasOwnProperty(p)) {
+                        if (!isFunction(this[p]) || this.__properties && this.__properties[p]) {
+                            o[p] = this.get(p);
+                        }
+                    }
+                }
+
+                return o;
+            },
+
+            valueOf : function () {
+                return this.getProperties();
+            },
+
             property : function (key, val) {
 
                 if (typeof this.__meta.properties[key] !== 'undefined') {

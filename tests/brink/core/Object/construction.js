@@ -7,6 +7,8 @@ describe('construction', function () {
 
 		Obj = $b('TestObj')({
 
+			a : 'test',
+
 			init : function () {
 				this.initialized = true;
 			}
