@@ -68,7 +68,7 @@ describe('bindings', function () {
         a.watch('test', function () {
             expect(a.test).to.equal(10);
             a.test = 20;
-            a.unwatchAll();
+            a.destroy();
             done();
         });
 
@@ -102,7 +102,10 @@ describe('bindings', function () {
             expect(c.test3).to.equal(b.test2);
             expect(c.test3).to.equal(10);
 
-            c.unwatchAll();
+            a.destroy();
+            b.destroy();
+            c.destroy();
+
             done();
 
         });

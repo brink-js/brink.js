@@ -9,7 +9,7 @@ $b(
         'use strict';
 
         return function (obj) {
-            return obj.constructor.__isObject;
+            return obj.constructor.__meta.isObject;
         };
     }
 

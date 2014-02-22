@@ -4,7 +4,6 @@ $b(
         '../config',
         './RunLoop',
         './CoreObject',
-        './DirtyChecker',
         '../utils/bindTo',
         '../utils/clone',
         '../utils/error',
@@ -20,7 +19,6 @@ $b(
         config,
         RunLoop,
         CoreObject,
-        DirtyChecker,
         bindTo,
         clone,
         error,
@@ -35,7 +33,8 @@ $b(
         'use strict';
 
         var Obj,
-            watchLoop = RunLoop.create();
+            watchLoop = RunLoop.create(),
+            instanceManager;
 
         Obj = CoreObject.extend({
 
@@ -43,14 +42,17 @@ $b(
 
                 var i,
                     p,
-                    d;
+                    d,
+                    meta;
 
-                this.__watchers = [];
-                this.__subWatchers = {};
-                this.__allWatchedProps = [];
-                this.__watchedProps = [];
-                this.__changedProps = [];
-                this.__values = {};
+                this.__meta = meta = clone(this.__meta || {});
+
+                meta.watchers = [];
+                meta.subWatchers = {};
+                meta.allWatchedProps = [];
+                meta.watchedProps = [];
+                meta.changedProps = [];
+                meta.values = {};
 
                 if (typeof o === 'object' && !Array.isArray(o)) {
                     o = clone(o);
@@ -60,7 +62,7 @@ $b(
                     o = {};
                 }
 
-                if (!this.__isExtended) {
+                if (!meta.isExtended) {
                     merge(this, o);
                     this.__parsePrototype();
                 }
@@ -71,12 +73,12 @@ $b(
                     }
                 }
 
-                for (i = 0; i < this.__methods.length; i ++) {
-                    p = this.__methods[i];
+                for (i = 0; i < meta.methods.length; i ++) {
+                    p = meta.methods[i];
                     this[p] = this[p].bind(this);
                 }
 
-                for (p in this.__properties) {
+                for (p in meta.properties) {
                     this.__defineProperty(p);
                 }
 
@@ -84,7 +86,11 @@ $b(
                     this.init.apply(this, arguments);
                 }
 
-                this.__isInitialized = true;
+                meta.isInitialized = true;
+
+                if ($b.instanceManager) {
+                    $b.instanceManager.add(this, meta);
+                }
 
                 return this;
             },
@@ -93,16 +99,19 @@ $b(
 
                 var p,
                     v,
+                    meta,
                     methods,
                     dependencies;
 
-                methods = clone(this.__methods || []);
-                dependencies = clone(this.__dependencies || []);
+                meta = this.__meta = this.__meta || {};
 
-                this.__getters = clone(this.__getters || {});
-                this.__setters = clone(this.__setters || {});
+                methods = clone(meta.methods || []);
+                dependencies = clone(meta.dependencies || []);
 
-                this.__properties = clone(this.__properties || {});
+                meta.getters = clone(meta.getters || {});
+                meta.setters = clone(meta.setters || {});
+
+                meta.properties = clone(meta.properties || {});
 
                 for (p in this) {
 
@@ -129,22 +138,29 @@ $b(
                     }
                 }
 
-                this.__methods = methods;
-                this.__dependencies = dependencies;
+                meta.methods = methods;
+                meta.dependencies = dependencies;
             },
 
             __defineProperty : function (p) {
 
                 var d;
 
-                d = this.__properties[p];
+                d = this.__meta.properties[p];
 
                 if (!config.DIRTY_CHECK) {
 
                     d = clone(d);
 
-                    d.get = d.get.bind(this);
-                    d.set = d.set.bind(this);
+                    if (d.get) {
+                        d.get = d.get.bind(this);
+
+                    }
+
+                    if (d.set) {
+                        d.set = d.set.bind(this);
+                    }
+
 
                    // Modern browsers, IE9 +
                     if (Object.defineProperty) {
@@ -162,11 +178,19 @@ $b(
 
                 else {
                     this[p] = d.defaultValue;
-                    DirtyChecker.addInstance(this);
                 }
 
                 if (d.watch && d.watch.length) {
                     this.watch(d.watch, this.propertyDidChange);
+                }
+            },
+
+            __undefineProperties : function () {
+
+                var p;
+
+                for (p in this.__meta.properties) {
+                    delete this[p];
                 }
             },
 
@@ -197,7 +221,7 @@ $b(
             __defineGetter : function (p, fn) {
 
                 if (fn && isFunction(fn)) {
-                    this.__getters[p] = fn;
+                    this.__meta.getters[p] = fn;
                 }
 
                 return function () {
@@ -208,7 +232,7 @@ $b(
             __defineSetter : function (p, fn) {
 
                 if (fn && isFunction(fn)) {
-                    this.__setters[p] = fn;
+                    this.__meta.setters[p] = fn;
                 }
 
                 return function (val) {
@@ -228,19 +252,23 @@ $b(
                     props,
                     watchers;
 
+                if (!this.__meta) {
+                    return;
+                }
+
                 fns = watchLoop.__once;
-                props = this.__changedProps;
+                props = this.__meta.changedProps;
 
-                for (i = 0; i < this.__watchers.length; i ++) {
+                for (i = 0; i < this.__meta.watchers.length; i ++) {
 
-                    fn = this.__watchers[i];
+                    fn = this.__meta.watchers[i];
                     idx = fns.indexOf(fn);
 
-                    if (this.__watchedProps[i].length && !intersect(this.__watchedProps[i], props).length) {
+                    if (this.__meta.watchedProps[i].length && !intersect(this.__meta.watchedProps[i], props).length) {
                         continue;
                     }
 
-                    args = (this.__watchedProps[i].length ? this.__watchedProps[i] : props).concat();
+                    args = (this.__meta.watchedProps[i].length ? this.__meta.watchedProps[i] : props).concat();
 
                     if (idx < 0) {
                         watchLoop.once(fn, args);
@@ -252,7 +280,7 @@ $b(
                     }
                 }
 
-                this.__changedProps = [];
+                this.__meta.changedProps = [];
             },
 
             propertyDidChange : function (p) {
@@ -274,12 +302,11 @@ $b(
 
                 if (config.DIRTY_CHECK) {
 
-                    this[p] = this.get(p);
-                    DirtyChecker.updateCache(this, p);
+                    this.__meta.cache[p] = this[p] = this.get(p);
 
-                    for (p2 in this.__properties) {
+                    for (p2 in this.__meta.properties) {
 
-                        d = this.__properties[p2];
+                        d = this.__meta.properties[p2];
 
                         if (~(d.watch || []).indexOf(p)) {
                             this.propertyDidChange(p2);
@@ -287,21 +314,17 @@ $b(
                     }
                 }
 
-                merge(this.__changedProps,[p]);
-                watchLoop.once(this.__notifyPropertyListeners, this.__changedProps);
+                merge(this.__meta.changedProps,[p]);
+                watchLoop.once(this.__notifyPropertyListeners, this.__meta.changedProps);
                 watchLoop.start();
             },
 
             property : function (key, val) {
 
-                if (typeof this.__properties[key] !== 'undefined') {
+                if (typeof this.__meta.properties[key] !== 'undefined') {
                     if (typeof val === 'undefined') {
-                        return this.__properties[key];
+                        return this.__meta.properties[key];
                     }
-                }
-
-                if (this.__isInitialized && this.hasOwnProperty('__properties')) {
-                    this.__properties = clone(this.__properties);
                 }
 
                 if (!val || !val.__isComputed) {
@@ -313,7 +336,7 @@ $b(
                     };
                 }
 
-                val = this.__properties[key] = defineProperty(this, key, val);
+                val = this.__meta.properties[key] = defineProperty(this, key, val);
 
                 val.bindTo = function (o, p) {
                     o.property(p, bindTo(this, key, true));
@@ -323,7 +346,7 @@ $b(
                     this.propertyDidChange(key)
                 }.bind(this);
 
-                if (this.__isInitialized) {
+                if (this.__meta.isInitialized) {
                     this.__defineProperty(key);
                 }
 
@@ -332,11 +355,11 @@ $b(
 
             get : function (key) {
 
-                if (this.__getters[key]) {
-                    return this.__getters[key].call(this, key);
+                if (this.__meta.getters[key]) {
+                    return this.__meta.getters[key].call(this, key);
                 }
 
-                return this.__values[key];
+                return this.__meta.values[key];
             },
 
             set : function (key, val, quiet, skipCompare) {
@@ -350,12 +373,12 @@ $b(
 
                     if (skipCompare || old !== val) {
 
-                        if (this.__setters[key]) {
-                            val = this.__setters[key].call(this, val, key);
+                        if (this.__meta.setters[key]) {
+                            val = this.__meta.setters[key].call(this, val, key);
                         }
 
                         else {
-                            this.__values[key] = val;
+                            this.__meta.values[key] = val;
                         }
 
                         if (!quiet) {
@@ -431,17 +454,17 @@ $b(
                     }
                 }
 
-                idx = this.__watchers.indexOf(fn);
+                idx = this.__meta.watchers.indexOf(fn);
 
                 if (idx < 0) {
-                    this.__watchers.push(fn);
-                    idx = this.__watchers.length - 1;
+                    this.__meta.watchers.push(fn);
+                    idx = this.__meta.watchers.length - 1;
                 }
 
-                this.__watchedProps[idx] = merge(this.__watchedProps[idx] || [], props);
-                this.__subWatchers[idx] = merge(this.__subWatchers[idx] || [], subWatchers);
+                this.__meta.watchedProps[idx] = merge(this.__meta.watchedProps[idx] || [], props);
+                this.__meta.subWatchers[idx] = merge(this.__meta.subWatchers[idx] || [], subWatchers);
 
-                this.__allWatchedProps = flatten(this.__watchedProps);
+                this.__meta.allWatchedProps = flatten(this.__meta.watchedProps);
             },
 
             unwatch : function (fns) {
@@ -458,23 +481,23 @@ $b(
 
                     fn = fns[i];
 
-                    idx = this.__watchers.indexOf(fn);
+                    idx = this.__meta.watchers.indexOf(fn);
 
                     if (~idx) {
 
-                        for (p in this.__subWatchers[idx]) {
-                            t = this.__subWatchers[idx];
+                        for (p in this.__meta.subWatchers[idx]) {
+                            t = this.__meta.subWatchers[idx];
                             t.obj.unwatch(t.fn);
                         }
 
-                        this.__watchers.splice(idx, 1);
-                        this.__watchedProps.splice(idx, 1);
-                        this.__subWatchers.splice(idx, 1);
+                        this.__meta.watchers.splice(idx, 1);
+                        this.__meta.watchedProps.splice(idx, 1);
+                        this.__meta.subWatchers.splice(idx, 1);
 
                     }
                }
 
-                this.__allWatchedProps = flatten(this.__watchedProps);
+                this.__meta.allWatchedProps = flatten(this.__meta.watchedProps);
             },
 
             unwatchAll : function () {
@@ -482,28 +505,29 @@ $b(
                 var i,
                     t;
 
-                for (i = 0; i < this.__watchers.length; i ++) {
-                    for (p in this.__subWatchers[i]) {
-                        t = this.__subWatchers[i];
+                for (i = 0; i < this.__meta.watchers.length; i ++) {
+                    for (p in this.__meta.subWatchers[i]) {
+                        t = this.__meta.subWatchers[i];
                         t.obj.unwatch(t.fn);
                     }
                 }
 
-                this.__watchers = [];
-                this.__watchedProps = [];
-                this.__allWatchedProps = [];
-                this.__subWatchers = [];
+                this.__meta.watchers = [];
+                this.__meta.watchedProps = [];
+                this.__meta.allWatchedProps = [];
+                this.__meta.subWatchers = [];
             },
 
             destroy : function () {
 
-                var i;
-
-                if (config.DIRTY_CHECK) {
-                    DirtyChecker.removeInstance(this);
+                if ($b.instanceManager) {
+                    $b.instanceManager.remove(this);
                 }
 
                 this.unwatchAll();
+                this.__undefineProperties();
+
+                this.__meta = null;
             }
         });
 
@@ -517,7 +541,7 @@ $b(
             proto = SubObj.prototype;
 
             proto.__parsePrototype.call(proto);
-            proto.__isExtended = true;
+            proto.__meta.isExtended = true;
 
             return SubObj;
         };
@@ -538,7 +562,7 @@ $b(
                 proto[p] = proto.__dependencies[p].resolve();
             }
 
-            this.__dependenciesResolved = true;
+            this.__meta.dependenciesResolved = true;
 
             return this;
         };
@@ -547,7 +571,7 @@ $b(
 
             cb = typeof cb === 'function' ? cb : function () {};
 
-            if (this.__dependenciesResolved) {
+            if (this.__meta.dependenciesResolved) {
                 cb(this);
             }
 
@@ -560,6 +584,7 @@ $b(
         };
 
         Obj.watchLoop = watchLoop;
+        Obj.__meta = {isObject: true};
 
         return Obj;
     }

@@ -43,8 +43,6 @@ $b(
 
 				if (callInit === true || callInit === false) {
 
-					this.__iid = CoreObject.IID ++;
-
 					if (callInit) {
 						fn = this.__init || this.init || this.constructor;
 						fn.apply(this, arguments);
@@ -59,7 +57,6 @@ $b(
 			Obj.prototype = proto;
 			extend(Obj, this, proto.classProps || {});
 
-			Obj.__isObject = true;
 			Obj.prototype.constructor = Obj;
 
 			return Obj;
@@ -106,8 +103,6 @@ $b(
 
 			return instance;
 		};
-
-		CoreObject.IID = 1;
 
         return CoreObject;
     }

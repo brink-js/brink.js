@@ -18,48 +18,31 @@ $b(
                 return this;
             },
 
-            addInstance : function (obj) {
-
-                var p,
-                    cache;
-
-                INSTANCES[obj.__iid] = obj;
-                cache = CACHED[obj.__iid] = CACHED[obj.__iid] || {};
-
-                for (p in obj.__properties) {
-                    cache[p] = obj[p];
-                }
-            },
-
-            removeInstance : function (obj) {
-                delete INSTANCES[obj.__iid];
-                delete CACHED[obj.__iid];
-            },
-
-            updateCache : function (obj, prop) {
-                CACHED[obj.__iid][prop] = obj[prop];
-            },
-
             run : function () {
 
-                var i,
-                    j,
-                    p,
-                    obj,
-                    cache;
+                if ($b.instanceManager) {
 
-                for (i in INSTANCES) {
+                    this.run = function () {
 
-                    obj = INSTANCES[i];
-                    cache = CACHED[i];
+                        $b.instanceManager.forEach(function (meta, instance) {
 
-                    for (j = 0; j < obj.__allWatchedProps.length; j ++) {
+                            var i,
+                                p;
 
-                        p = obj.__allWatchedProps[j];
-                        if (cache[p] !== obj[p]) {
-                            obj.set(p, obj[p], false, true);
-                        }
+                           for (i = 0; i < meta.allWatchedProps.length; i ++) {
+
+                                p = meta.allWatchedProps[i];
+
+                                if (meta.cache[p] !== instance[p]) {
+                                    instance.set(p, instance[p], false, true);
+                                }
+
+                           }
+
+                        });
                     }
+
+                    this.run();
                 }
             },
 
