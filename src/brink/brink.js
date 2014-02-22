@@ -86,6 +86,7 @@ $b.init = function (deps, cb) {
 
 			'brink/core/Object',
 			'brink/core/Class',
+			'brink/core/Array',
 
 			'brink/node/build'
 		]

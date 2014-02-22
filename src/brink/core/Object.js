@@ -52,7 +52,7 @@ $b(
                 this.__changedProps = [];
                 this.__values = {};
 
-                if (typeof o === 'object') {
+                if (typeof o === 'object' && !Array.isArray(o)) {
                     o = clone(o);
                 }
 
@@ -118,7 +118,7 @@ $b(
 
                         if (p.indexOf('__') !== 0) {
 
-                            if (v.__isRequire) {
+                            if (v && v.__isRequire) {
                                 dependencies.push(p);
                             }
 
@@ -558,6 +558,8 @@ $b(
 
             return this;
         };
+
+        Obj.watchLoop = watchLoop;
 
         return Obj;
     }
