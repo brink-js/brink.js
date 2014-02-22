@@ -90,7 +90,6 @@ $b.init = function (deps, cb) {
 			'brink/core/Dictionary',
 
 			'brink/core/InstanceManager',
-			'brink/core/DirtyChecker',
 
 			'brink/node/build'
 		]
@@ -106,10 +105,6 @@ $b.init = function (deps, cb) {
 			});
 
 			$b.merge($b.config, CONFIG);
-
-			if ($b.config.DIRTY_CHECK) {
-				$b.__.DirtyChecker.start();
-			}
 
 			if ($b.isFunction(deps)) {
 				cb = deps;

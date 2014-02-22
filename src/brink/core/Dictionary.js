@@ -29,9 +29,6 @@ $b(
                     this.add.apply(this, [].concat(arguments[i]));
                 }
 
-                this.__cache = this.keys.concat();
-                this.__valuesCache = this.values.concat();
-
                 this.addedItems = [];
                 this.removedItems = [];
 
@@ -65,22 +62,9 @@ $b(
                 return Obj.prototype.set.apply(this, arguments);
             },
 
-            add : function () {
-
-                var i,
-                    args;
-
-                args = [].concat(arguments);
-
-                if (args.length === 2 && !Array.isArray(args[0])) {
-                    args = [args[0], args[1]];
-                }
-
-                for (i = 0; i < args.length; i ++) {
-                    this.keys.push(args[0]);
-                    this.values[this.keys.length - 1] = args[1];
-                }
-
+            add : function (key, val) {
+                this.keys.push(key);
+                this.values[this.keys.length - 1] = val;
             },
 
             remove : function () {

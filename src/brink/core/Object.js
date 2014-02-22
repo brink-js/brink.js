@@ -2,7 +2,6 @@ $b(
 
     [
         '../config',
-        './RunLoop',
         './CoreObject',
         '../utils/bindTo',
         '../utils/clone',
@@ -17,7 +16,6 @@ $b(
 
     function (
         config,
-        RunLoop,
         CoreObject,
         bindTo,
         clone,
@@ -32,9 +30,7 @@ $b(
 
         'use strict';
 
-        var Obj,
-            watchLoop = RunLoop.create(),
-            instanceManager;
+        var Obj;
 
         Obj = CoreObject.extend({
 
@@ -46,12 +42,6 @@ $b(
                     meta;
 
                 this.__meta = meta = clone(this.__meta || {});
-
-                meta.watchers = [];
-                meta.subWatchers = {};
-                meta.allWatchedProps = [];
-                meta.watchedProps = [];
-                meta.changedProps = [];
                 meta.values = {};
 
                 if (typeof o === 'object' && !Array.isArray(o)) {
@@ -87,6 +77,7 @@ $b(
                 }
 
                 meta.isInitialized = true;
+                meta.isExtended = true;
 
                 if ($b.instanceManager) {
                     $b.instanceManager.add(this, meta);
@@ -161,7 +152,6 @@ $b(
                         d.set = d.set.bind(this);
                     }
 
-
                    // Modern browsers, IE9 +
                     if (Object.defineProperty) {
                         Object.defineProperty(this, p, d);
@@ -169,11 +159,11 @@ $b(
 
                     // Old FF
                     else if (this.__defineGetter__) {
-                        this.__defineGetter__(prop, d.get);
-                        this.__defineSetter__(prop, d.set);
+                        this.__defineGetter__(p, d.get);
+                        this.__defineSetter__(p, d.set);
                     }
 
-                    this.set(p, d.defaultValue, true);
+                    this.set(p, d.defaultValue, true, true);
                 }
 
                 else {
@@ -220,9 +210,14 @@ $b(
 
             __defineGetter : function (p, fn) {
 
-                if (fn && isFunction(fn)) {
-                    this.__meta.getters[p] = fn;
+                if (fn && !isFunction(fn)) {
+
+                    fn = function () {
+                        return this.__meta.values[p];
+                    };
                 }
+
+                this.__meta.getters[p] = fn;
 
                 return function () {
                     return this.get.call(this, p);
@@ -231,92 +226,25 @@ $b(
 
             __defineSetter : function (p, fn) {
 
-                if (fn && isFunction(fn)) {
-                    this.__meta.setters[p] = fn;
+                if (fn && !isFunction(fn)) {
+
+                    fn = function (val) {
+                        return this.__meta.values[p] = val;
+                    };
                 }
+
+                this.__meta.setters[p] = fn;
 
                 return function (val) {
                     return this.set.call(this, p, val);
                 }
             },
 
-            __notifyPropertyListeners : function () {
+            propertyDidChange : function () {
 
-                var i,
-                    j,
-                    p,
-                    fn,
-                    fns,
-                    idx,
-                    args,
-                    props,
-                    watchers;
-
-                if (!this.__meta) {
-                    return;
+                if ($b.instanceManager) {
+                    $b.instanceManager.propertyDidChange(this, flatten(arguments));
                 }
-
-                fns = watchLoop.__once;
-                props = this.__meta.changedProps;
-
-                for (i = 0; i < this.__meta.watchers.length; i ++) {
-
-                    fn = this.__meta.watchers[i];
-                    idx = fns.indexOf(fn);
-
-                    if (this.__meta.watchedProps[i].length && !intersect(this.__meta.watchedProps[i], props).length) {
-                        continue;
-                    }
-
-                    args = (this.__meta.watchedProps[i].length ? this.__meta.watchedProps[i] : props).concat();
-
-                    if (idx < 0) {
-                        watchLoop.once(fn, args);
-                    }
-
-                    else {
-                        merge(args, watchLoop.__onceArgs[idx]);
-                        watchLoop.__onceArgs[idx] = args;
-                    }
-                }
-
-                this.__meta.changedProps = [];
-            },
-
-            propertyDidChange : function (p) {
-
-                var i,
-                    p,
-                    d,
-                    p2,
-                    watchers;
-
-                if (Array.isArray(p)) {
-
-                    for (i = 0; i < p.length; i ++) {
-                        this.propertyDidChange(p[i]);
-                    }
-
-                    return;
-                }
-
-                if (config.DIRTY_CHECK) {
-
-                    this.__meta.cache[p] = this[p] = this.get(p);
-
-                    for (p2 in this.__meta.properties) {
-
-                        d = this.__meta.properties[p2];
-
-                        if (~(d.watch || []).indexOf(p)) {
-                            this.propertyDidChange(p2);
-                        }
-                    }
-                }
-
-                merge(this.__meta.changedProps,[p]);
-                watchLoop.once(this.__notifyPropertyListeners, this.__meta.changedProps);
-                watchLoop.start();
             },
 
             property : function (key, val) {
@@ -359,7 +287,7 @@ $b(
                     return this.__meta.getters[key].call(this, key);
                 }
 
-                return this.__meta.values[key];
+                return this[key];
             },
 
             set : function (key, val, quiet, skipCompare) {
@@ -378,7 +306,7 @@ $b(
                         }
 
                         else {
-                            this.__meta.values[key] = val;
+                            this[key] = val;
                         }
 
                         if (!quiet) {
@@ -403,136 +331,76 @@ $b(
 
             watch : function (fn, props) {
 
-                var i,
-                    k,
-                    p,
-                    t,
-                    idx,
-                    subFn,
-                    subWatchers;
+                var fn,
+                    props;
 
-                subWatchers = [];
+                fn = arguments[0];
+                props = arguments[1];
 
-                if (typeof fn !== 'function') {
+                if ($b.instanceManager) {
 
-                    fn = [].slice.call(arguments, arguments.length - 1, arguments.length)[0];
+                    if (typeof fn !== 'function') {
 
-                    if (arguments.length === 1) {
-                        props = [];
+                        fn = [].slice.call(arguments, arguments.length - 1, arguments.length)[0];
+
+                        if (arguments.length === 1) {
+                            props = [];
+                        }
+
+                        else {
+                            props = expandProps(flatten([].slice.call(arguments, 0, arguments.length - 1)));
+                        }
                     }
 
                     else {
-                        props = expandProps(flatten([].slice.call(arguments, 0, arguments.length - 1)));
+                        props = [].concat(props);
                     }
+
+                    $b.instanceManager.watch(this, props, fn);
                 }
 
                 else {
-                    props = [].concat(props);
+                    error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
-
-                for (i = 0; i < props.length; i ++) {
-
-                    p = props[i];
-
-                    if (~p.indexOf('.')) {
-
-                        t = p.split('.');
-                        k = t.pop();
-
-                        subFn = function () {
-                            this.propertyDidChange([t,p].join('.'));
-                        }.bind(this);
-
-                        t = this.get(t);
-
-                        t.watch(k, subFn);
-
-                        subWatchers.push({
-                            obj : t,
-                            fn : subFn
-                        });
-                    }
-                }
-
-                idx = this.__meta.watchers.indexOf(fn);
-
-                if (idx < 0) {
-                    this.__meta.watchers.push(fn);
-                    idx = this.__meta.watchers.length - 1;
-                }
-
-                this.__meta.watchedProps[idx] = merge(this.__meta.watchedProps[idx] || [], props);
-                this.__meta.subWatchers[idx] = merge(this.__meta.subWatchers[idx] || [], subWatchers);
-
-                this.__meta.allWatchedProps = flatten(this.__meta.watchedProps);
             },
 
             unwatch : function (fns) {
 
-                var i,
-                    p,
-                    t,
-                    fn,
-                    idx;
+                if ($b.instanceManager) {
+                    $b.instanceManager.unwatch(this, flatten(arguments));
+                }
 
-                fns = [].concat(fns);
+                else {
+                    error('InstanceManager does not exist, can\'t watch for property changes.');
+                }
 
-                for (i = 0; i < fns.length; i ++) {
-
-                    fn = fns[i];
-
-                    idx = this.__meta.watchers.indexOf(fn);
-
-                    if (~idx) {
-
-                        for (p in this.__meta.subWatchers[idx]) {
-                            t = this.__meta.subWatchers[idx];
-                            t.obj.unwatch(t.fn);
-                        }
-
-                        this.__meta.watchers.splice(idx, 1);
-                        this.__meta.watchedProps.splice(idx, 1);
-                        this.__meta.subWatchers.splice(idx, 1);
-
-                    }
-               }
-
-                this.__meta.allWatchedProps = flatten(this.__meta.watchedProps);
             },
 
             unwatchAll : function () {
 
-                var i,
-                    t;
-
-                for (i = 0; i < this.__meta.watchers.length; i ++) {
-                    for (p in this.__meta.subWatchers[i]) {
-                        t = this.__meta.subWatchers[i];
-                        t.obj.unwatch(t.fn);
-                    }
+                if ($b.instanceManager) {
+                    $b.instanceManager.unwatchAll(this);
                 }
 
-                this.__meta.watchers = [];
-                this.__meta.watchedProps = [];
-                this.__meta.allWatchedProps = [];
-                this.__meta.subWatchers = [];
+                else {
+                    error('InstanceManager does not exist, can\'t watch for property changes.');
+                }
             },
 
             destroy : function () {
 
+                this.unwatchAll();
+                this.__undefineProperties();
+
                 if ($b.instanceManager) {
                     $b.instanceManager.remove(this);
                 }
-
-                this.unwatchAll();
-                this.__undefineProperties();
 
                 this.__meta = null;
             }
         });
 
         Obj.extend = function () {
-
 
             var proto,
                 SubObj;
@@ -583,8 +451,7 @@ $b(
             return this;
         };
 
-        Obj.watchLoop = watchLoop;
-        Obj.__meta = {isObject: true};
+        Obj.__meta = merge(Obj.__meta || {}, {isObject: true});
 
         return Obj;
     }

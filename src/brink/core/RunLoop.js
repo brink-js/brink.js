@@ -109,11 +109,14 @@ $b(
                     this.start(true);
                 }
 
-                for (i = 0; i < this.__once.length; i ++) {
+                for (i = 0; i < this.__once.length;) {
 
                     fn = this.__once[i];
                     args = this.__onceArgs[i][0];
                     scope = this.__onceArgs[i][1];
+
+                    this.__once.splice(i, 1);
+                    this.__onceArgs.splice(i, 1);
 
                     fn.call(scope, args);
                 }

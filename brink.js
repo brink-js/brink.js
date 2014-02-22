@@ -958,14 +958,14 @@
                 "brink/utils/alias",
                 "brink/node/build",
                 "brink/core/CoreObject",
-                "brink/core/RunLoop",
-                "brink/core/DirtyChecker",
                 "brink/core/Object",
                 "brink/core/Dictionary",
                 "brink/core/Array",
-                "brink/core/InstanceManager",
                 "brink/core/NotificationManager",
-                "brink/core/Class"
+                "brink/core/Class",
+                "brink/core/RunLoop",
+                "brink/core/InstanceWatcher",
+                "brink/core/InstanceManager"
             ]
     
     		, function () {
@@ -978,10 +978,6 @@
     			});
     
     			$b.merge($b.config, CONFIG);
-    
-    			if ($b.config.DIRTY_CHECK) {
-    				$b.__.DirtyChecker.start();
-    			}
     
     			if ($b.isFunction(deps)) {
     				cb = deps;
@@ -1862,268 +1858,10 @@
     ).attach('$b');
     
 
-    $b('brink/core/RunLoop', 
-    
-        [
-            "./CoreObject"
-        ],
-    
-        function (CoreObject) {
-    
-            'use strict';
-    
-            return CoreObject.extend({
-    
-                __interval : 'raf',
-                __timerID : null,
-                __started : false,
-    
-                init : function (interval) {
-    
-                    this.clear();
-    
-                    if (typeof interval !== 'undefined') {
-                        this.setInterval.call(this, interval);
-                    }
-    
-                    return this;
-                },
-    
-                setInterval : function (val) {
-    
-                    val = isNaN(val) ? val.toLowerCase() : val;
-                    this.__interval = (val === 'raf' || val === 'requestanimationframe') ? 'raf' : val;
-    
-                    if(this.stopTimer()) {
-                        this.start();
-                    }
-                },
-    
-                startTimer : function (fn) {
-    
-                    fn = fn.bind(this);
-    
-                    if (this.__interval === 'raf') {
-                        return requestAnimationFrame(fn);
-                    }
-    
-                    return setTimeout(fn, this.__interval);
-                },
-    
-                stopTimer : function () {
-    
-                    if (!this.__timerID) {
-                        return false;
-                    }
-    
-                    if (this.__interval === 'raf') {
-                        cancelAnimationFrame(this.__timerID);
-                    }
-    
-                    else {
-                        clearTimeout(this.__timerID);
-                    }
-    
-                    this.__timerID = null;
-    
-                    return true;
-                },
-    
-                start : function (restart) {
-                    this.__started = true;
-                    if (!this.__timerID || restart) {
-                        this.stopTimer();
-                        return this.__timerID = this.startTimer(this.run);
-                    }
-                },
-    
-                restart : function () {
-                    this.start(true);
-                },
-    
-                stop : function () {
-                    this.__started = false;
-                    return this.stopTimer();
-                },
-    
-                defer : function () {
-                    return this.start();
-                },
-    
-                deferOnce : function () {
-                    this.stopTimer();
-                    return this.__timerID = this.startTimer(function () {
-                        this.stopTimer();
-                        this.run(false);
-                    }.bind(this));
-                },
-    
-                run : function (repeat) {
-    
-                    var i,
-                        fn,
-                        args,
-                        scope;
-    
-                    if (!this.__once.length && !this.__loop.length) {
-                        return;
-                    }
-    
-                    if (repeat !== false) {
-                        this.start(true);
-                    }
-    
-                    for (i = 0; i < this.__once.length; i ++) {
-    
-                        fn = this.__once[i];
-                        args = this.__onceArgs[i][0];
-                        scope = this.__onceArgs[i][1];
-    
-                        fn.call(scope, args);
-                    }
-    
-                    for (i = 0; i < this.__loop.length; i ++) {
-    
-                        fn = this.__loop[i];
-                        args = this.__loopArgs[i][0];
-                        scope = this.__loopArgs[i][1];
-    
-                        fn.call(scope, args);
-                    }
-    
-                    this.__once = [];
-                    this.__onceArgs = [];
-                },
-    
-                once : function (fn, args, scope) {
-    
-                    var idx = this.__once.indexOf(fn);
-    
-                    if (idx < 0) {
-    
-                        this.__once.push(fn);
-                        idx = this.__once.length - 1;
-                    }
-    
-                    this.__onceArgs[idx] = [args || null, scope || null];
-    
-                    if (this.__started) {
-                        this.start();
-                    }
-                },
-    
-                loop : function (fn, args, scope) {
-    
-                    var idx = this.__loop.indexOf(fn);
-    
-                    if (idx < 0) {
-    
-                        this.__loop.push(fn);
-                        idx = this.__loop.length - 1;
-                    }
-    
-                    this.__loopArgs[idx] = [args || null, scope || null];
-    
-                    if (this.__started) {
-                        this.start();
-                    }
-                },
-    
-                remove : function (fn) {
-    
-                    var i;
-    
-                    i = this.__once.indexOf(fn);
-    
-                    if (i >= 0) {
-                        this.__once.splice(i, 1);
-                    }
-    
-                    i = this.__loop.indexOf(fn);
-    
-                    if (i >= 0) {
-                        this.__loop.splice(i, 1);
-                    }
-                },
-    
-                clear : function () {
-                    this.__loop = [];
-                    this.__once = [];
-    
-                    this.__loopArgs = [];
-                    this.__onceArgs = [];
-                }
-    
-            });
-        }
-    
-    ).attach('$b.__');
-
-    $b('brink/core/DirtyChecker', 
-    
-        [
-            './RunLoop',
-            './CoreObject'
-        ],
-    
-        function (RunLoop, CoreObject) {
-    
-            'use strict';
-    
-            RunLoop = RunLoop.create();
-    
-            var DirtyChecker = CoreObject.extend({
-    
-                init : function () {
-                    RunLoop.loop(this.run.bind(this));
-                    return this;
-                },
-    
-                run : function () {
-    
-                    if ($b.instanceManager) {
-    
-                        this.run = function () {
-    
-                            $b.instanceManager.forEach(function (meta, instance) {
-    
-                                var i,
-                                    p;
-    
-                               for (i = 0; i < meta.allWatchedProps.length; i ++) {
-    
-                                    p = meta.allWatchedProps[i];
-    
-                                    if (meta.cache[p] !== instance[p]) {
-                                        instance.set(p, instance[p], false, true);
-                                    }
-    
-                               }
-    
-                            });
-                        }
-    
-                        this.run();
-                    }
-                },
-    
-                start : function () {
-                    RunLoop.start();
-                }
-    
-            });
-    
-            return DirtyChecker.create();
-        }
-    
-    ).attach('$b.__');
-    
-
     $b('brink/core/Object', 
     
         [
             '../config',
-            './RunLoop',
             './CoreObject',
             '../utils/bindTo',
             '../utils/clone',
@@ -2138,7 +1876,6 @@
     
         function (
             config,
-            RunLoop,
             CoreObject,
             bindTo,
             clone,
@@ -2153,9 +1890,7 @@
     
             'use strict';
     
-            var Obj,
-                watchLoop = RunLoop.create(),
-                instanceManager;
+            var Obj;
     
             Obj = CoreObject.extend({
     
@@ -2167,12 +1902,6 @@
                         meta;
     
                     this.__meta = meta = clone(this.__meta || {});
-    
-                    meta.watchers = [];
-                    meta.subWatchers = {};
-                    meta.allWatchedProps = [];
-                    meta.watchedProps = [];
-                    meta.changedProps = [];
                     meta.values = {};
     
                     if (typeof o === 'object' && !Array.isArray(o)) {
@@ -2208,6 +1937,7 @@
                     }
     
                     meta.isInitialized = true;
+                    meta.isExtended = true;
     
                     if ($b.instanceManager) {
                         $b.instanceManager.add(this, meta);
@@ -2282,7 +2012,6 @@
                             d.set = d.set.bind(this);
                         }
     
-    
                        // Modern browsers, IE9 +
                         if (Object.defineProperty) {
                             Object.defineProperty(this, p, d);
@@ -2290,11 +2019,11 @@
     
                         // Old FF
                         else if (this.__defineGetter__) {
-                            this.__defineGetter__(prop, d.get);
-                            this.__defineSetter__(prop, d.set);
+                            this.__defineGetter__(p, d.get);
+                            this.__defineSetter__(p, d.set);
                         }
     
-                        this.set(p, d.defaultValue, true);
+                        this.set(p, d.defaultValue, true, true);
                     }
     
                     else {
@@ -2341,9 +2070,14 @@
     
                 __defineGetter : function (p, fn) {
     
-                    if (fn && isFunction(fn)) {
-                        this.__meta.getters[p] = fn;
+                    if (fn && !isFunction(fn)) {
+    
+                        fn = function () {
+                            return this.__meta.values[p];
+                        };
                     }
+    
+                    this.__meta.getters[p] = fn;
     
                     return function () {
                         return this.get.call(this, p);
@@ -2352,92 +2086,25 @@
     
                 __defineSetter : function (p, fn) {
     
-                    if (fn && isFunction(fn)) {
-                        this.__meta.setters[p] = fn;
+                    if (fn && !isFunction(fn)) {
+    
+                        fn = function (val) {
+                            return this.__meta.values[p] = val;
+                        };
                     }
+    
+                    this.__meta.setters[p] = fn;
     
                     return function (val) {
                         return this.set.call(this, p, val);
                     }
                 },
     
-                __notifyPropertyListeners : function () {
+                propertyDidChange : function () {
     
-                    var i,
-                        j,
-                        p,
-                        fn,
-                        fns,
-                        idx,
-                        args,
-                        props,
-                        watchers;
-    
-                    if (!this.__meta) {
-                        return;
+                    if ($b.instanceManager) {
+                        $b.instanceManager.propertyDidChange(this, flatten(arguments));
                     }
-    
-                    fns = watchLoop.__once;
-                    props = this.__meta.changedProps;
-    
-                    for (i = 0; i < this.__meta.watchers.length; i ++) {
-    
-                        fn = this.__meta.watchers[i];
-                        idx = fns.indexOf(fn);
-    
-                        if (this.__meta.watchedProps[i].length && !intersect(this.__meta.watchedProps[i], props).length) {
-                            continue;
-                        }
-    
-                        args = (this.__meta.watchedProps[i].length ? this.__meta.watchedProps[i] : props).concat();
-    
-                        if (idx < 0) {
-                            watchLoop.once(fn, args);
-                        }
-    
-                        else {
-                            merge(args, watchLoop.__onceArgs[idx]);
-                            watchLoop.__onceArgs[idx] = args;
-                        }
-                    }
-    
-                    this.__meta.changedProps = [];
-                },
-    
-                propertyDidChange : function (p) {
-    
-                    var i,
-                        p,
-                        d,
-                        p2,
-                        watchers;
-    
-                    if (Array.isArray(p)) {
-    
-                        for (i = 0; i < p.length; i ++) {
-                            this.propertyDidChange(p[i]);
-                        }
-    
-                        return;
-                    }
-    
-                    if (config.DIRTY_CHECK) {
-    
-                        this.__meta.cache[p] = this[p] = this.get(p);
-    
-                        for (p2 in this.__meta.properties) {
-    
-                            d = this.__meta.properties[p2];
-    
-                            if (~(d.watch || []).indexOf(p)) {
-                                this.propertyDidChange(p2);
-                            }
-                        }
-                    }
-    
-                    merge(this.__meta.changedProps,[p]);
-                    watchLoop.once(this.__notifyPropertyListeners, this.__meta.changedProps);
-                    watchLoop.start();
                 },
     
                 property : function (key, val) {
@@ -2480,7 +2147,7 @@
                         return this.__meta.getters[key].call(this, key);
                     }
     
-                    return this.__meta.values[key];
+                    return this[key];
                 },
     
                 set : function (key, val, quiet, skipCompare) {
@@ -2499,7 +2166,7 @@
                             }
     
                             else {
-                                this.__meta.values[key] = val;
+                                this[key] = val;
                             }
     
                             if (!quiet) {
@@ -2524,136 +2191,76 @@
     
                 watch : function (fn, props) {
     
-                    var i,
-                        k,
-                        p,
-                        t,
-                        idx,
-                        subFn,
-                        subWatchers;
+                    var fn,
+                        props;
     
-                    subWatchers = [];
+                    fn = arguments[0];
+                    props = arguments[1];
     
-                    if (typeof fn !== 'function') {
+                    if ($b.instanceManager) {
     
-                        fn = [].slice.call(arguments, arguments.length - 1, arguments.length)[0];
+                        if (typeof fn !== 'function') {
     
-                        if (arguments.length === 1) {
-                            props = [];
+                            fn = [].slice.call(arguments, arguments.length - 1, arguments.length)[0];
+    
+                            if (arguments.length === 1) {
+                                props = [];
+                            }
+    
+                            else {
+                                props = expandProps(flatten([].slice.call(arguments, 0, arguments.length - 1)));
+                            }
                         }
     
                         else {
-                            props = expandProps(flatten([].slice.call(arguments, 0, arguments.length - 1)));
+                            props = [].concat(props);
                         }
+    
+                        $b.instanceManager.watch(this, props, fn);
                     }
     
                     else {
-                        props = [].concat(props);
+                        error('InstanceManager does not exist, can\'t watch for property changes.');
                     }
-    
-                    for (i = 0; i < props.length; i ++) {
-    
-                        p = props[i];
-    
-                        if (~p.indexOf('.')) {
-    
-                            t = p.split('.');
-                            k = t.pop();
-    
-                            subFn = function () {
-                                this.propertyDidChange([t,p].join('.'));
-                            }.bind(this);
-    
-                            t = this.get(t);
-    
-                            t.watch(k, subFn);
-    
-                            subWatchers.push({
-                                obj : t,
-                                fn : subFn
-                            });
-                        }
-                    }
-    
-                    idx = this.__meta.watchers.indexOf(fn);
-    
-                    if (idx < 0) {
-                        this.__meta.watchers.push(fn);
-                        idx = this.__meta.watchers.length - 1;
-                    }
-    
-                    this.__meta.watchedProps[idx] = merge(this.__meta.watchedProps[idx] || [], props);
-                    this.__meta.subWatchers[idx] = merge(this.__meta.subWatchers[idx] || [], subWatchers);
-    
-                    this.__meta.allWatchedProps = flatten(this.__meta.watchedProps);
                 },
     
                 unwatch : function (fns) {
     
-                    var i,
-                        p,
-                        t,
-                        fn,
-                        idx;
+                    if ($b.instanceManager) {
+                        $b.instanceManager.unwatch(this, flatten(arguments));
+                    }
     
-                    fns = [].concat(fns);
+                    else {
+                        error('InstanceManager does not exist, can\'t watch for property changes.');
+                    }
     
-                    for (i = 0; i < fns.length; i ++) {
-    
-                        fn = fns[i];
-    
-                        idx = this.__meta.watchers.indexOf(fn);
-    
-                        if (~idx) {
-    
-                            for (p in this.__meta.subWatchers[idx]) {
-                                t = this.__meta.subWatchers[idx];
-                                t.obj.unwatch(t.fn);
-                            }
-    
-                            this.__meta.watchers.splice(idx, 1);
-                            this.__meta.watchedProps.splice(idx, 1);
-                            this.__meta.subWatchers.splice(idx, 1);
-    
-                        }
-                   }
-    
-                    this.__meta.allWatchedProps = flatten(this.__meta.watchedProps);
                 },
     
                 unwatchAll : function () {
     
-                    var i,
-                        t;
-    
-                    for (i = 0; i < this.__meta.watchers.length; i ++) {
-                        for (p in this.__meta.subWatchers[i]) {
-                            t = this.__meta.subWatchers[i];
-                            t.obj.unwatch(t.fn);
-                        }
+                    if ($b.instanceManager) {
+                        $b.instanceManager.unwatchAll(this);
                     }
     
-                    this.__meta.watchers = [];
-                    this.__meta.watchedProps = [];
-                    this.__meta.allWatchedProps = [];
-                    this.__meta.subWatchers = [];
+                    else {
+                        error('InstanceManager does not exist, can\'t watch for property changes.');
+                    }
                 },
     
                 destroy : function () {
     
+                    this.unwatchAll();
+                    this.__undefineProperties();
+    
                     if ($b.instanceManager) {
                         $b.instanceManager.remove(this);
                     }
-    
-                    this.unwatchAll();
-                    this.__undefineProperties();
     
                     this.__meta = null;
                 }
             });
     
             Obj.extend = function () {
-    
     
                 var proto,
                     SubObj;
@@ -2704,8 +2311,7 @@
                 return this;
             };
     
-            Obj.watchLoop = watchLoop;
-            Obj.__meta = {isObject: true};
+            Obj.__meta = merge(Obj.__meta || {}, {isObject: true});
     
             return Obj;
         }
@@ -2743,9 +2349,6 @@
                         this.add.apply(this, [].concat(arguments[i]));
                     }
     
-                    this.__cache = this.keys.concat();
-                    this.__valuesCache = this.values.concat();
-    
                     this.addedItems = [];
                     this.removedItems = [];
     
@@ -2779,22 +2382,9 @@
                     return Obj.prototype.set.apply(this, arguments);
                 },
     
-                add : function () {
-    
-                    var i,
-                        args;
-    
-                    args = [].concat(arguments);
-    
-                    if (args.length === 2 && !Array.isArray(args[0])) {
-                        args = [args[0], args[1]];
-                    }
-    
-                    for (i = 0; i < args.length; i ++) {
-                        this.keys.push(args[0]);
-                        this.values[this.keys.length - 1] = args[1];
-                    }
-    
+                add : function (key, val) {
+                    this.keys.push(key);
+                    this.values[this.keys.length - 1] = val;
                 },
     
                 remove : function () {
@@ -3075,51 +2665,6 @@
     
     
     		return Arr;
-    	}
-    
-    ).attach('$b');
-
-    $b('brink/core/InstanceManager', 
-    
-        [
-        	'./Object',
-            './Dictionary'
-        ],
-    
-        function (Obj, Dictionary) {
-    
-            var InstanceManager,
-                IID = 1;
-    
-    		InstanceManager = Obj.extend({
-    
-                instances : null,
-    
-                init : function () {
-                    this.instances = Dictionary.create();
-                },
-    
-                add : function (instance, meta) {
-    
-                    meta = meta || {};
-                    meta.iid = IID ++;
-    
-                    this.instances.add([instance, meta]);
-    
-                    return meta;
-                },
-    
-                remove : function (instance) {
-                    this.instances.remove.apply(this.instances, arguments);
-                },
-    
-                forEach : function (fn) {
-                    return this.instances.forEach(fn);
-                }
-    
-    		}).create();
-    
-            $b.define('instanceManager', InstanceManager).attach('$b');
     	}
     
     ).attach('$b');
@@ -3422,6 +2967,457 @@
     
             return Class;
         }
+    
+    ).attach('$b');
+
+    $b('brink/core/RunLoop', 
+    
+        [
+            "./CoreObject"
+        ],
+    
+        function (CoreObject) {
+    
+            'use strict';
+    
+            return CoreObject.extend({
+    
+                __interval : 'raf',
+                __timerID : null,
+                __started : false,
+    
+                init : function (interval) {
+    
+                    this.clear();
+    
+                    if (typeof interval !== 'undefined') {
+                        this.setInterval.call(this, interval);
+                    }
+    
+                    return this;
+                },
+    
+                setInterval : function (val) {
+    
+                    val = isNaN(val) ? val.toLowerCase() : val;
+                    this.__interval = (val === 'raf' || val === 'requestanimationframe') ? 'raf' : val;
+    
+                    if(this.stopTimer()) {
+                        this.start();
+                    }
+                },
+    
+                startTimer : function (fn) {
+    
+                    fn = fn.bind(this);
+    
+                    if (this.__interval === 'raf') {
+                        return requestAnimationFrame(fn);
+                    }
+    
+                    return setTimeout(fn, this.__interval);
+                },
+    
+                stopTimer : function () {
+    
+                    if (!this.__timerID) {
+                        return false;
+                    }
+    
+                    if (this.__interval === 'raf') {
+                        cancelAnimationFrame(this.__timerID);
+                    }
+    
+                    else {
+                        clearTimeout(this.__timerID);
+                    }
+    
+                    this.__timerID = null;
+    
+                    return true;
+                },
+    
+                start : function (restart) {
+                    this.__started = true;
+                    if (!this.__timerID || restart) {
+                        this.stopTimer();
+                        return this.__timerID = this.startTimer(this.run);
+                    }
+                },
+    
+                restart : function () {
+                    this.start(true);
+                },
+    
+                stop : function () {
+                    this.__started = false;
+                    return this.stopTimer();
+                },
+    
+                defer : function () {
+                    return this.start();
+                },
+    
+                deferOnce : function () {
+                    this.stopTimer();
+                    return this.__timerID = this.startTimer(function () {
+                        this.stopTimer();
+                        this.run(false);
+                    }.bind(this));
+                },
+    
+                run : function (repeat) {
+    
+                    var i,
+                        fn,
+                        args,
+                        scope;
+    
+                    if (!this.__once.length && !this.__loop.length) {
+                        return;
+                    }
+    
+                    if (repeat !== false) {
+                        this.start(true);
+                    }
+    
+                    for (i = 0; i < this.__once.length;) {
+    
+                        fn = this.__once[i];
+                        args = this.__onceArgs[i][0];
+                        scope = this.__onceArgs[i][1];
+    
+                        this.__once.splice(i, 1);
+                        this.__onceArgs.splice(i, 1);
+    
+                        fn.call(scope, args);
+                    }
+    
+                    for (i = 0; i < this.__loop.length; i ++) {
+    
+                        fn = this.__loop[i];
+                        args = this.__loopArgs[i][0];
+                        scope = this.__loopArgs[i][1];
+    
+                        fn.call(scope, args);
+                    }
+    
+                    this.__once = [];
+                    this.__onceArgs = [];
+                },
+    
+                once : function (fn, args, scope) {
+    
+                    var idx = this.__once.indexOf(fn);
+    
+                    if (idx < 0) {
+    
+                        this.__once.push(fn);
+                        idx = this.__once.length - 1;
+                    }
+    
+                    this.__onceArgs[idx] = [args || null, scope || null];
+    
+                    if (this.__started) {
+                        this.start();
+                    }
+                },
+    
+                loop : function (fn, args, scope) {
+    
+                    var idx = this.__loop.indexOf(fn);
+    
+                    if (idx < 0) {
+    
+                        this.__loop.push(fn);
+                        idx = this.__loop.length - 1;
+                    }
+    
+                    this.__loopArgs[idx] = [args || null, scope || null];
+    
+                    if (this.__started) {
+                        this.start();
+                    }
+                },
+    
+                remove : function (fn) {
+    
+                    var i;
+    
+                    i = this.__once.indexOf(fn);
+    
+                    if (i >= 0) {
+                        this.__once.splice(i, 1);
+                    }
+    
+                    i = this.__loop.indexOf(fn);
+    
+                    if (i >= 0) {
+                        this.__loop.splice(i, 1);
+                    }
+                },
+    
+                clear : function () {
+                    this.__loop = [];
+                    this.__once = [];
+    
+                    this.__loopArgs = [];
+                    this.__onceArgs = [];
+                }
+    
+            });
+        }
+    
+    ).attach('$b.__');
+
+    $b('brink/core/InstanceWatcher', 
+    
+        [
+            '../config',
+            './CoreObject',
+            './RunLoop',
+            '../utils/intersect'
+        ],
+    
+        function (config, CoreObject, RunLoop, intersect) {
+    
+            'use strict';
+    
+            return CoreObject.extend({
+    
+                init : function (instances) {
+    
+                    this.instances = instances;
+    
+                    this.runLoop = RunLoop.create();
+                    this.runLoop.loop(this.run.bind(this));
+    
+                    this.watchLoop = RunLoop.create();
+    
+                    if (config.DIRTY_CHECK) {
+                        this.start();
+                    }
+    
+                    return this;
+                },
+    
+                dirtyCheck : function (meta, instance) {
+    
+                    var i,
+                        p;
+    
+                    for (i = 0; i < meta.watchedProps.length; i ++) {
+    
+                        p = meta.watchedProps[i];
+    
+                        if (meta.values[p] !== instance[p]) {
+                            instance.set(p, instance[p], false, true);
+                        }
+                    }
+                },
+    
+                notifyWatchers : function (meta, instance) {
+    
+                    var i,
+                        fn,
+                        props,
+                        intersected;
+    
+                    for (i = 0; i < meta.watchers.fns.length; i ++) {
+    
+                        fn = meta.watchers.fns[i];
+                        props = meta.watchers.props[i];
+                        intersected = props.length ? intersect(props, meta.changedProps) : meta.changedProps.concat();
+    
+                        if (!intersected.length) {
+                            continue;
+                        }
+    
+                        this.watchLoop.once(fn, intersected);
+                    }
+    
+                    this.watchLoop.run(false);
+    
+                    meta.changedProps = [];
+                },
+    
+                run : function () {
+    
+                    this.instances.forEach(function (meta, instance) {
+    
+                        config.DIRTY_CHECK && this.dirtyCheck(meta, instance);
+                        meta.changedProps.length && this.notifyWatchers(meta, instance);
+    
+                    }, this);
+    
+                    if (!config.DIRTY_CHECK) {
+                        this.stop();
+                    }
+                },
+    
+                start : function () {
+                    this.runLoop.start();
+                },
+    
+                stop : function () {
+                    this.runLoop.stop();
+                }
+    
+            });
+        }
+    
+    ).attach('$b.__');
+    
+
+    $b('brink/core/InstanceManager', 
+    
+        [
+        	'./CoreObject',
+            './Dictionary',
+            './InstanceWatcher',
+            '../config',
+            '../utils/merge',
+            '../utils/flatten'
+        ],
+    
+        function (CoreObject, Dictionary, InstanceWatcher, config, merge, flatten) {
+    
+            var InstanceManager,
+                IID = 1;
+    
+    		InstanceManager = CoreObject.extend({
+    
+                instances : null,
+    
+                init : function () {
+                    this.instances = Dictionary.create();
+                    this.watcher = InstanceWatcher.create(this.instances);
+                },
+    
+                buildMeta : function (meta) {
+    
+                    meta = meta || {};
+                    meta.iid = IID ++;
+    
+                    meta.watchers = meta.watchers || {};
+    
+                    meta.watchers.fns = meta.watchers.fns || [];
+                    meta.watchers.props = meta.watchers.props || [];
+                    meta.changedProps = meta.changedProps || [];
+    
+                    return meta;
+                },
+    
+                add : function (instance, meta) {
+    
+                    meta = this.buildMeta(meta);
+                    this.instances.add(instance, meta);
+    
+                    return meta;
+                },
+    
+                remove : function (instance) {
+                    this.instances.remove.apply(this.instances, arguments);
+                },
+    
+                forEach : function (fn) {
+                    return this.instances.forEach(fn);
+                },
+    
+                propertyDidChange : function (obj, props) {
+    
+                    var i,
+                        p,
+                        p2,
+                        meta;
+    
+                    meta = obj.__meta;
+    
+                    for (i = 0; i < props.length; i ++) {
+    
+                        p = props[i];
+    
+                        if (config.DIRTY_CHECK) {
+                            meta.values[p] = this[p];
+                        }
+    
+                        for (p2 in meta.properties) {
+    
+                            d = meta.properties[p2];
+    
+                            if (~(d.watch || []).indexOf(p)) {
+                                this.propertyDidChange(obj, p2);
+                            }
+                        }
+                    }
+    
+                    merge(meta.changedProps, props);
+    
+                    this.watcher.start();
+                },
+    
+                watch : function (obj, props, fn) {
+    
+                    var i,
+                        p,
+                        t,
+                        k,
+                        meta;
+    
+                    meta = obj.__meta;
+    
+                    idx = meta.watchers.fns.indexOf(fn);
+    
+                    if (!~idx) {
+                        meta.watchers.fns.push(fn);
+                        idx = meta.watchers.fns.length - 1;
+                    }
+    
+                    meta.watchers.props[idx] = merge(meta.watchers.props[idx] || [], props);
+                    meta.watchedProps = flatten(meta.watchers.props);
+                },
+    
+                unwatch : function (obj, fns) {
+    
+                    var i,
+                        fn,
+                        idx;
+    
+                    meta = obj.__meta;
+    
+                    for (i = 0; i < fns.length; i ++) {
+    
+                        fn = fns[i];
+    
+                        idx = meta.watchers.fns.indexOf(fn);
+    
+                        if (~idx) {
+                            meta.watchers.fns.splice(idx, 1);
+                            meta.watchers.props.splice(idx, 1);
+                        }
+                   }
+    
+                    meta.watchedProps = flatten(meta.watchers.props);
+                },
+    
+                unwatchAll : function (obj) {
+    
+                    var meta;
+    
+                    meta = obj.__meta;
+    
+                    meta.watchers = {
+                        fns : [],
+                        props : []
+                    };
+    
+                    meta.watchedProps = [];
+                }
+    
+    		}).create();
+    
+            $b.define('instanceManager', InstanceManager).attach('$b');
+    	}
     
     ).attach('$b');
 
