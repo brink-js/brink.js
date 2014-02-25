@@ -958,6 +958,7 @@
                 "brink/utils/clone",
                 "brink/utils/bindTo",
                 "brink/utils/alias",
+                "brink/react/ReactMixin",
                 "brink/node/build",
                 "brink/core/CoreObject",
                 "brink/core/Object",
@@ -1585,6 +1586,33 @@
                         return this.set(s, val);
                     }
                 });
+            };
+        }
+    
+    ).attach('$b');
+    
+
+    $b('brink/react/ReactMixin', 
+    
+        function () {
+    
+            'use strict';
+    
+            return {
+    
+                __propsChanged : function () {
+                    this.setProps(this.__props.getChangedProperties());
+                },
+    
+                componentWillMount : function () {
+                    this.__props = this.props;
+                    this.props = this.__props.serialize();
+                    this.__props.watch(this.__propsChanged);
+                },
+    
+                componentWillUnmount : function () {
+                    this.__props.unwatch(this.__propsChanged);
+                }
             };
         }
     

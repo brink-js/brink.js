@@ -91,6 +91,8 @@ $b.init = function (deps, cb) {
 
 			'brink/core/InstanceManager',
 
+			'brink/react/ReactMixin',
+
 			'brink/node/build'
 		]
         /*{{/modules}}*/
