@@ -2043,7 +2043,7 @@
                     }
     
                     if (d.watch && d.watch.length) {
-                        this.watch(d.watch, this.propertyDidChange);
+                        this.watch(d.watch, d.didChange);
                     }
                 },
     
@@ -2115,14 +2115,14 @@
                     }
                 },
     
-                serialize : function () {
+                serialize : function (props) {
     
                     var i,
                         p,
                         o,
                         props;
     
-                    props = arguments.length ? [].concat.call(arguments) : [];
+                    props = props ? flatten([].concat.call(props)) : [];
                     o = {};
     
                     if (props.length) {
@@ -2140,6 +2140,10 @@
                     }
     
                     return o;
+                },
+    
+                getChangedProperties : function () {
+                    return this.serialize.apply(this, this.__meta.changedProps);
                 },
     
                 property : function (key, val) {
