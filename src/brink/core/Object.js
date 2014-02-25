@@ -104,6 +104,11 @@ $b(
 
                 meta.properties = clone(meta.properties || {});
 
+                meta.watchers = meta.watchers || {};
+
+                meta.watchers.fns = meta.watchers.fns || [];
+                meta.watchers.props = meta.watchers.props || [];
+
                 for (p in this) {
 
                     v = this[p];

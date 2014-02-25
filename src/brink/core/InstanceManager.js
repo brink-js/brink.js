@@ -28,10 +28,6 @@ $b(
                 meta = meta || {};
                 meta.iid = IID ++;
 
-                meta.watchers = meta.watchers || {};
-
-                meta.watchers.fns = meta.watchers.fns || [];
-                meta.watchers.props = meta.watchers.props || [];
                 meta.changedProps = meta.changedProps || [];
 
                 return meta;
