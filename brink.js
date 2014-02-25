@@ -2116,7 +2116,7 @@
                         o,
                         props;
     
-                    props = arguments.length ? [].concat(arguments) : [];
+                    props = arguments.length ? [].concat.call(arguments) : [];
                     o = {};
     
                     if (props.length) {
@@ -2129,13 +2129,8 @@
                     }
     
     
-                    for (p in this) {
-    
-                        if ( p.indexOf('__') !== 0 && this.hasOwnProperty(p)) {
-                            if (!isFunction(this[p]) || this.__meta.properties && this.__meta.properties[p]) {
-                                o[p] = this.get(p);
-                            }
-                        }
+                    for (p in this.__meta.properties) {
+                        o[p] = this.get(p);
                     }
     
                     return o;
