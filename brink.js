@@ -2058,25 +2058,19 @@
     
                 __readOnly : function (p) {
     
-                    return function (val) {
-    
-                        if (this.__meta.pojoStyle) {
+                    if (this.__meta.pojoStyle) {
+                        return function (val) {
                             return error('Tried to write to a read-only property `' + p + '` on ' + this);
-                        }
-    
-                        return this[p] = val;
+                        }.bind(this);
                     };
                 },
     
                 __writeOnly : function (p) {
     
-                    return function () {
-    
-                        if (this.__meta.pojoStyle) {
+                    if (this.__meta.pojoStyle) {
+                        return function () {
                             return error('Tried to read a write-only property `' + p + '` on ' + this);
-                        }
-    
-                        return this[p];
+                        }.bind(this);
                     };
                 },
     
@@ -2110,19 +2104,23 @@
     
                 propertyDidChange : function () {
     
+                    var props;
+    
+                    props = flatten([].slice.call(arguments, 0, arguments.length));
+    
                     if ($b.instanceManager) {
-                        $b.instanceManager.propertyDidChange(this, flatten(arguments));
+                        $b.instanceManager.propertyDidChange(this, props);
                     }
                 },
     
-                serialize : function (props) {
+                serialize : function () {
     
                     var i,
                         p,
                         o,
                         props;
     
-                    props = props ? flatten([].concat.call(props)) : [];
+                    props = flatten([].slice.call(arguments, 0, arguments.length));
                     o = {};
     
                     if (props.length) {
@@ -3395,6 +3393,8 @@
                         p,
                         p2,
                         meta;
+    
+                    props = [].concat(props);
     
                     meta = obj.__meta;
     

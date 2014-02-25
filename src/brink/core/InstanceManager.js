@@ -57,6 +57,8 @@ $b(
                     p2,
                     meta;
 
+                props = [].concat(props);
+
                 meta = obj.__meta;
 
                 for (i = 0; i < props.length; i ++) {
