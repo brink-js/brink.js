@@ -2109,7 +2109,7 @@
                     }
                 },
     
-                getProperties : function () {
+                serialize : function () {
     
                     var i,
                         p,
@@ -2132,17 +2132,13 @@
                     for (p in this) {
     
                         if ( p.indexOf('__') !== 0 && this.hasOwnProperty(p)) {
-                            if (!isFunction(this[p]) || this.__properties && this.__properties[p]) {
+                            if (!isFunction(this[p]) || this.__meta.properties && this.__meta.properties[p]) {
                                 o[p] = this.get(p);
                             }
                         }
                     }
     
                     return o;
-                },
-    
-                valueOf : function () {
-                    return this.getProperties();
                 },
     
                 property : function (key, val) {
