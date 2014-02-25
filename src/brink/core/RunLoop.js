@@ -69,7 +69,10 @@ $b(
                 this.__started = true;
                 if (!this.__timerID || restart) {
                     this.stopTimer();
-                    return this.__timerID = this.startTimer(this.run);
+                    return this.__timerID = this.startTimer(function () {
+                        this.start(true);
+                        this.run();
+                    });
                 }
             },
 
@@ -90,11 +93,11 @@ $b(
                 this.stopTimer();
                 return this.__timerID = this.startTimer(function () {
                     this.stopTimer();
-                    this.run(false);
+                    this.run();
                 }.bind(this));
             },
 
-            run : function (repeat) {
+            run : function () {
 
                 var i,
                     fn,
@@ -105,18 +108,11 @@ $b(
                     return;
                 }
 
-                if (repeat !== false) {
-                    this.start(true);
-                }
-
-                for (i = 0; i < this.__once.length;) {
+                for (i = 0; i < this.__once.length; i ++) {
 
                     fn = this.__once[i];
                     args = this.__onceArgs[i][0];
                     scope = this.__onceArgs[i][1];
-
-                    this.__once.splice(i, 1);
-                    this.__onceArgs.splice(i, 1);
 
                     fn.call(scope, args);
                 }
@@ -144,11 +140,12 @@ $b(
                     idx = this.__once.length - 1;
                 }
 
-                this.__onceArgs[idx] = [args || null, scope || null];
-
-                if (this.__started) {
-                    this.start();
+                else {
+                    args = args || this.__onceArgs[idx][0];
+                    scope = scope || this.__onceArgs[idx][0];
                 }
+
+                this.__onceArgs[idx] = [args || null, scope || null];
             },
 
             loop : function (fn, args, scope) {
@@ -162,10 +159,6 @@ $b(
                 }
 
                 this.__loopArgs[idx] = [args || null, scope || null];
-
-                if (this.__started) {
-                    this.start();
-                }
             },
 
             remove : function (fn) {

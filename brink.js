@@ -1906,6 +1906,11 @@
                     this.__meta = meta = clone(this.__meta || {});
                     meta.values = {};
     
+                    meta.watchers = {
+                        fns : [],
+                        props : []
+                    };
+    
                     if (typeof o === 'object' && !Array.isArray(o)) {
                         o = clone(o);
                     }
@@ -1965,11 +1970,6 @@
                     meta.setters = clone(meta.setters || {});
     
                     meta.properties = clone(meta.properties || {});
-    
-                    meta.watchers = meta.watchers || {};
-    
-                    meta.watchers.fns = meta.watchers.fns || [];
-                    meta.watchers.props = meta.watchers.props || [];
     
                     for (p in this) {
     
@@ -2102,6 +2102,12 @@
                     }
                 },
     
+                __resetChangedProps : function () {
+                    if (this.__meta) {
+                        this.__meta.changedProps = [];
+                    }
+                },
+    
                 propertyDidChange : function () {
     
                     if ($b.instanceManager) {
@@ -2160,7 +2166,7 @@
                     }.bind(this);
     
                     val.didChange = function () {
-                        this.propertyDidChange(key)
+                        this.propertyDidChange(key);
                     }.bind(this);
     
                     if (this.__meta.isInitialized) {
@@ -2228,8 +2234,8 @@
                     var fn,
                         props;
     
-                    fn = arguments[0];
-                    props = arguments[1];
+                    fn = arguments[1];
+                    props = arguments[0];
     
                     if ($b.instanceManager) {
     
@@ -2520,9 +2526,9 @@
     
     			init : function (a) {
     				this.content = a;
-    				this.__cache = this.content.concat();
-    				this.addedItems = [];
-    				this.removedItems = [];
+    				this.__meta.cache = this.content.concat();
+    				this.__meta.addedItems = [];
+    				this.__meta.removedItems = [];
     				this.length = this.content.length;
     			},
     
@@ -2673,26 +2679,57 @@
     				return this;
     			},
     
+                __resetChangedProps : function () {
+    
+                	var meta = this.__meta;
+    
+                    if (meta) {
+                        meta.changedProps = [];
+                        meta.addedItems = [];
+                        meta.removedItems = [];
+                    }
+                },
+    
+                getChanges : function () {
+    
+                	var o,
+                		meta;
+    
+                	o = {};
+                	meta = this.__meta;
+    
+                	if (meta) {
+                		o = {
+                			added : meta.addedItems,
+                			removed : meta.removedItems
+                		};
+                	}
+    
+                	return o;
+                },
+    
     			contentDidChange : function (i, action) {
     
-    				if (action === 'reorder' || this.__invalid === true) {
-    					merge(this.addedItems, this.content.concat());
-    					merge(this.removedItems, this.__cache.concat());
+    				var meta = this.__meta;
+    
+    				if (action === 'reorder' || meta.invalid === true) {
+    					merge(meta.addedItems, this.content.concat());
+    					merge(meta.removedItems, meta.cache.concat());
     					this.__invalid = true;
     				}
     
     				else if (action === 'added') {
-    					this.addedItems.push(this.content[i]);
+    					meta.addedItems.push(this.content[i]);
     				}
     
     				else if (action === 'removed') {
-    					this.removedItems.push(this.__cache[i]);
+    					meta.removedItems.push(meta.cache[i]);
     				}
     
     				this.propertyDidChange('@each');
     
     				this.length = this.content.length;
-    				this.__cache = this.content.concat();
+    				meta.cache = this.content.concat();
     			}
     
     		}));
@@ -3075,7 +3112,10 @@
                     this.__started = true;
                     if (!this.__timerID || restart) {
                         this.stopTimer();
-                        return this.__timerID = this.startTimer(this.run);
+                        return this.__timerID = this.startTimer(function () {
+                            this.start(true);
+                            this.run();
+                        });
                     }
                 },
     
@@ -3096,11 +3136,11 @@
                     this.stopTimer();
                     return this.__timerID = this.startTimer(function () {
                         this.stopTimer();
-                        this.run(false);
+                        this.run();
                     }.bind(this));
                 },
     
-                run : function (repeat) {
+                run : function () {
     
                     var i,
                         fn,
@@ -3111,18 +3151,11 @@
                         return;
                     }
     
-                    if (repeat !== false) {
-                        this.start(true);
-                    }
-    
-                    for (i = 0; i < this.__once.length;) {
+                    for (i = 0; i < this.__once.length; i ++) {
     
                         fn = this.__once[i];
                         args = this.__onceArgs[i][0];
                         scope = this.__onceArgs[i][1];
-    
-                        this.__once.splice(i, 1);
-                        this.__onceArgs.splice(i, 1);
     
                         fn.call(scope, args);
                     }
@@ -3150,11 +3183,12 @@
                         idx = this.__once.length - 1;
                     }
     
-                    this.__onceArgs[idx] = [args || null, scope || null];
-    
-                    if (this.__started) {
-                        this.start();
+                    else {
+                        args = args || this.__onceArgs[idx][0];
+                        scope = scope || this.__onceArgs[idx][0];
                     }
+    
+                    this.__onceArgs[idx] = [args || null, scope || null];
                 },
     
                 loop : function (fn, args, scope) {
@@ -3168,10 +3202,6 @@
                     }
     
                     this.__loopArgs[idx] = [args || null, scope || null];
-    
-                    if (this.__started) {
-                        this.start();
-                    }
                 },
     
                 remove : function (fn) {
@@ -3227,6 +3257,7 @@
                     this.runLoop.loop(this.run.bind(this));
     
                     this.watchLoop = RunLoop.create();
+                    this.watchLoop.name = 'watchLoop';
     
                     if (config.DIRTY_CHECK) {
                         this.start();
@@ -3270,9 +3301,8 @@
                         this.watchLoop.once(fn, intersected);
                     }
     
-                    this.watchLoop.run(false);
-    
-                    meta.changedProps = [];
+                    this.watchLoop.once(instance.__resetChangedProps);
+                    this.watchLoop.run();
                 },
     
                 run : function () {

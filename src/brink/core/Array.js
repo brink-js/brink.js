@@ -52,9 +52,9 @@ $b(
 
 			init : function (a) {
 				this.content = a;
-				this.__cache = this.content.concat();
-				this.addedItems = [];
-				this.removedItems = [];
+				this.__meta.cache = this.content.concat();
+				this.__meta.addedItems = [];
+				this.__meta.removedItems = [];
 				this.length = this.content.length;
 			},
 
@@ -205,26 +205,57 @@ $b(
 				return this;
 			},
 
+            __resetChangedProps : function () {
+
+            	var meta = this.__meta;
+
+                if (meta) {
+                    meta.changedProps = [];
+                    meta.addedItems = [];
+                    meta.removedItems = [];
+                }
+            },
+
+            getChanges : function () {
+
+            	var o,
+            		meta;
+
+            	o = {};
+            	meta = this.__meta;
+
+            	if (meta) {
+            		o = {
+            			added : meta.addedItems,
+            			removed : meta.removedItems
+            		};
+            	}
+
+            	return o;
+            },
+
 			contentDidChange : function (i, action) {
 
-				if (action === 'reorder' || this.__invalid === true) {
-					merge(this.addedItems, this.content.concat());
-					merge(this.removedItems, this.__cache.concat());
+				var meta = this.__meta;
+
+				if (action === 'reorder' || meta.invalid === true) {
+					merge(meta.addedItems, this.content.concat());
+					merge(meta.removedItems, meta.cache.concat());
 					this.__invalid = true;
 				}
 
 				else if (action === 'added') {
-					this.addedItems.push(this.content[i]);
+					meta.addedItems.push(this.content[i]);
 				}
 
 				else if (action === 'removed') {
-					this.removedItems.push(this.__cache[i]);
+					meta.removedItems.push(meta.cache[i]);
 				}
 
 				this.propertyDidChange('@each');
 
 				this.length = this.content.length;
-				this.__cache = this.content.concat();
+				meta.cache = this.content.concat();
 			}
 
 		}));

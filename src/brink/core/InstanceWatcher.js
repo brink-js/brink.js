@@ -21,6 +21,7 @@ $b(
                 this.runLoop.loop(this.run.bind(this));
 
                 this.watchLoop = RunLoop.create();
+                this.watchLoop.name = 'watchLoop';
 
                 if (config.DIRTY_CHECK) {
                     this.start();
@@ -64,9 +65,8 @@ $b(
                     this.watchLoop.once(fn, intersected);
                 }
 
-                this.watchLoop.run(false);
-
-                meta.changedProps = [];
+                this.watchLoop.once(instance.__resetChangedProps);
+                this.watchLoop.run();
             },
 
             run : function () {

@@ -44,6 +44,11 @@ $b(
                 this.__meta = meta = clone(this.__meta || {});
                 meta.values = {};
 
+                meta.watchers = {
+                    fns : [],
+                    props : []
+                };
+
                 if (typeof o === 'object' && !Array.isArray(o)) {
                     o = clone(o);
                 }
@@ -103,11 +108,6 @@ $b(
                 meta.setters = clone(meta.setters || {});
 
                 meta.properties = clone(meta.properties || {});
-
-                meta.watchers = meta.watchers || {};
-
-                meta.watchers.fns = meta.watchers.fns || [];
-                meta.watchers.props = meta.watchers.props || [];
 
                 for (p in this) {
 
@@ -240,6 +240,12 @@ $b(
                 }
             },
 
+            __resetChangedProps : function () {
+                if (this.__meta) {
+                    this.__meta.changedProps = [];
+                }
+            },
+
             propertyDidChange : function () {
 
                 if ($b.instanceManager) {
@@ -298,7 +304,7 @@ $b(
                 }.bind(this);
 
                 val.didChange = function () {
-                    this.propertyDidChange(key)
+                    this.propertyDidChange(key);
                 }.bind(this);
 
                 if (this.__meta.isInitialized) {
@@ -366,8 +372,8 @@ $b(
                 var fn,
                     props;
 
-                fn = arguments[0];
-                props = arguments[1];
+                fn = arguments[1];
+                props = arguments[0];
 
                 if ($b.instanceManager) {
 

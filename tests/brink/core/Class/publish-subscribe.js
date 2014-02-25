@@ -1,26 +1,9 @@
 describe('pub/sub', function () {
 
-    var instance,
-        instance2,
-        delay,
-        doneCalled;
-
-    beforeEach(function () {
-        instance = $b('TestClass').create();
-        instance2 = $b('TestClass').create();
-        doneCalled = false;
-        delay = 0;
-    });
-
-    afterEach(function () {
-        instance.destroy();
-        instance = null;
-    });
-
-
     it('should publish/subscribe and unsubscribe to a notification successfully', function (done) {
 
-        var a = 0;
+        var a = 0,
+            instance = $b('TestClass').create();
 
         instance.subscribe('sub-test', function () {
             a ++;
@@ -32,11 +15,14 @@ describe('pub/sub', function () {
 
         expect(a).to.equal(1);
 
+        instance.destroy();
         done();
 
     });
 
     it('should publish a notification with data', function (done) {
+
+        var instance = $b('TestClass').create();
 
         instance.subscribe('pub-data-test', function (n) {
             expect(n.data).to.eql({
@@ -44,6 +30,7 @@ describe('pub/sub', function () {
                 y : 2
             });
 
+            instance.destroy();
             done();
         });
 
@@ -55,11 +42,14 @@ describe('pub/sub', function () {
 
     it('should publish a notification with multiple arguments', function (done) {
 
+        var instance = $b('TestClass').create();
+
         instance.subscribe('pub-args-test', function (n, arg1, arg2, arg3) {
             expect(arg1).to.eql(1);
             expect(arg2).to.eql(2);
             expect(arg3).to.eql('z');
             expect(n.dispatcher).to.eql(instance);
+            instance.destroy();
             done();
         });
 
@@ -69,23 +59,26 @@ describe('pub/sub', function () {
 
     describe('notifications', function () {
 
-        it('should hold a notification', function (done) {
+        it('should hold and release a notification', function (done) {
+
+            var instance = $b('TestClass').create(),
+                instance2 = $b('TestClass').create(),
+                didHold = false;
 
             instance.subscribe('hold-test-2', function (n) {
 
                 n.hold();
 
                 setTimeout(function () {
+                    didHold = true;
                     n.release();
-                }, delay);
+                }, 10);
 
-                doneCalled = true;
-                done();
             });
 
             instance2.subscribe('hold-test-2', function (n) {
-                if (!doneCalled) {
-                    done(false);
+                if (didHold) {
+                    done();
                 }
             });
 
@@ -93,37 +86,17 @@ describe('pub/sub', function () {
         });
 
 
-        it('should release a notification', function (done) {
-
-            instance.subscribe('release-test-2', function (n) {
-                n.hold();
-
-                setTimeout(function () {
-                    n.release();
-
-                    if (!doneCalled) {
-                        done(false);
-                    }
-                }, delay);
-            });
-
-            instance2.subscribe('release-test-2', function (n) {
-                doneCalled = true;
-                done();
-            });
-
-            instance.publish('release-test-2');
-        });
-
-
         it('should cancel a notification', function (done) {
+
+            var instance = $b('TestClass').create(),
+                instance2 = $b('TestClass').create();
 
             instance.subscribe('cancel-test-2', function (n) {
                 n.cancel();
 
                 setTimeout(function () {
                     done();
-                }, delay);
+                }, 10);
             });
 
             instance2.subscribe('cancel-test-2', function (n) {
@@ -134,6 +107,8 @@ describe('pub/sub', function () {
         });
 
         it('should respond to a notification with a callback', function (done) {
+
+            var instance = $b('TestClass').create();
 
             instance.subscribe('respond-test-2', function (n) {
                 expect(n).to.be.an('object');
