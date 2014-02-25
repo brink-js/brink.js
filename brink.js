@@ -10,7 +10,7 @@
     _global = typeof window !== 'undefined' ? window : global;
     CONFIG = _global.Brink || _global.$b || {};
     
-    include = _global.include || require ? require : null;
+    include = _global.include ? _global.include : typeof require !== 'undefined' ? require : null;
     
     $b = _global.$b = _global.Brink = function () {
     
@@ -156,7 +156,7 @@
                 resolver;
         
             _global = typeof window !== 'undefined' ? window : global;
-            origRequire = require;
+            origRequire = typeof require !== 'undefined' ? require : null;
         
             resolver = (function () {
         
@@ -911,8 +911,10 @@
             $b.define = resolver.define;
             $b.undefine = resolver.undefine;
         
-            require = origRequire;
         
+            if (origRequire) {
+                require = origRequire;
+            }
         })();
     
     $b.require.config(CONFIG);
@@ -2023,10 +2025,15 @@
                             this.__defineSetter__(p, d.set);
                         }
     
+                        else {
+                            this.__meta.pojoStyle = true;
+                        }
+    
                         this.set(p, d.defaultValue, true, true);
                     }
     
                     else {
+                        this.__meta.pojoStyle = true;
                         this[p] = d.defaultValue;
                     }
     
@@ -2048,7 +2055,7 @@
     
                     return function (val) {
     
-                        if (!config.DIRTY_CHECK) {
+                        if (this.__meta.pojoStyle) {
                             return error('Tried to write to a read-only property `' + p + '` on ' + this);
                         }
     
@@ -2060,7 +2067,7 @@
     
                     return function () {
     
-                        if (!config.DIRTY_CHECK) {
+                        if (this.__meta.pojoStyle) {
                             return error('Tried to read a write-only property `' + p + '` on ' + this);
                         }
     
@@ -2070,14 +2077,9 @@
     
                 __defineGetter : function (p, fn) {
     
-                    if (fn && !isFunction(fn)) {
-    
-                        fn = function () {
-                            return this.__meta.values[p];
-                        };
+                    if (isFunction(fn)) {
+                        this.__meta.getters[p] = fn;
                     }
-    
-                    this.__meta.getters[p] = fn;
     
                     return function () {
                         return this.get.call(this, p);
@@ -2086,14 +2088,9 @@
     
                 __defineSetter : function (p, fn) {
     
-                    if (fn && !isFunction(fn)) {
-    
-                        fn = function (val) {
-                            return this.__meta.values[p] = val;
-                        };
+                    if (isFunction(fn)) {
+                        this.__meta.setters[p] = fn;
                     }
-    
-                    this.__meta.setters[p] = fn;
     
                     return function (val) {
                         return this.set.call(this, p, val);
@@ -2183,7 +2180,7 @@
                         return this.__meta.getters[key].call(this, key);
                     }
     
-                    return this[key];
+                    return this.__meta.pojoStyle ? this[key] : this.__meta.values[key];
                 },
     
                 set : function (key, val, quiet, skipCompare) {
@@ -2202,7 +2199,12 @@
                             }
     
                             else {
-                                this[key] = val;
+    
+                                if (this.__meta.pojoStyle) {
+                                    this[key] = val;
+                                }
+    
+                                this.__meta.values[key] = val;
                             }
     
                             if (!quiet) {

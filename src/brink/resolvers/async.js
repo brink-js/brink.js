@@ -7,7 +7,7 @@
         resolver;
 
     _global = typeof window !== 'undefined' ? window : global;
-    origRequire = require;
+    origRequire = typeof require !== 'undefined' ? require : null;
 
     resolver = (function () {
 
@@ -762,6 +762,8 @@
     $b.define = resolver.define;
     $b.undefine = resolver.undefine;
 
-    require = origRequire;
 
+    if (origRequire) {
+        require = origRequire;
+    }
 })();

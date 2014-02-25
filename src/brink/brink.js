@@ -8,7 +8,7 @@ var $b,
 _global = typeof window !== 'undefined' ? window : global;
 CONFIG = _global.Brink || _global.$b || {};
 
-include = _global.include || require ? require : null;
+include = _global.include ? _global.include : typeof require !== 'undefined' ? require : null;
 
 $b = _global.$b = _global.Brink = function () {
 
