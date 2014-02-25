@@ -3364,7 +3364,8 @@
     
                 propertyDidChange : function (obj, props) {
     
-                    var i,
+                    var d,
+                        i,
                         p,
                         p2,
                         meta;
@@ -3400,6 +3401,7 @@
                         p,
                         t,
                         k,
+                        idx,
                         meta;
     
                     meta = obj.__meta;
