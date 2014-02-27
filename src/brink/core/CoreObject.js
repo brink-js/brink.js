@@ -68,14 +68,17 @@ $b(
 			return extend(new F(), props);
 		};
 
-		CoreObject.reopen = function (o) {
-			extend(this.prototype, o);
-			return Obj;
-		};
+		CoreObject.inject = function (p, v) {
 
-		CoreObject.reopenObject = function (o) {
-			extend(this, o);
-			return Obj;
+			if (typeof p === 'object') {
+				extend(this.prototype, p);
+			}
+
+			else {
+				this.prototype[p] = v;
+			}
+
+			return this;
 		};
 
 		CoreObject.create = function (o) {

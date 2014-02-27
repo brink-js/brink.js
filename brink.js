@@ -36,6 +36,52 @@
         
         	'use strict';
         
+        	if (!Array.prototype.forEach) {
+        
+        		Array.prototype.forEach = function (fn, scope) {
+        
+        			var i,
+        				l;
+        
+        			l = this.length || 0;
+        
+        			for (i = 0; i < l; i ++) {
+        				fn.call(scope, this[i], i, this);
+        			}
+        		};
+        	}
+        
+        })();
+    
+    
+        ;(function () {
+        
+        	'use strict';
+        
+        	if (!Array.prototype.filter) {
+        
+        		Array.prototype.filter = function (fn, scope) {
+        
+        			var result = [];
+        
+        			this.forEach(function (val, i) {
+        				if (fn.call(scope, val, i, this)) {
+        					result.push(val);
+        				}
+        			});
+        
+        			return result;
+        
+        		};
+        	}
+        
+        })();
+    
+    
+        ;(function () {
+        
+        	'use strict';
+        
         	if (!Array.prototype.indexOf) {
         
         		Array.prototype.indexOf = function (a, b) {
@@ -944,6 +990,7 @@
                 "brink/utils/error",
                 "brink/utils/assert",
                 "brink/utils/expandProps",
+                "brink/utils/inject",
                 "brink/utils/isBrinkInstance",
                 "brink/utils/defineProperty",
                 "brink/utils/isBrinkObject",
@@ -958,6 +1005,8 @@
                 "brink/utils/clone",
                 "brink/utils/bindTo",
                 "brink/utils/alias",
+                "brink/utils/next",
+                "brink/utils/required",
                 "brink/react/ReactMixin",
                 "brink/node/build",
                 "brink/core/CoreObject",
@@ -1114,6 +1163,24 @@
         }
     
     ).attach('$b');
+
+    $b('brink/utils/inject', 
+    
+        [],
+    
+        function () {
+    
+            'use strict';
+    
+            return function (Class, p, v) {
+    
+                Class.inject.apply(Class, arguments);
+    
+            };
+        }
+    
+    ).attach('$b');
+    
 
     $b('brink/utils/isBrinkInstance', 
     
@@ -1459,7 +1526,7 @@
     
             'use strict';
     
-            return function (o, v) {
+            return function (o) {
     
                 if (isFunction(o)) {
                     o = {
@@ -1586,6 +1653,40 @@
                         return this.set(s, val);
                     }
                 });
+            };
+        }
+    
+    ).attach('$b');
+    
+
+    $b('brink/utils/next', 
+    
+        [
+        ],
+    
+        function () {
+    
+            'use strict';
+    
+            return function () {
+    
+            };
+        }
+    
+    ).attach('$b');
+    
+
+    $b('brink/utils/required', 
+    
+        [
+        ],
+    
+        function () {
+    
+            'use strict';
+    
+            return function () {
+    
             };
         }
     
@@ -1846,14 +1947,17 @@
     			return extend(new F(), props);
     		};
     
-    		CoreObject.reopen = function (o) {
-    			extend(this.prototype, o);
-    			return Obj;
-    		};
+    		CoreObject.inject = function (p, v) {
     
-    		CoreObject.reopenObject = function (o) {
-    			extend(this, o);
-    			return Obj;
+    			if (typeof p === 'object') {
+    				extend(this.prototype, p);
+    			}
+    
+    			else {
+    				this.prototype[p] = v;
+    			}
+    
+    			return this;
     		};
     
     		CoreObject.create = function (o) {
@@ -2124,12 +2228,6 @@
                     }
                 },
     
-                __resetChangedProps : function () {
-                    if (this.__meta) {
-                        this.__meta.changedProps = [];
-                    }
-                },
-    
                 propertyDidChange : function () {
     
                     var props;
@@ -2314,6 +2412,16 @@
     
                     else {
                         error('InstanceManager does not exist, can\'t watch for property changes.');
+                    }
+                },
+    
+                willNotifyWatchers : function () {
+    
+                },
+    
+                didNotifyWatchers : function () {
+                    if (this.__meta) {
+                        this.__meta.changedProps = [];
                     }
                 },
     
@@ -2505,61 +2613,31 @@
     $b('brink/core/Array', 
     
         [
-        	'./Object',
-        	'../utils/flatten',
-        	'../utils/merge'
+        	'./Object'
         ],
     
-        function (Obj, flatten, merge) {
+        function (Obj) {
     
         	var Arr,
-        		AP,
-        		METHODS;
+        		AP;
     
         	AP = Array.prototype;
     
-        	(function () {
+    		Arr = Obj({
     
-        		var p;
+                content : null,
+                length : 0,
     
-        		function alias (p) {
+                oldContent : null,
+                pristineContent : null,
     
-        			return function (r, l) {
-        				r = AP[p].apply(this.content, arguments);
-        				this.length = this.content.length;
-        				return r;
-        			}
-        		}
+    			init : function (content) {
     
-        		for (p in AP) {
-        			if (AP.hasOwnProperty(p) && typeof AP[p] === 'function') {
-        				METHODS[p] = alias(p);
-        			}
-        		}
+    				this.set('content', content);
+                    this.set('oldContent', content.concat());
+    				this.set('length', this.content.length);
     
-        	})();
-    
-    		Arr = Obj.extend(merge(METHODS, {
-    
-    			content : null,
-    			addedItems : null,
-    			removedItems : null,
-    
-    			__notifyPropertyListeners : function () {
-    				Obj.prototype.__notifyPropertyListeners.apply(this, arguments);
-    
-    				Obj.watchLoop.once(function () {
-    					this.addedItems = [];
-    					this.removedItems = [];
-    				}.bind(this));
-    			},
-    
-    			init : function (a) {
-    				this.content = a;
-    				this.__meta.cache = this.content.concat();
-    				this.__meta.addedItems = [];
-    				this.__meta.removedItems = [];
-    				this.length = this.content.length;
+                    this.watch('content', this.contentDidChange);
     			},
     
     			get : function (i) {
@@ -2581,24 +2659,18 @@
     				return val;
     			},
     
+                findBy : function (q, v) {
+    
+                    var i;
+    
+                    for (i = 0; i < this.content.length; i ++) {
+    
+                    }
+                },
+    
     			concat : function () {
-    				var r = AP.filter.apply(this.content, arguments);
+    				var r = AP.concat.apply(this.content, arguments);
     				return this.prototype.constructor.create(r);
-    			},
-    
-    			filter : function () {
-    				var r = AP.filter.apply(this.content, arguments);
-    				return this.prototype.constructor.create(r);
-    			},
-    
-    			flatten : function () {
-    				flatten(this.content);
-    				this.contentDidChange(null, 'reorder');
-    			},
-    
-    			merge : function (o) {
-    				merge(this.content, o);
-    				this.contentDidChange(null, 'reorder');
     			},
     
     			insert : function () {
@@ -2607,7 +2679,7 @@
     
     			insertAt : function (i, o) {
     				this.splice(i, 0, o);
-    				return this.length;
+    				return this.get('length');
     			},
     
     			push : function () {
@@ -2639,7 +2711,7 @@
     
     			removeAt : function (i, r) {
     				r = AP.splice.call(this.content, i, 1);
-    				this.contentDidChange(i, 'removed');
+    				this.contentDidChange();
     				return r[0];
     			},
     
@@ -2679,7 +2751,7 @@
     
     				for (j = 0; j < rest.length; j ++) {
     					this.content.splice(i + j, 0, rest[j]);
-    					this.contentDidChange(i + j, 'added');
+    					this.contentDidChange();
     				}
     
     				return removed;
@@ -2698,16 +2770,139 @@
     			},
     
     			reverse : function () {
+    
+                    if (!this.pristineContent) {
+                        this.pristineContent = this.content;
+                    }
+    
     				r = AP.reverse.apply(this.content, arguments)
-    				this.contentDidChange(null, 'reorder');
+    				this.contentDidChange();
     				return this;
     			},
     
+                filter : function () {
+    
+                    if (!this.pristineContent) {
+                        this.pristineContent = this.content;
+                    }
+    
+                    this.content = AP.filter.apply(this.content, arguments)
+                    this.contentDidChange();
+                    return this.content;
+                },
+    
     			sort : function () {
-    				r = AP.sort.apply(this.content, arguments)
-    				this.contentDidChange(null, 'reorder');
-    				return this;
+    
+                    if (!this.pristineContent) {
+                        this.pristineContent = this.content;
+                        this.content = this.content.concat();
+                    }
+    
+    				AP.sort.apply(this.content, arguments)
+    				this.contentDidChange();
+    				return this.content;
     			},
+    
+                reset : function () {
+                    this.content = this.pristineContent;
+                    this.pristineContent = null;
+                },
+    
+                willNotifyWatchers : function () {
+    
+                    this.getChanges = function () {
+    
+                        var i,
+                            changes,
+                            newItem,
+                            oldItem,
+                            newIndex,
+                            oldIndex,
+                            oldContent,
+                            newContent;
+    
+                        oldContent = this.oldContent;
+                        newContent = this.content;
+    
+                        changes = {
+                            added : [],
+                            removed : [],
+                            moved : []
+                        };
+    
+                        for (i = 0; i < Math.max(oldContent.length, newContent.length); i ++) {
+    
+                            newItem = newContent[i];
+                            oldItem = oldContent[i];
+    
+                            if (newItem === oldItem) {
+                                continue;
+                            }
+    
+                            if (oldItem) {
+    
+                                newIndex = newContent.indexOf(oldItem);
+    
+                                // Has it been moved?
+                                if (~newIndex) {
+                                    changes.moved.push({
+                                        oldIndex : i,
+                                        newIndex : newIndex,
+                                        item : oldItem
+                                    });
+                                }
+    
+                                // Nope, it's been removed
+                                else {
+                                    changes.removed.push({
+                                        index : i,
+                                        item : oldItem
+                                    });
+                                }
+                            }
+    
+                            else {
+    
+                                oldIndex = oldContent.indexOf(newItem);
+    
+                                // Has it been moved?
+                                if (~oldIndex) {
+                                    changes.moved.push({
+                                        oldIndex : oldIndex,
+                                        newIndex : i,
+                                        item : newItem
+                                    });
+                                }
+    
+                                // Nope, it's been added
+                                else {
+                                    changes.added.push({
+                                        index : i,
+                                        item : newItem
+                                    });
+                                }
+                            }
+                        }
+    
+                        this.getChanges = function () {
+                            return changes;
+                        };
+    
+                        return changes;
+    
+                    }.bind(this);
+                },
+    
+                didNotifyWatchers : function () {
+    
+                    this.oldContent = this.content.concat();
+    
+                    if (this.__meta) {
+                        this.__meta.changedProps = [];
+                        this.__meta.contentChanges = {};
+                    }
+    
+                },
     
                 __resetChangedProps : function () {
     
@@ -2720,49 +2915,12 @@
                     }
                 },
     
-                getChanges : function () {
-    
-                	var o,
-                		meta;
-    
-                	o = {};
-                	meta = this.__meta;
-    
-                	if (meta) {
-                		o = {
-                			added : meta.addedItems,
-                			removed : meta.removedItems
-                		};
-                	}
-    
-                	return o;
-                },
-    
-    			contentDidChange : function (i, action) {
-    
-    				var meta = this.__meta;
-    
-    				if (action === 'reorder' || meta.invalid === true) {
-    					merge(meta.addedItems, this.content.concat());
-    					merge(meta.removedItems, meta.cache.concat());
-    					this.__invalid = true;
-    				}
-    
-    				else if (action === 'added') {
-    					meta.addedItems.push(this.content[i]);
-    				}
-    
-    				else if (action === 'removed') {
-    					meta.removedItems.push(meta.cache[i]);
-    				}
-    
-    				this.propertyDidChange('@each');
-    
-    				this.length = this.content.length;
-    				meta.cache = this.content.concat();
+    			contentDidChange : function () {
+    				this.set('length', this.content.length);
+                    this.propertyDidChange('@each');
     			}
     
-    		}));
+    		});
     
     
     		return Arr;
@@ -3178,7 +3336,7 @@
                         scope;
     
                     if (!this.__once.length && !this.__loop.length) {
-                        return;
+                        return false;
                     }
     
                     for (i = 0; i < this.__once.length; i ++) {
@@ -3201,6 +3359,8 @@
     
                     this.__once = [];
                     this.__onceArgs = [];
+    
+                    return true;
                 },
     
                 once : function (fn, args, scope) {
@@ -3316,6 +3476,7 @@
                     var i,
                         fn,
                         props,
+                        willNotify,
                         intersected;
     
                     for (i = 0; i < meta.watchers.fns.length; i ++) {
@@ -3328,11 +3489,19 @@
                             continue;
                         }
     
+                        willNotify = true;
                         this.watchLoop.once(fn, intersected);
                     }
     
-                    this.watchLoop.once(instance.__resetChangedProps);
-                    this.watchLoop.run();
+                    if (willNotify) {
+                        instance.willNotifyWatchers();
+                    }
+    
+                    while(this.watchLoop.run()) {
+    
+                    }
+    
+                    instance.didNotifyWatchers();
                 },
     
                 run : function () {

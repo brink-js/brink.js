@@ -30,6 +30,8 @@ $b = _global.$b = _global.Brink = function () {
 
 /********* POLYFILLS *********/
 
+include('./polyfills/Array.forEach.js');
+include('./polyfills/Array.filter.js');
 include('./polyfills/Array.indexOf.js');
 include('./polyfills/Array.isArray.js');
 include('./polyfills/Function.bind.js');
@@ -76,13 +78,17 @@ $b.init = function (deps, cb) {
 			'brink/utils/expandProps',
 			'brink/utils/extend',
 			'brink/utils/flatten',
+			'brink/utils/inject',
 			'brink/utils/intersect',
 
 			'brink/utils/isBrinkInstance',
 			'brink/utils/isBrinkObject',
 			'brink/utils/isFunction',
 			'brink/utils/isObject',
+
 			'brink/utils/merge',
+			'brink/utils/next',
+			'brink/utils/required',
 
 			'brink/core/Object',
 			'brink/core/Class',
