@@ -49,11 +49,42 @@ $b(
 
             findBy : function (q, v) {
 
+                var i,
+                    item;
+
+                for (i = 0; i < this.content.length; i ++) {
+                    item = this.content[i];
+                    if (item[q] === v) {
+                        return item;
+                    }
+                }
+
+                return null;
+            },
+
+            findIndexBy : function (q, v) {
+
+                var i,
+                    item;
+
+                for (i = 0; i < this.content.length; i ++) {
+                    item = this.content[i];
+                    if (item[q] === v) {
+                        return i;
+                    }
+                }
+
+                return -1;
+            },
+
+            forEach : function (fn, scope) {
+
                 var i;
 
                 for (i = 0; i < this.content.length; i ++) {
-
+                    fn.call(scope, this.content[i], i, this);
                 }
+
             },
 
 			concat : function () {
