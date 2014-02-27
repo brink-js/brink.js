@@ -323,17 +323,6 @@ $b(
 
             },
 
-            __resetChangedProps : function () {
-
-            	var meta = this.__meta;
-
-                if (meta) {
-                    meta.changedProps = [];
-                    meta.addedItems = [];
-                    meta.removedItems = [];
-                }
-            },
-
 			contentDidChange : function () {
 				this.set('length', this.content.length);
                 this.propertyDidChange('@each');

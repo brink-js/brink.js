@@ -3,6 +3,7 @@ $b(
     [
         '../config',
         './CoreObject',
+        '../utils/bindFunction',
         '../utils/bindTo',
         '../utils/clone',
         '../utils/merge',
@@ -16,6 +17,7 @@ $b(
     function (
         config,
         CoreObject,
+        bindFunction,
         bindTo,
         clone,
         merge,
@@ -39,46 +41,33 @@ $b(
                     d,
                     meta;
 
-                meta = this.__meta = this.__meta ? clone(this.__meta) : null;
-
-                if (!meta) {
+                if (!this.__meta) {
                     this.__parsePrototype.call(this);
                     meta = this.__meta;
                 }
 
-                meta.values = {};
-                meta.watchers = {
-                    fns : [],
-                    props : []
-                };
-
-                if (typeof o === 'object' && !Array.isArray(o)) {
-                    o = clone(o);
-                }
-
                 else {
-                    o = {};
+                    meta = this.__buildMeta();
                 }
 
-                for (p in o) {
-                    this.descriptor(p, o[p]);
-                }
+                if (o && typeof o === 'object' && !Array.isArray(o)) {
 
-                for (i = 0; i < meta.methods.length; i ++) {
-                    p = meta.methods[i];
-                    this[p] = this[p].bind(this);
+                    o = clone(o);
+
+                    for (p in o) {
+                        this.descriptor(p, o[p]);
+                    }
                 }
 
                 for (p in meta.properties) {
-                    this.__defineProperty(p);
+                    this.__defineProperty.call(this, p, meta.properties[p]);
                 }
 
-                if (isFunction(this.init)) {
+                if (this.init) {
                     this.init.apply(this, arguments);
                 }
 
                 meta.isInitialized = true;
-                meta.isExtended = true;
 
                 if ($b.instanceManager) {
                     $b.instanceManager.add(this, meta);
@@ -87,11 +76,9 @@ $b(
                 return this;
             },
 
-            __parsePrototype : function () {
+            __buildMeta : function () {
 
-                var p,
-                    v,
-                    meta;
+                var meta;
 
                 meta = this.__meta = clone(this.__meta || {});
 
@@ -101,6 +88,23 @@ $b(
                 meta.properties = clone(meta.properties || {});
                 meta.methods = clone(meta.methods || []);
                 meta.dependencies = clone(meta.dependencies || []);
+
+                meta.values = {};
+                meta.watchers = {
+                    fns : [],
+                    props : []
+                };
+
+                return meta;
+            },
+
+            __parsePrototype : function () {
+
+                var p,
+                    v,
+                    meta;
+
+                meta = this.__buildMeta();
 
                 for (p in this) {
 
@@ -129,23 +133,19 @@ $b(
 
             },
 
-            __defineProperty : function (p) {
-
-                var d;
-
-                d = this.__meta.properties[p];
+            __defineProperty : function (p, d) {
 
                 if (!config.DIRTY_CHECK) {
 
                     d = clone(d);
 
                     if (d.get) {
-                        d.get = d.get.bind(this);
+                        d.get = bindFunction(d.get, this);
 
                     }
 
                     if (d.set) {
-                        d.set = d.set.bind(this);
+                        d.set = bindFunction(d.set, this);
                     }
 
                    // Modern browsers, IE9 +
@@ -188,18 +188,18 @@ $b(
             __readOnly : function (p) {
 
                 if (this.__meta.pojoStyle) {
-                    return function (val) {
+                    return bindFunction(function (val) {
                         return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
-                    }.bind(this);
+                    }, this);
                 };
             },
 
             __writeOnly : function (p) {
 
                 if (this.__meta.pojoStyle) {
-                    return function () {
+                    return bindFunction(function () {
                         return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
-                    }.bind(this);
+                    }, this);
                 };
             },
 
@@ -287,16 +287,16 @@ $b(
                 val = this.__meta.properties[key] = defineProperty(this, key, val);
                 val.key = key;
 
-                val.bindTo = function (o, p) {
+                val.bindTo = bindFunction(function (o, p) {
                     o.descriptor(p, bindTo(this, key, true));
-                }.bind(this);
+                }, this);
 
-                val.didChange = function () {
+                val.didChange = bindFunction(function () {
                     this.propertyDidChange(key);
-                }.bind(this);
+                }, this);
 
                 if (this.__meta.isInitialized) {
-                    this.__defineProperty(key);
+                    this.__defineProperty(key, val);
                 }
 
                 return val;
@@ -450,13 +450,12 @@ $b(
             proto = SubObj.prototype;
 
             proto.__parsePrototype.call(proto);
-            proto.__meta.isExtended = true;
 
             return SubObj;
         };
 
         Obj.define = function () {
-            $b.define(this.prototype.__dependencies, this.resolveDependencies.bind(this));
+            $b.define(this.prototype.__dependencies, bindFunction(this.resolveDependencies.bind, this));
             return this;
         };
 
@@ -484,10 +483,10 @@ $b(
                 cb(this);
             }
 
-            $b.require(this.prototype.__dependencies, function () {
+            $b.require(this.prototype.__dependencies, bindFunction(function () {
                 this.resolveDependencies.call(this);
                 cb(this);
-            }.bind(this));
+            }, this));
 
             return this;
         };

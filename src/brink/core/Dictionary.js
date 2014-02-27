@@ -11,10 +11,6 @@ $b(
             keys : null,
             values : null,
 
-            // Not inherited
-            flatten : null,
-            merge : null,
-
             init : function () {
 
                 var i,
@@ -29,8 +25,6 @@ $b(
                     this.add.apply(this, [].concat(arguments[i]));
                 }
 
-                this.addedItems = [];
-                this.removedItems = [];
 
                 this.length = this.keys.length;
             },

@@ -43,7 +43,7 @@ $b(
 
 					if (callInit) {
 						fn = this.__init || this.init || this.constructor;
-						fn.apply(this, arguments);
+						fn.call(this);
 					}
 
 					return this;
@@ -82,25 +82,24 @@ $b(
 		CoreObject.create = function (o) {
 
 			var p,
-				args,
 				init,
 				instance;
 
-			args = arguments;
+            var start = (+new Date());
 
-			if (typeof o === 'function') {
-				instance = new this(true);
-				o.call(instance);
-				args = [];
-			}
-
-			instance = instance || new this(false);
+			instance = new this(false);
 
 			init = instance.__init || instance.init;
 
 			if (init) {
-				return init.apply(instance, args) || instance;
+				instance = init.apply(instance, arguments) || instance;
 			}
+
+            var time = (+new Date()) - start;
+
+            if (time > 1) {
+            	//console.log(time, instance);
+            }
 
 			return instance;
 		};

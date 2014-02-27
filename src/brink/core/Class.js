@@ -1,11 +1,14 @@
 $b(
 
     [
+    	'../config',
     	'./Object',
-    	'./NotificationManager'
+    	'./NotificationManager',
+    	'../utils/bindFunction',
+    	'../utils/clone'
     ],
 
-    function (Obj, NotificationManager) {
+    function (config, Obj, NotificationManager, bindFunction, clone) {
 
         'use strict';
 
@@ -13,8 +16,10 @@ $b(
         	superfy,
         	doesCallSuper;
 
-		superfy = function (fn, superFn) {
+		function superfy (fn, superFn) {
+
 			return function () {
+
 				var r, tmp = this._super || null;
 
 				// Reference the prototypes method, as super temporarily
@@ -22,7 +27,7 @@ $b(
 
 				r = fn.apply(this, arguments);
 
-				// Reset this._super
+				// Reset _super
 				this._super = tmp;
 				return r;
 			};
@@ -39,6 +44,42 @@ $b(
 		}) ? (/\bthis\._super\b/) : (/.*/);
 
 		Class = Obj({
+
+			__init : superfy(function () {
+
+				var i,
+					p,
+					meta;
+
+                this._super();
+
+                meta = this.__meta;
+
+                /*
+                    Auto-binding methods is very expensive as we have to do
+                    it every time an instance is created. It roughly doubles
+                    the time it takes to instantiate
+
+                    Still, it's not really an issue unless you are creating thousands
+                    of instances at once. Creating 10,000 instances with auto-bound
+                    methods should still take < 500ms.
+
+                    We auto-bind on $b.Class and not on $b.Object because it's
+                    far more likely you'd be creating a lot of Object instances at once
+                    and shouldn't need the overhead of this.
+                */
+                if (config.AUTO_BIND_METHODS || 1) {
+                    for (i = 0; i < meta.methods.length; i ++) {
+                        p = meta.methods[i];
+                    	if (!~p.indexOf('__')) {
+	                        this[p] = bindFunction(this[p], this);
+	                    }
+	                }
+                }
+
+                return this;
+
+			}, Obj.prototype.__init),
 
 			subscribe : function (name, handler, priority) {
 
