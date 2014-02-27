@@ -12,7 +12,7 @@ $b(
 
             componentWillMount : function () {
                 this.__props = this.props;
-                this.props = this.__props.serialize();
+                this.props = this.__props.getProperties();
                 this.__props.watch(this.__propsChanged);
             },
 

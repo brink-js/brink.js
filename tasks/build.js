@@ -3,6 +3,7 @@ var fs = require('fs'),
     wrench = require('wrench'),
     uglify = require('uglify-js');
 
+
 $b = require('../src/brink/brink.js');
 
 $b.configure({
@@ -12,9 +13,9 @@ $b.configure({
 $b.build({
     cwd : __dirname,
     file : '../brink.js',
+    exclude : ['brink/browser/**'],
     minify : false
 });
-
 
 $b.build({
     cwd : __dirname,

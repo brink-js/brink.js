@@ -4,13 +4,23 @@
     
     var $b,
     	_global,
-    	include,
-    	CONFIG;
+    	CONFIG,
+    	EMPTY_FN;
     
     _global = typeof window !== 'undefined' ? window : global;
     CONFIG = _global.Brink || _global.$b || {};
     
-    include = _global.include ? _global.include : typeof require !== 'undefined' ? require : null;
+    EMPTY_FN = function () {};
+    
+    if (typeof window === 'undefined') {
+    	_global = global;
+    	console.log('zzz');
+    	_global.include = _global.include || require;
+    }
+    
+    else {
+    	_global = window;
+    }
     
     $b = _global.$b = _global.Brink = function () {
     
@@ -190,6 +200,14 @@
         	}
         
         })();
+    
+    /*
+    	These are empty functions for production builds,
+    	only the dev version actually implements these, but
+    	we don't want code that uses them to Error.
+    */
+    
+    $b.assert = $b.error = $b.required = EMPTY_FN;
     
     /********* RESOLVER *********/
     
@@ -391,11 +409,7 @@
                     // If in a CJS environment, resolve immediately.
                     if (typeof window === 'undefined') {
                         origRequire(f);
-        
-                        setTimeout(function () {
-                            _invokeAnonymousDefine(m, f);
-                        }, 0);
-        
+                        _invokeAnonymousDefine(m, f);
                         return 1;
                     }
         
@@ -980,44 +994,42 @@
     	return $b;
     };
     
-    
     $b.init = function (deps, cb) {
     
     	$b.require(
     
             [
                 "brink/config",
-                "brink/utils/error",
-                "brink/utils/assert",
-                "brink/utils/expandProps",
-                "brink/utils/inject",
-                "brink/utils/isBrinkInstance",
-                "brink/utils/defineProperty",
-                "brink/utils/isBrinkObject",
-                "brink/utils/isFunction",
+                "brink/dev/error",
+                "brink/dev/assert",
+                "brink/dev/required",
                 "brink/utils/isObject",
-                "brink/utils/extend",
                 "brink/utils/merge",
                 "brink/utils/flatten",
-                "brink/utils/intersect",
-                "brink/utils/configure",
+                "brink/utils/isFunction",
+                "brink/utils/expandProps",
                 "brink/utils/computed",
-                "brink/utils/clone",
-                "brink/utils/bindTo",
                 "brink/utils/alias",
+                "brink/utils/isBrinkInstance",
+                "brink/utils/bindTo",
+                "brink/utils/clone",
+                "brink/utils/configure",
+                "brink/utils/defineProperty",
+                "brink/utils/extend",
+                "brink/utils/inject",
+                "brink/utils/intersect",
+                "brink/utils/isBrinkObject",
                 "brink/utils/next",
-                "brink/utils/required",
-                "brink/react/ReactMixin",
-                "brink/node/build",
                 "brink/core/CoreObject",
                 "brink/core/Object",
-                "brink/core/Dictionary",
-                "brink/core/Array",
                 "brink/core/NotificationManager",
                 "brink/core/Class",
+                "brink/core/Array",
+                "brink/core/Dictionary",
                 "brink/core/RunLoop",
                 "brink/core/InstanceWatcher",
-                "brink/core/InstanceManager"
+                "brink/core/InstanceManager",
+                "brink/node/build"
             ]
     
     		, function () {
@@ -1026,7 +1038,7 @@
     			/********* ALIASES *********/
     
     			$b.merge($b, {
-    				F : function () {}
+    				F : EMPTY_FN
     			});
     
     			$b.merge($b.config, CONFIG);
@@ -1096,7 +1108,7 @@
     
     ).attach('$b');
 
-    $b('brink/utils/error', 
+    $b('brink/dev/error', 
     
         function () {
     
@@ -1109,7 +1121,7 @@
     
     ).attach('$b');
 
-    $b('brink/utils/assert', 
+    $b('brink/dev/assert', 
     
         [
             './error'
@@ -1130,137 +1142,22 @@
     ).attach('$b');
     
 
-    $b('brink/utils/expandProps', 
-    
-        function () {
-    
-            'use strict';
-    
-            return function (a, b, i, j, p, n, s) {
-    
-                s = [];
-    
-                for (i = 0; i < a.length; i ++) {
-    
-                    p = a[i];
-    
-                    if (~p.indexOf(',')) {
-                        p = p.split('.');
-                        n = p[0];
-                        b = p[1].split(',');
-                        p = [];
-    
-                        for (j = 0; j < b.length; j ++) {
-                            p.push([n, b[j]].join('.'));
-                        }
-                    }
-    
-                    s = s.concat(p);
-                }
-    
-                return s;
-            };
-        }
-    
-    ).attach('$b');
-
-    $b('brink/utils/inject', 
-    
-        [],
-    
-        function () {
-    
-            'use strict';
-    
-            return function (Class, p, v) {
-    
-                Class.inject.apply(Class, arguments);
-    
-            };
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/utils/isBrinkInstance', 
+    $b('brink/dev/required', 
     
         [
-    
         ],
     
         function () {
     
             'use strict';
     
-            return function (obj) {
-                return obj.constructor.__meta.isObject;
+            return function () {
+    
             };
         }
     
     ).attach('$b');
-
-    $b('brink/utils/defineProperty', 
     
-        [
-            './assert',
-            './isBrinkInstance'
-        ],
-    
-        function (assert, isBrinkInstance) {
-    
-            'use strict';
-    
-            return function (obj, prop, descriptor) {
-    
-                assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
-    
-                descriptor.configurable = true;
-                descriptor.enumerable = descriptor.enumerable !== 'undefined' ? descriptor.enumerable : true;
-    
-                if (prop.indexOf('__') === 0) {
-                    descriptor.configurable = false;
-                    descriptor.enumerable = false;
-                }
-    
-                descriptor.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
-                descriptor.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
-    
-                descriptor.defaultValue = typeof descriptor.defaultValue !== 'undefined' ? descriptor.defaultValue : descriptor.value;
-    
-                delete descriptor.value;
-                delete descriptor.writable;
-    
-                return descriptor;
-            };
-        }
-    
-    ).attach('$b');
-
-    $b('brink/utils/isBrinkObject', 
-    
-        function () {
-    
-            'use strict';
-    
-            return function (obj) {
-                return obj.__isObject;
-            };
-        }
-    
-    ).attach('$b');
-
-    $b('brink/utils/isFunction', 
-    
-        function () {
-    
-            'use strict';
-    
-            return function (obj) {
-                return typeof obj == 'function';
-            };
-        }
-    
-    ).attach('$b');
 
     $b('brink/utils/isObject', 
     
@@ -1281,92 +1178,13 @@
     
     ).attach('$b');
 
-    $b('brink/utils/extend', 
-    
-        [
-            './isObject',
-            './isFunction'
-        ],
-    
-        function (isObject, isFunction) {
-    
-            'use strict';
-    
-            return function (target) {
-    
-    			var i,
-    				l,
-    				src,
-    				clone,
-    				copy,
-    				deep,
-    				name,
-    				options,
-    				copyIsArray;
-    
-    			// Handle case when target is a string or something (possible in deep copy)
-    			if (typeof target !== "object" && !isFunction(target)) {
-    			    target = {};
-    			}
-    
-    			i = isObject(arguments[1]) ? 1 : 2;
-    			deep = (arguments[1] === true);
-    
-    			for (l = arguments.length; i < l; i ++) {
-    
-    			    // Only deal with non-null/undefined values
-    			    if ((options = arguments[i]) != null) {
-    
-    			        // Extend the base object
-    			        for (name in options) {
-    
-    			            src = target[name];
-    			            copy = options[name];
-    
-    			            // Prevent never-ending loop
-    			            if (target === copy) {
-    			                continue;
-    			            }
-    
-    			            // Recurse if we're merging plain objects or arrays
-    			            if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
-    
-    			                if (copyIsArray) {
-    			                    copyIsArray = false;
-    			                    clone = src && isArray(src) ? src : [];
-    
-    			                }
-    
-    			                else {
-    			                    clone = src && isPlainObject(src) ? src : {};
-    			                }
-    
-    			                // Never move original objects, clone them
-    			                target[name] = extend(clone, deep, copy);
-    			            }
-    
-    			            // Don't bring in undefined values
-    			            else if (copy !== undefined) {
-    			                target[name] = copy;
-    			            }
-    			        }
-    			    }
-    			}
-    
-    			return target;
-            };
-        }
-    
-    ).attach('$b');
-
     $b('brink/utils/merge', 
     
         [
-            './assert',
             './isObject'
         ],
     
-        function (assert, isObject) {
+        function (isObject) {
     
             'use strict';
     
@@ -1463,56 +1281,52 @@
     
     ).attach('$b');
 
-    $b('brink/utils/intersect', 
+    $b('brink/utils/isFunction', 
     
-        [
-            './flatten'
-        ],
-    
-        function (flatten) {
+        function () {
     
             'use strict';
     
-            return function (a, b) {
+            return function (obj) {
+                return typeof obj == 'function';
+            };
+        }
     
-                var i,
-                    c;
+    ).attach('$b');
+
+    $b('brink/utils/expandProps', 
     
-                b = flatten([].slice.call(arguments, 1));
-                c = [];
+        function () {
     
-                for (i = 0; i < b.length; i ++) {
-                    if (~a.indexOf(b[i])) {
-                        c.push(b[i]);
+            'use strict';
+    
+            return function (a, b, i, j, p, n, s) {
+    
+                s = [];
+    
+                for (i = 0; i < a.length; i ++) {
+    
+                    p = a[i];
+    
+                    if (~p.indexOf(',')) {
+                        p = p.split('.');
+                        n = p[0];
+                        b = p[1].split(',');
+                        p = [];
+    
+                        for (j = 0; j < b.length; j ++) {
+                            p.push([n, b[j]].join('.'));
+                        }
                     }
+    
+                    s = s.concat(p);
                 }
     
-                return c;
+                return s;
             };
         }
     
     ).attach('$b');
-    
-
-    $b('brink/utils/configure', 
-    
-        [
-            './merge',
-            '../config'
-        ],
-    
-        function (merge, config) {
-    
-            'use strict';
-    
-            return function (o) {
-                $b.merge(config, o);
-                return config;
-            };
-        }
-    
-    ).attach('$b');
-    
 
     $b('brink/utils/computed', 
     
@@ -1549,26 +1363,48 @@
     
     ).attach('$b');
 
-    $b('brink/utils/clone', 
+    $b('brink/utils/alias', 
     
         [
-            './merge',
-            './isObject'
+            './computed'
         ],
     
-        function (merge, isObject) {
+        function (computed) {
     
             'use strict';
     
-            return function (o, deep, a) {
+            return function (s) {
     
-                function arrayOrObject (o, r) {
-                    return Array.isArray(o) ? [] : isObject(o) ? {} : null;
-                }
+                return computed({
     
-                a = arrayOrObject(o);
+                    watch : [s],
     
-                return a ? merge(a, o, deep) : null;
+                    get : function () {
+                        return this.get(s);
+                    },
+    
+                    set : function (val) {
+                        return this.set(s, val);
+                    }
+                });
+            };
+        }
+    
+    ).attach('$b');
+    
+
+    $b('brink/utils/isBrinkInstance', 
+    
+        [
+    
+        ],
+    
+        function () {
+    
+            'use strict';
+    
+            return function (obj) {
+                return obj.constructor.__meta.isObject;
             };
         }
     
@@ -1577,12 +1413,11 @@
     $b('brink/utils/bindTo', 
     
         [
-            './assert',
             './computed',
             './isBrinkInstance'
         ],
     
-        function (assert, computed, isBrinkInstance) {
+        function (computed, isBrinkInstance) {
     
             'use strict';
     
@@ -1591,7 +1426,7 @@
                 var b,
                     val;
     
-                assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
+                $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
     
                 val = a.get(prop);
     
@@ -1629,35 +1464,226 @@
     
     ).attach('$b');
 
-    $b('brink/utils/alias', 
+    $b('brink/utils/clone', 
     
         [
-            './computed'
+            './merge',
+            './isObject'
         ],
     
-        function (computed) {
+        function (merge, isObject) {
     
             'use strict';
     
-            return function (s) {
+            return function (o, deep, a) {
     
-                return computed({
+                function arrayOrObject (o, r) {
+                    return Array.isArray(o) ? [] : isObject(o) ? {} : null;
+                }
     
-                    watch : [s],
+                a = arrayOrObject(o);
     
-                    get : function () {
-                        return this.get(s);
-                    },
+                return a ? merge(a, o, deep) : null;
+            };
+        }
     
-                    set : function (val) {
-                        return this.set(s, val);
-                    }
-                });
+    ).attach('$b');
+
+    $b('brink/utils/configure', 
+    
+        [
+            './merge',
+            '../config'
+        ],
+    
+        function (merge, config) {
+    
+            'use strict';
+    
+            return function (o) {
+                $b.merge(config, o);
+                return config;
             };
         }
     
     ).attach('$b');
     
+
+    $b('brink/utils/defineProperty', 
+    
+        [
+            './isBrinkInstance'
+        ],
+    
+        function (isBrinkInstance) {
+    
+            'use strict';
+    
+            return function (obj, prop, descriptor) {
+    
+                $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
+    
+                descriptor.configurable = true;
+                descriptor.enumerable = descriptor.enumerable !== 'undefined' ? descriptor.enumerable : true;
+    
+                if (prop.indexOf('__') === 0) {
+                    descriptor.configurable = false;
+                    descriptor.enumerable = false;
+                }
+    
+                descriptor.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
+                descriptor.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
+    
+                descriptor.defaultValue = typeof descriptor.defaultValue !== 'undefined' ? descriptor.defaultValue : descriptor.value;
+    
+                delete descriptor.value;
+                delete descriptor.writable;
+    
+                return descriptor;
+            };
+        }
+    
+    ).attach('$b');
+
+    $b('brink/utils/extend', 
+    
+        [
+            './isObject',
+            './isFunction'
+        ],
+    
+        function (isObject, isFunction) {
+    
+            'use strict';
+    
+            return function (target) {
+    
+    			var i,
+    				l,
+    				src,
+    				clone,
+    				copy,
+    				deep,
+    				name,
+    				options,
+    				copyIsArray;
+    
+    			// Handle case when target is a string or something (possible in deep copy)
+    			if (typeof target !== "object" && !isFunction(target)) {
+    			    target = {};
+    			}
+    
+    			i = isObject(arguments[1]) ? 1 : 2;
+    			deep = (arguments[1] === true);
+    
+    			for (l = arguments.length; i < l; i ++) {
+    
+    			    // Only deal with non-null/undefined values
+    			    if ((options = arguments[i]) != null) {
+    
+    			        // Extend the base object
+    			        for (name in options) {
+    
+    			            src = target[name];
+    			            copy = options[name];
+    
+    			            // Prevent never-ending loop
+    			            if (target === copy) {
+    			                continue;
+    			            }
+    
+    			            // Recurse if we're merging plain objects or arrays
+    			            if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+    
+    			                if (copyIsArray) {
+    			                    copyIsArray = false;
+    			                    clone = src && isArray(src) ? src : [];
+    
+    			                }
+    
+    			                else {
+    			                    clone = src && isPlainObject(src) ? src : {};
+    			                }
+    
+    			                // Never move original objects, clone them
+    			                target[name] = extend(clone, deep, copy);
+    			            }
+    
+    			            // Don't bring in undefined values
+    			            else if (copy !== undefined) {
+    			                target[name] = copy;
+    			            }
+    			        }
+    			    }
+    			}
+    
+    			return target;
+            };
+        }
+    
+    ).attach('$b');
+
+    $b('brink/utils/inject', 
+    
+        [],
+    
+        function () {
+    
+            'use strict';
+    
+            return function (Class, p, v) {
+    
+                Class.inject.apply(Class, arguments);
+    
+            };
+        }
+    
+    ).attach('$b');
+    
+
+    $b('brink/utils/intersect', 
+    
+        [
+            './flatten'
+        ],
+    
+        function (flatten) {
+    
+            'use strict';
+    
+            return function (a, b) {
+    
+                var i,
+                    c;
+    
+                b = flatten([].slice.call(arguments, 1));
+                c = [];
+    
+                for (i = 0; i < b.length; i ++) {
+                    if (~a.indexOf(b[i])) {
+                        c.push(b[i]);
+                    }
+                }
+    
+                return c;
+            };
+        }
+    
+    ).attach('$b');
+    
+
+    $b('brink/utils/isBrinkObject', 
+    
+        function () {
+    
+            'use strict';
+    
+            return function (obj) {
+                return obj.__isObject;
+            };
+        }
+    
+    ).attach('$b');
 
     $b('brink/utils/next', 
     
@@ -1670,207 +1696,6 @@
     
             return function () {
     
-            };
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/utils/required', 
-    
-        [
-        ],
-    
-        function () {
-    
-            'use strict';
-    
-            return function () {
-    
-            };
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/react/ReactMixin', 
-    
-        function () {
-    
-            'use strict';
-    
-            return {
-    
-                __propsChanged : function () {
-                    this.setProps(this.__props.getChangedProperties());
-                },
-    
-                componentWillMount : function () {
-                    this.__props = this.props;
-                    this.props = this.__props.serialize();
-                    this.__props.watch(this.__propsChanged);
-                },
-    
-                componentWillUnmount : function () {
-                    this.__props.unwatch(this.__propsChanged);
-                }
-            };
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/node/build', 
-    
-        [
-            '../utils/error'
-        ],
-    
-        function (error) {
-    
-            'use strict';
-    
-            return function (opts) {
-    
-                var vm = require('vm'),
-                    fs = require('fs'),
-                    zlib = require('zlib'),
-                    path = require('path'),
-                    includer = require('includer'),
-                    wrench = require('wrench'),
-                    uglify = require('uglify-js'),
-                    minimatch = require('minimatch'),
-                    modules = [],
-                    src;
-    
-                console.log('');
-    
-                function replaceAnonymousDefine (id, src) {
-    
-                    // Replace the first instance of '$b(' or '$b.define('
-                    src = src.replace(/(\$b|\.define)?(\s)?(\()/, "$1$2$3'" + id + "', ");
-                    return src;
-                }
-    
-                function replaceModules (modules, src) {
-    
-                    return src.replace(/([t| ]+)(\/\*{{modules}}\*\/)([\s\S]+?)(\/\*{{\/modules}}\*\/)/, '$1' + JSON.stringify(modules, null, '    ').split('\n').join('\n$1'));
-                }
-    
-                function wrap (src) {
-                    return '\n    ' + src.replace(/\n/g, '\n    ') + '\n';
-                }
-    
-                function matches (path) {
-    
-                    var i;
-    
-                    for (i = 0; i < opts.include.length; i ++) {
-    
-                        if (!minimatch(path, opts.include[i])) {
-                            return false;
-                        }
-                    }
-    
-                    for (i = 0; i < opts.exclude.length; i ++) {
-    
-                        if (minimatch(path, opts.exclude[i])) {
-                            return false;
-                        }
-                    }
-    
-                    return true;
-                }
-    
-                opts = opts || {};
-    
-                opts.include = [].concat(opts.include || ['**']);
-                opts.exclude = [].concat(opts.exclude || []);
-                opts.modules = [].concat(opts.modules || []);
-    
-                if (opts.cwd) {
-                    process.chdir(opts.cwd);
-                }
-    
-                if (!opts.file && !opts.minifiedFile) {
-                    error('No output file specified.');
-                }
-    
-                includer(
-    
-                    __dirname + '/../brink.js',
-    
-                    {
-                        wrap : wrap
-                    },
-    
-                    function (err, src) {
-    
-                        var cb,
-                            moduleSrc;
-    
-                        $b.configure(opts);
-    
-                        cb = function () {
-    
-                            var p,
-                                meta,
-                                metas,
-                                minifiedSrc;
-    
-                            metas = $b.require.metas();
-    
-                            for (p in metas) {
-    
-                                meta = metas[p];
-    
-                                if (meta.url) {
-    
-                                    if (matches(meta.id)) {
-    
-                                        modules.push(meta.id);
-    
-                                        moduleSrc = fs.readFileSync(meta.url, {encoding : 'utf8'});
-                                        moduleSrc = replaceAnonymousDefine(meta.id, moduleSrc);
-    
-                                        src += wrap(moduleSrc);
-                                    }
-                                }
-                            }
-    
-                            src = ';(function () {\n' + replaceModules(modules, src) + '\n})();';
-    
-                            if (opts.minifiedFile) {
-    
-                                minifiedSrc = uglify.minify(src, {fromString: true}).code;
-    
-                                wrench.mkdirSyncRecursive(path.dirname(opts.minifiedFile));
-    
-                                fs.writeFileSync(opts.minifiedFile, minifiedSrc);
-    
-                                console.log(fs.realpathSync(opts.minifiedFile) + ' written successfully.');
-                            }
-    
-                            if (opts.file) {
-                                wrench.mkdirSyncRecursive(path.dirname(opts.file));
-    
-                                fs.writeFileSync(opts.file, src);
-    
-                                console.log(fs.realpathSync(opts.file) + ' written successfully.');
-                            }
-    
-                            console.log('');
-                        };
-    
-                        if (opts.modules.length) {
-                            b.require(opts.modules, cb);
-                        }
-    
-                        else {
-                            cb();
-                        }
-                    }
-                );
             };
         }
     
@@ -1934,7 +1759,7 @@
     			}
     
     			Obj.prototype = proto;
-    			extend(Obj, this, proto.classProps || {});
+    			extend(Obj, this, proto.statics || {});
     
     			Obj.prototype.constructor = Obj;
     
@@ -1999,7 +1824,6 @@
             './CoreObject',
             '../utils/bindTo',
             '../utils/clone',
-            '../utils/error',
             '../utils/merge',
             '../utils/flatten',
             '../utils/intersect',
@@ -2013,7 +1837,6 @@
             CoreObject,
             bindTo,
             clone,
-            error,
             merge,
             flatten,
             intersect,
@@ -2192,7 +2015,7 @@
     
                     if (this.__meta.pojoStyle) {
                         return function (val) {
-                            return error('Tried to write to a read-only property `' + p + '` on ' + this);
+                            return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
                         }.bind(this);
                     };
                 },
@@ -2201,7 +2024,7 @@
     
                     if (this.__meta.pojoStyle) {
                         return function () {
-                            return error('Tried to read a write-only property `' + p + '` on ' + this);
+                            return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
                         }.bind(this);
                     };
                 },
@@ -2354,7 +2177,7 @@
                         return this;
                     }
     
-                    error('Tried to call set with unsupported arguments', arguments);
+                    $b.error('Tried to call set with unsupported arguments', arguments);
                 },
     
                 watch : function (fn, props) {
@@ -2388,7 +2211,7 @@
                     }
     
                     else {
-                        error('InstanceManager does not exist, can\'t watch for property changes.');
+                        $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                     }
                 },
     
@@ -2399,7 +2222,7 @@
                     }
     
                     else {
-                        error('InstanceManager does not exist, can\'t watch for property changes.');
+                        $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                     }
     
                 },
@@ -2411,7 +2234,7 @@
                     }
     
                     else {
-                        error('InstanceManager does not exist, can\'t watch for property changes.');
+                        $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                     }
                 },
     
@@ -2493,438 +2316,6 @@
     
             return Obj;
         }
-    
-    ).attach('$b');
-
-    $b('brink/core/Dictionary', 
-    
-        [
-        	'./Object'
-        ],
-    
-        function (Obj) {
-    
-    		return Obj.extend({
-    
-                keys : null,
-                values : null,
-    
-                // Not inherited
-                flatten : null,
-                merge : null,
-    
-                init : function () {
-    
-                    var i,
-                        a,
-                        keys,
-                        vals;
-    
-                    this.keys = [];
-                    this.values = [];
-    
-                    for (i = 0; i < arguments.length; i ++) {
-                        this.add.apply(this, [].concat(arguments[i]));
-                    }
-    
-                    this.addedItems = [];
-                    this.removedItems = [];
-    
-                    this.length = this.keys.length;
-                },
-    
-                get : function (key) {
-    
-                    var i;
-    
-                    i = typeof key !== 'string' ? this.keys.indexOf(key) : -1;
-    
-                    if (~i) {
-                        return this.values[i];
-                    }
-    
-                    return Obj.prototype.get.apply(this, arguments);
-                },
-    
-                set : function (key, val) {
-    
-                    var i;
-    
-                    i = typeof key !== 'string' ? this.keys.indexOf(key) : -1;
-    
-                    if (~i) {
-                        this.values[i] = val;
-                        return val;
-                    }
-    
-                    return Obj.prototype.set.apply(this, arguments);
-                },
-    
-                add : function (key, val) {
-                    this.keys.push(key);
-                    this.values[this.keys.length - 1] = val;
-                },
-    
-                remove : function () {
-    
-                    var i,
-                        j,
-                        removed;
-    
-                    removed = [];
-    
-                    for (j = 0; j < arguments.length; j ++) {
-    
-                        i = this.keys.indexOf(arguments[j]);
-    
-                        if (~i) {
-                            this.keys.splice(i, 1);
-                            removed.push(this.values.splice(i, 1)[0]);
-                        }
-                    }
-    
-                    return removed;
-                },
-    
-                has : function (o) {
-                    return !~this.keys.indexOf(o);
-                },
-    
-                indexOf : function () {
-                    return this.keys.indexOf(o);
-                },
-    
-                forEach : function (fn, scope) {
-    
-                    var i;
-    
-                    for (i = 0; i < this.keys.length; i ++) {
-                        fn.call(scope, this.values[i], this.keys[i], i, this);
-                    }
-    
-                    return this;
-                }
-    
-    		});
-    	}
-    
-    ).attach('$b');
-
-    $b('brink/core/Array', 
-    
-        [
-        	'./Object'
-        ],
-    
-        function (Obj) {
-    
-        	var Arr,
-        		AP;
-    
-        	AP = Array.prototype;
-    
-    		Arr = Obj({
-    
-                content : null,
-                length : 0,
-    
-                oldContent : null,
-                pristineContent : null,
-    
-    			init : function (content) {
-    
-    				this.set('content', content);
-                    this.set('oldContent', content.concat());
-    				this.set('length', this.content.length);
-    
-                    this.watch('content', this.contentDidChange);
-    			},
-    
-    			get : function (i) {
-    
-    				if (isNaN(i)) {
-    					return Obj.prototype.get.apply(this, arguments);
-    				}
-    
-    				return this.content[i];
-    			},
-    
-    			set : function (i, val) {
-    
-    				if (isNaN(i)) {
-    					return Obj.prototype.set.apply(this, arguments);
-    				}
-    
-    				this.replaceAt(i, val);
-    				return val;
-    			},
-    
-                findBy : function (q, v) {
-    
-                    var i;
-    
-                    for (i = 0; i < this.content.length; i ++) {
-    
-                    }
-                },
-    
-    			concat : function () {
-    				var r = AP.concat.apply(this.content, arguments);
-    				return this.prototype.constructor.create(r);
-    			},
-    
-    			insert : function () {
-    				return this.push.apply(this, arguments);
-    			},
-    
-    			insertAt : function (i, o) {
-    				this.splice(i, 0, o);
-    				return this.get('length');
-    			},
-    
-    			push : function () {
-    
-    				var i;
-    
-    				for (i = 0; i < arguments.length; i ++) {
-    					this.insertAt(this.length, arguments[i]);
-    				}
-    
-    				return this.length;
-    			},
-    
-    			pop : function (i) {
-    				i = this.length - 1;
-    				return this.removeAt(i);
-    			},
-    
-    			remove : function (o, i) {
-    
-    				i = this.content.indexOf(o);
-    
-    				if (~i) {
-    					return this.removeAt(i);
-    				}
-    
-    				return false;
-    			},
-    
-    			removeAt : function (i, r) {
-    				r = AP.splice.call(this.content, i, 1);
-    				this.contentDidChange();
-    				return r[0];
-    			},
-    
-    			replace : function (a, b, i) {
-    
-    				i = this.content.indexOf(a);
-    
-    				if (~i) {
-    					return this.replaceAt(i, b);
-    				}
-    			},
-    
-    			replaceAt : function (i, o) {
-    				this.removeAt(i);
-    				return this.insertAt(i, o);
-    			},
-    
-    			splice : function (i, l) {
-    
-    				var rest,
-    					removed;
-    
-    				removed = [];
-    				rest = AP.splice.call(arguments, 2, arguments.length);
-    
-    				if (l > 0) {
-    
-    					j = i;
-    					l = i + l;
-    
-    					while (j < l) {
-    						removed.push(this.removeAt(i));
-    
-    						j ++;
-    					}
-    				}
-    
-    				for (j = 0; j < rest.length; j ++) {
-    					this.content.splice(i + j, 0, rest[j]);
-    					this.contentDidChange();
-    				}
-    
-    				return removed;
-    			},
-    
-    			shift : function () {
-    				return this.removeAt(0);
-    			},
-    
-    			unshift : function () {
-    				for (i = 0; i < arguments.length; i ++) {
-    					this.insertAt(0, this.arguments[i]);
-    				}
-    
-    				return this.length;
-    			},
-    
-    			reverse : function () {
-    
-                    if (!this.pristineContent) {
-                        this.pristineContent = this.content;
-                    }
-    
-    				r = AP.reverse.apply(this.content, arguments)
-    				this.contentDidChange();
-    				return this;
-    			},
-    
-                filter : function () {
-    
-                    if (!this.pristineContent) {
-                        this.pristineContent = this.content;
-                    }
-    
-                    this.content = AP.filter.apply(this.content, arguments)
-                    this.contentDidChange();
-                    return this.content;
-                },
-    
-    			sort : function () {
-    
-                    if (!this.pristineContent) {
-                        this.pristineContent = this.content;
-                        this.content = this.content.concat();
-                    }
-    
-    				AP.sort.apply(this.content, arguments)
-    				this.contentDidChange();
-    				return this.content;
-    			},
-    
-                reset : function () {
-                    this.content = this.pristineContent;
-                    this.pristineContent = null;
-                },
-    
-                willNotifyWatchers : function () {
-    
-                    this.getChanges = function () {
-    
-                        var i,
-                            changes,
-                            newItem,
-                            oldItem,
-                            newIndex,
-                            oldIndex,
-                            oldContent,
-                            newContent;
-    
-                        oldContent = this.oldContent;
-                        newContent = this.content;
-    
-                        changes = {
-                            added : [],
-                            removed : [],
-                            moved : []
-                        };
-    
-                        for (i = 0; i < Math.max(oldContent.length, newContent.length); i ++) {
-    
-                            newItem = newContent[i];
-                            oldItem = oldContent[i];
-    
-                            if (newItem === oldItem) {
-                                continue;
-                            }
-    
-                            if (oldItem) {
-    
-                                newIndex = newContent.indexOf(oldItem);
-    
-                                // Has it been moved?
-                                if (~newIndex) {
-                                    changes.moved.push({
-                                        oldIndex : i,
-                                        newIndex : newIndex,
-                                        item : oldItem
-                                    });
-                                }
-    
-                                // Nope, it's been removed
-                                else {
-                                    changes.removed.push({
-                                        index : i,
-                                        item : oldItem
-                                    });
-                                }
-                            }
-    
-                            else {
-    
-                                oldIndex = oldContent.indexOf(newItem);
-    
-                                // Has it been moved?
-                                if (~oldIndex) {
-                                    changes.moved.push({
-                                        oldIndex : oldIndex,
-                                        newIndex : i,
-                                        item : newItem
-                                    });
-                                }
-    
-                                // Nope, it's been added
-                                else {
-                                    changes.added.push({
-                                        index : i,
-                                        item : newItem
-                                    });
-                                }
-                            }
-                        }
-    
-                        this.getChanges = function () {
-                            return changes;
-                        };
-    
-                        return changes;
-    
-                    }.bind(this);
-                },
-    
-                didNotifyWatchers : function () {
-    
-                    this.oldContent = this.content.concat();
-    
-                    if (this.__meta) {
-                        this.__meta.changedProps = [];
-                        this.__meta.contentChanges = {};
-                    }
-    
-                },
-    
-                __resetChangedProps : function () {
-    
-                	var meta = this.__meta;
-    
-                    if (meta) {
-                        meta.changedProps = [];
-                        meta.addedItems = [];
-                        meta.removedItems = [];
-                    }
-                },
-    
-    			contentDidChange : function () {
-    				this.set('length', this.content.length);
-                    this.propertyDidChange('@each');
-    			}
-    
-    		});
-    
-    
-    		return Arr;
-    	}
     
     ).attach('$b');
 
@@ -3226,6 +2617,469 @@
     
             return Class;
         }
+    
+    ).attach('$b');
+
+    $b('brink/core/Array', 
+    
+        [
+        	'./Object'
+        ],
+    
+        function (Obj) {
+    
+        	var Arr,
+        		AP;
+    
+        	AP = Array.prototype;
+    
+    		Arr = Obj({
+    
+                content : null,
+                length : 0,
+    
+                oldContent : null,
+                pristineContent : null,
+    
+    			init : function (content) {
+    
+    				this.set('content', content);
+                    this.set('oldContent', content.concat());
+    				this.set('length', this.content.length);
+    
+                    this.watch('content', this.contentDidChange);
+    			},
+    
+    			get : function (i) {
+    
+    				if (isNaN(i)) {
+    					return Obj.prototype.get.apply(this, arguments);
+    				}
+    
+    				return this.content[i];
+    			},
+    
+    			set : function (i, val) {
+    
+    				if (isNaN(i)) {
+    					return Obj.prototype.set.apply(this, arguments);
+    				}
+    
+    				this.replaceAt(i, val);
+    				return val;
+    			},
+    
+                findBy : function (q, v) {
+    
+                    var i,
+                        item;
+    
+                    for (i = 0; i < this.content.length; i ++) {
+                        item = this.content[i];
+                        if (item[q] === v) {
+                            return item;
+                        }
+                    }
+    
+                    return null;
+                },
+    
+                findIndexBy : function (q, v) {
+    
+                    var i,
+                        item;
+    
+                    for (i = 0; i < this.content.length; i ++) {
+                        item = this.content[i];
+                        if (item[q] === v) {
+                            return i;
+                        }
+                    }
+    
+                    return -1;
+                },
+    
+                forEach : function (fn, scope) {
+    
+                    var i;
+    
+                    for (i = 0; i < this.content.length; i ++) {
+                        fn.call(scope, this.content[i], i, this);
+                    }
+    
+                },
+    
+    			concat : function () {
+    				var r = AP.concat.apply(this.content, arguments);
+    				return this.prototype.constructor.create(r);
+    			},
+    
+    			insert : function () {
+    				return this.push.apply(this, arguments);
+    			},
+    
+    			insertAt : function (i, o) {
+    				this.splice(i, 0, o);
+    				return this.get('length');
+    			},
+    
+    			push : function () {
+    
+    				var i;
+    
+    				for (i = 0; i < arguments.length; i ++) {
+    					this.insertAt(this.length, arguments[i]);
+    				}
+    
+    				return this.length;
+    			},
+    
+    			pop : function (i) {
+    				i = this.length - 1;
+    				return this.removeAt(i);
+    			},
+    
+    			remove : function (o, i) {
+    
+    				i = this.content.indexOf(o);
+    
+    				if (~i) {
+    					return this.removeAt(i);
+    				}
+    
+    				return false;
+    			},
+    
+    			removeAt : function (i, r) {
+    				r = AP.splice.call(this.content, i, 1);
+    				this.contentDidChange();
+    				return r[0];
+    			},
+    
+    			replace : function (a, b, i) {
+    
+    				i = this.content.indexOf(a);
+    
+    				if (~i) {
+    					return this.replaceAt(i, b);
+    				}
+    			},
+    
+    			replaceAt : function (i, o) {
+    				this.removeAt(i);
+    				return this.insertAt(i, o);
+    			},
+    
+    			splice : function (i, l) {
+    
+    				var rest,
+    					removed;
+    
+    				removed = [];
+    				rest = AP.splice.call(arguments, 2, arguments.length);
+    
+    				if (l > 0) {
+    
+    					j = i;
+    					l = i + l;
+    
+    					while (j < l) {
+    						removed.push(this.removeAt(i));
+    
+    						j ++;
+    					}
+    				}
+    
+    				for (j = 0; j < rest.length; j ++) {
+    					this.content.splice(i + j, 0, rest[j]);
+    					this.contentDidChange();
+    				}
+    
+    				return removed;
+    			},
+    
+    			shift : function () {
+    				return this.removeAt(0);
+    			},
+    
+    			unshift : function () {
+    				for (i = 0; i < arguments.length; i ++) {
+    					this.insertAt(0, this.arguments[i]);
+    				}
+    
+    				return this.length;
+    			},
+    
+    			reverse : function () {
+    
+                    if (!this.pristineContent) {
+                        this.pristineContent = this.content;
+                    }
+    
+    				r = AP.reverse.apply(this.content, arguments)
+    				this.contentDidChange();
+    				return this;
+    			},
+    
+                filter : function () {
+    
+                    if (!this.pristineContent) {
+                        this.pristineContent = this.content;
+                    }
+    
+                    this.content = AP.filter.apply(this.content, arguments)
+                    this.contentDidChange();
+                    return this.content;
+                },
+    
+    			sort : function () {
+    
+                    if (!this.pristineContent) {
+                        this.pristineContent = this.content;
+                        this.content = this.content.concat();
+                    }
+    
+    				AP.sort.apply(this.content, arguments)
+    				this.contentDidChange();
+    				return this.content;
+    			},
+    
+                reset : function () {
+                    this.content = this.pristineContent;
+                    this.pristineContent = null;
+                },
+    
+                willNotifyWatchers : function () {
+    
+                    this.getChanges = function () {
+    
+                        var i,
+                            changes,
+                            newItem,
+                            oldItem,
+                            newIndex,
+                            oldIndex,
+                            oldContent,
+                            newContent;
+    
+                        oldContent = this.oldContent;
+                        newContent = this.content;
+    
+                        changes = {
+                            added : [],
+                            removed : [],
+                            moved : []
+                        };
+    
+                        for (i = 0; i < Math.max(oldContent.length, newContent.length); i ++) {
+    
+                            newItem = newContent[i];
+                            oldItem = oldContent[i];
+    
+                            if (newItem === oldItem) {
+                                continue;
+                            }
+    
+                            if (oldItem) {
+    
+                                newIndex = newContent.indexOf(oldItem);
+    
+                                // Has it been moved?
+                                if (~newIndex) {
+                                    changes.moved.push({
+                                        oldIndex : i,
+                                        newIndex : newIndex,
+                                        item : oldItem
+                                    });
+                                }
+    
+                                // Nope, it's been removed
+                                else {
+                                    changes.removed.push({
+                                        index : i,
+                                        item : oldItem
+                                    });
+                                }
+                            }
+    
+                            else {
+    
+                                oldIndex = oldContent.indexOf(newItem);
+    
+                                // Has it been moved?
+                                if (~oldIndex) {
+                                    changes.moved.push({
+                                        oldIndex : oldIndex,
+                                        newIndex : i,
+                                        item : newItem
+                                    });
+                                }
+    
+                                // Nope, it's been added
+                                else {
+                                    changes.added.push({
+                                        index : i,
+                                        item : newItem
+                                    });
+                                }
+                            }
+                        }
+    
+                        this.getChanges = function () {
+                            return changes;
+                        };
+    
+                        return changes;
+    
+                    }.bind(this);
+                },
+    
+                didNotifyWatchers : function () {
+    
+                    this.oldContent = this.content.concat();
+    
+                    if (this.__meta) {
+                        this.__meta.changedProps = [];
+                        this.__meta.contentChanges = {};
+                    }
+    
+                },
+    
+                __resetChangedProps : function () {
+    
+                	var meta = this.__meta;
+    
+                    if (meta) {
+                        meta.changedProps = [];
+                        meta.addedItems = [];
+                        meta.removedItems = [];
+                    }
+                },
+    
+    			contentDidChange : function () {
+    				this.set('length', this.content.length);
+                    this.propertyDidChange('@each');
+    			}
+    
+    		});
+    
+    
+    		return Arr;
+    	}
+    
+    ).attach('$b');
+
+    $b('brink/core/Dictionary', 
+    
+        [
+        	'./Object'
+        ],
+    
+        function (Obj) {
+    
+    		return Obj.extend({
+    
+                keys : null,
+                values : null,
+    
+                // Not inherited
+                flatten : null,
+                merge : null,
+    
+                init : function () {
+    
+                    var i,
+                        a,
+                        keys,
+                        vals;
+    
+                    this.keys = [];
+                    this.values = [];
+    
+                    for (i = 0; i < arguments.length; i ++) {
+                        this.add.apply(this, [].concat(arguments[i]));
+                    }
+    
+                    this.addedItems = [];
+                    this.removedItems = [];
+    
+                    this.length = this.keys.length;
+                },
+    
+                get : function (key) {
+    
+                    var i;
+    
+                    i = typeof key !== 'string' ? this.keys.indexOf(key) : -1;
+    
+                    if (~i) {
+                        return this.values[i];
+                    }
+    
+                    return Obj.prototype.get.apply(this, arguments);
+                },
+    
+                set : function (key, val) {
+    
+                    var i;
+    
+                    i = typeof key !== 'string' ? this.keys.indexOf(key) : -1;
+    
+                    if (~i) {
+                        this.values[i] = val;
+                        return val;
+                    }
+    
+                    return Obj.prototype.set.apply(this, arguments);
+                },
+    
+                add : function (key, val) {
+                    this.keys.push(key);
+                    this.values[this.keys.length - 1] = val;
+                },
+    
+                remove : function () {
+    
+                    var i,
+                        j,
+                        removed;
+    
+                    removed = [];
+    
+                    for (j = 0; j < arguments.length; j ++) {
+    
+                        i = this.keys.indexOf(arguments[j]);
+    
+                        if (~i) {
+                            this.keys.splice(i, 1);
+                            removed.push(this.values.splice(i, 1)[0]);
+                        }
+                    }
+    
+                    return removed;
+                },
+    
+                has : function (o) {
+                    return !~this.keys.indexOf(o);
+                },
+    
+                indexOf : function () {
+                    return this.keys.indexOf(o);
+                },
+    
+                forEach : function (fn, scope) {
+    
+                    var i;
+    
+                    for (i = 0; i < this.keys.length; i ++) {
+                        fn.call(scope, this.values[i], this.keys[i], i, this);
+                    }
+    
+                    return this;
+                }
+    
+    		});
+    	}
     
     ).attach('$b');
 
@@ -3683,5 +3537,160 @@
     	}
     
     ).attach('$b');
+
+    $b('brink/node/build', 
+    
+        [],
+    
+        function () {
+    
+            'use strict';
+    
+            return function (opts) {
+    
+                var vm = require('vm'),
+                    fs = require('fs'),
+                    zlib = require('zlib'),
+                    path = require('path'),
+                    includer = require('includer'),
+                    wrench = require('wrench'),
+                    uglify = require('uglify-js'),
+                    minimatch = require('minimatch'),
+                    modules = [],
+                    src;
+    
+                console.log('');
+    
+                function replaceAnonymousDefine (id, src) {
+    
+                    // Replace the first instance of '$b(' or '$b.define('
+                    src = src.replace(/(\$b|\.define)?(\s)?(\()/, "$1$2$3'" + id + "', ");
+                    return src;
+                }
+    
+                function replaceModules (modules, src) {
+    
+                    return src.replace(/([t| ]+)(\/\*{{modules}}\*\/)([\s\S]+?)(\/\*{{\/modules}}\*\/)/, '$1' + JSON.stringify(modules, null, '    ').split('\n').join('\n$1'));
+                }
+    
+                function wrap (src) {
+                    return '\n    ' + src.replace(/\n/g, '\n    ') + '\n';
+                }
+    
+                function matches (path) {
+    
+                    var i;
+    
+                    for (i = 0; i < opts.include.length; i ++) {
+    
+                        if (!minimatch(path, opts.include[i])) {
+                            return false;
+                        }
+                    }
+    
+                    for (i = 0; i < opts.exclude.length; i ++) {
+    
+                        if (minimatch(path, opts.exclude[i])) {
+                            return false;
+                        }
+                    }
+    
+                    return true;
+                }
+    
+                opts = opts || {};
+    
+                opts.include = [].concat(opts.include || ['**']);
+                opts.exclude = [].concat(opts.exclude || []);
+                opts.modules = [].concat(opts.modules || []);
+    
+                if (opts.cwd) {
+                    process.chdir(opts.cwd);
+                }
+    
+                if (!opts.file && !opts.minifiedFile) {
+                    $b.error('No output file specified.');
+                }
+    
+                includer(
+    
+                    __dirname + '/../brink.js',
+    
+                    {
+                        wrap : wrap
+                    },
+    
+                    function (err, src) {
+    
+                        var cb,
+                            moduleSrc;
+    
+                        $b.configure(opts);
+    
+                        cb = function () {
+    
+                            var p,
+                                meta,
+                                metas,
+                                minifiedSrc;
+    
+                            metas = $b.require.metas();
+    
+                            for (p in metas) {
+    
+                                meta = metas[p];
+    
+                                if (meta.url) {
+    
+                                    if (matches(meta.id)) {
+    
+                                        modules.push(meta.id);
+    
+                                        moduleSrc = fs.readFileSync(meta.url, {encoding : 'utf8'});
+                                        moduleSrc = replaceAnonymousDefine(meta.id, moduleSrc);
+    
+                                        src += wrap(moduleSrc);
+                                    }
+                                }
+                            }
+    
+                            src = ';(function () {\n' + replaceModules(modules, src) + '\n})();';
+    
+                            if (opts.minifiedFile) {
+    
+                                minifiedSrc = uglify.minify(src, {fromString: true}).code;
+    
+                                wrench.mkdirSyncRecursive(path.dirname(opts.minifiedFile));
+    
+                                fs.writeFileSync(opts.minifiedFile, minifiedSrc);
+    
+                                console.log(fs.realpathSync(opts.minifiedFile) + ' written successfully.');
+                            }
+    
+                            if (opts.file) {
+                                wrench.mkdirSyncRecursive(path.dirname(opts.file));
+    
+                                fs.writeFileSync(opts.file, src);
+    
+                                console.log(fs.realpathSync(opts.file) + ' written successfully.');
+                            }
+    
+                            console.log('');
+                        };
+    
+                        if (opts.modules.length) {
+                            b.require(opts.modules, cb);
+                        }
+    
+                        else {
+                            cb();
+                        }
+                    }
+                );
+            };
+        }
+    
+    ).attach('$b');
+    
 
 })();

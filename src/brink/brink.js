@@ -2,13 +2,23 @@
 
 var $b,
 	_global,
-	include,
-	CONFIG;
+	CONFIG,
+	EMPTY_FN;
 
 _global = typeof window !== 'undefined' ? window : global;
 CONFIG = _global.Brink || _global.$b || {};
 
-include = _global.include ? _global.include : typeof require !== 'undefined' ? require : null;
+EMPTY_FN = function () {};
+
+if (typeof window === 'undefined') {
+	_global = global;
+	console.log('zzz');
+	_global.include = _global.include || require;
+}
+
+else {
+	_global = window;
+}
 
 $b = _global.$b = _global.Brink = function () {
 
@@ -37,6 +47,14 @@ include('./polyfills/Array.isArray.js');
 include('./polyfills/Function.bind.js');
 include('./polyfills/requestAnimationFrame.js');
 
+/*
+	These are empty functions for production builds,
+	only the dev version actually implements these, but
+	we don't want code that uses them to Error.
+*/
+
+$b.assert = $b.error = $b.required = EMPTY_FN;
+
 /********* RESOLVER *********/
 
 include('./resolvers/async');
@@ -58,7 +76,6 @@ $b.configure = function (o) {
 	return $b;
 };
 
-
 $b.init = function (deps, cb) {
 
 	$b.require(
@@ -67,14 +84,17 @@ $b.init = function (deps, cb) {
 		[
 			'brink/config',
 
+			'brink/dev/assert',
+			'brink/dev/error',
+			'brink/dev/required',
+
 			'brink/utils/alias',
-			'brink/utils/assert',
 			'brink/utils/bindTo',
 			'brink/utils/clone',
 			'brink/utils/computed',
 			'brink/utils/configure',
 			'brink/utils/defineProperty',
-			'brink/utils/error',
+
 			'brink/utils/expandProps',
 			'brink/utils/extend',
 			'brink/utils/flatten',
@@ -88,7 +108,6 @@ $b.init = function (deps, cb) {
 
 			'brink/utils/merge',
 			'brink/utils/next',
-			'brink/utils/required',
 
 			'brink/core/Object',
 			'brink/core/Class',
@@ -97,7 +116,8 @@ $b.init = function (deps, cb) {
 
 			'brink/core/InstanceManager',
 
-			'brink/react/ReactMixin',
+			'brink/browser/ajax',
+			'brink/browser/ReactMixin',
 
 			'brink/node/build'
 		]
@@ -109,7 +129,7 @@ $b.init = function (deps, cb) {
 			/********* ALIASES *********/
 
 			$b.merge($b, {
-				F : function () {}
+				F : EMPTY_FN
 			});
 
 			$b.merge($b.config, CONFIG);

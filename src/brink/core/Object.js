@@ -5,7 +5,6 @@ $b(
         './CoreObject',
         '../utils/bindTo',
         '../utils/clone',
-        '../utils/error',
         '../utils/merge',
         '../utils/flatten',
         '../utils/intersect',
@@ -19,7 +18,6 @@ $b(
         CoreObject,
         bindTo,
         clone,
-        error,
         merge,
         flatten,
         intersect,
@@ -198,7 +196,7 @@ $b(
 
                 if (this.__meta.pojoStyle) {
                     return function (val) {
-                        return error('Tried to write to a read-only property `' + p + '` on ' + this);
+                        return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
                     }.bind(this);
                 };
             },
@@ -207,7 +205,7 @@ $b(
 
                 if (this.__meta.pojoStyle) {
                     return function () {
-                        return error('Tried to read a write-only property `' + p + '` on ' + this);
+                        return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
                     }.bind(this);
                 };
             },
@@ -360,7 +358,7 @@ $b(
                     return this;
                 }
 
-                error('Tried to call set with unsupported arguments', arguments);
+                $b.error('Tried to call set with unsupported arguments', arguments);
             },
 
             watch : function (fn, props) {
@@ -394,7 +392,7 @@ $b(
                 }
 
                 else {
-                    error('InstanceManager does not exist, can\'t watch for property changes.');
+                    $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
             },
 
@@ -405,7 +403,7 @@ $b(
                 }
 
                 else {
-                    error('InstanceManager does not exist, can\'t watch for property changes.');
+                    $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
 
             },
@@ -417,7 +415,7 @@ $b(
                 }
 
                 else {
-                    error('InstanceManager does not exist, can\'t watch for property changes.');
+                    $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
             },
 

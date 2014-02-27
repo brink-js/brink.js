@@ -196,11 +196,7 @@
             // If in a CJS environment, resolve immediately.
             if (typeof window === 'undefined') {
                 origRequire(f);
-
-                setTimeout(function () {
-                    _invokeAnonymousDefine(m, f);
-                }, 0);
-
+                _invokeAnonymousDefine(m, f);
                 return 1;
             }
 

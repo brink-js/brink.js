@@ -1,12 +1,11 @@
 $b(
 
     [
-        './assert',
         './computed',
         './isBrinkInstance'
     ],
 
-    function (assert, computed, isBrinkInstance) {
+    function (computed, isBrinkInstance) {
 
         'use strict';
 
@@ -15,7 +14,7 @@ $b(
             var b,
                 val;
 
-            assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
+            $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
 
             val = a.get(prop);
 

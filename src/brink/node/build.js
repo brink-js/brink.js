@@ -1,10 +1,8 @@
 $b(
 
-    [
-        '../utils/error'
-    ],
+    [],
 
-    function (error) {
+    function () {
 
         'use strict';
 
@@ -71,7 +69,7 @@ $b(
             }
 
             if (!opts.file && !opts.minifiedFile) {
-                error('No output file specified.');
+                $b.error('No output file specified.');
             }
 
             includer(

@@ -1,11 +1,10 @@
 $b(
 
     [
-        './assert',
         './isObject'
     ],
 
-    function (assert, isObject) {
+    function (isObject) {
 
         'use strict';
 

@@ -1,17 +1,16 @@
 $b(
 
     [
-        './assert',
         './isBrinkInstance'
     ],
 
-    function (assert, isBrinkInstance) {
+    function (isBrinkInstance) {
 
         'use strict';
 
         return function (obj, prop, descriptor) {
 
-            assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
+            $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
 
             descriptor.configurable = true;
             descriptor.enumerable = descriptor.enumerable !== 'undefined' ? descriptor.enumerable : true;
