@@ -50,6 +50,7 @@ $b(
                 var i,
                     fn,
                     props,
+                    willNotify,
                     intersected;
 
                 for (i = 0; i < meta.watchers.fns.length; i ++) {
@@ -62,11 +63,19 @@ $b(
                         continue;
                     }
 
+                    willNotify = true;
                     this.watchLoop.once(fn, intersected);
                 }
 
-                this.watchLoop.once(instance.__resetChangedProps);
-                this.watchLoop.run();
+                if (willNotify) {
+                    instance.willNotifyWatchers();
+                }
+
+                while(this.watchLoop.run()) {
+
+                }
+
+                instance.didNotifyWatchers();
             },
 
             run : function () {

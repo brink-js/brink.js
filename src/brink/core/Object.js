@@ -234,12 +234,6 @@ $b(
                 }
             },
 
-            __resetChangedProps : function () {
-                if (this.__meta) {
-                    this.__meta.changedProps = [];
-                }
-            },
-
             propertyDidChange : function () {
 
                 var props;
@@ -424,6 +418,16 @@ $b(
 
                 else {
                     error('InstanceManager does not exist, can\'t watch for property changes.');
+                }
+            },
+
+            willNotifyWatchers : function () {
+
+            },
+
+            didNotifyWatchers : function () {
+                if (this.__meta) {
+                    this.__meta.changedProps = [];
                 }
             },
 
