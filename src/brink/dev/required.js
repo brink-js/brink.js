@@ -9,6 +9,10 @@ $b(
 
         return function () {
 
+            return function () {
+
+            };
+
         };
     }
 

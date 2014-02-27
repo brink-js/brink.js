@@ -119,6 +119,15 @@ $b.init = function (deps, cb) {
 			'brink/browser/ajax',
 			'brink/browser/ReactMixin',
 
+			'brink/data/attr',
+			'brink/data/belongsTo',
+			'brink/data/hasMany',
+			'brink/data/Adapter',
+			'brink/data/RESTAdapter',
+			'brink/data/Model',
+			'brink/data/Collection',
+			'brink/data/Store',
+
 			'brink/node/build'
 		]
         /*{{/modules}}*/

@@ -97,7 +97,7 @@ $b(
                     methods,
                     dependencies;
 
-                meta = this.__meta = this.__meta || {};
+                meta = this.__meta = clone(this.__meta || {});
 
                 methods = clone(meta.methods || []);
                 dependencies = clone(meta.dependencies || []);
