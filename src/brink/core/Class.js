@@ -38,7 +38,7 @@ $b(
 			xyz = true;
 		}) ? (/\bthis\._super\b/) : (/.*/);
 
-		Class = Obj.extend({
+		Class = Obj({
 
 			subscribe : function (name, handler, priority) {
 

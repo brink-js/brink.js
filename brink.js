@@ -1431,7 +1431,7 @@
                 val = a.get(prop);
     
                 if (!isDefined) {
-                    a.property(prop);
+                    a.descriptor(prop);
                 }
     
                 b = computed({
@@ -2114,7 +2114,7 @@
                     val.key = key;
     
                     val.bindTo = function (o, p) {
-                        o.descripor(p, bindTo(this, key, true));
+                        o.descriptor(p, bindTo(this, key, true));
                     }.bind(this);
     
                     val.didChange = function () {
@@ -2126,6 +2126,10 @@
                     }
     
                     return val;
+                },
+    
+                bindProperty : function (key, obj, key2) {
+                    return this.descriptor(key).bindTo(obj, key2);
                 },
     
                 get : function (key) {
@@ -2529,7 +2533,7 @@
     			xyz = true;
     		}) ? (/\bthis\._super\b/) : (/.*/);
     
-    		Class = Obj.extend({
+    		Class = Obj({
     
     			subscribe : function (name, handler, priority) {
     
@@ -2978,7 +2982,7 @@
     
         function (Obj) {
     
-    		return Obj.extend({
+    		return Obj({
     
                 keys : null,
                 values : null,
