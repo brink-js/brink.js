@@ -29,7 +29,7 @@ $b(
                 value : options.defaultValue,
 
                 get : function (key) {
-                    return this.__meta.data ? this.__meta.data[key] : null;
+                    return this.__data ? this.__data[key] : null;
                 },
 
                 set : function (val, key) {
@@ -39,9 +39,9 @@ $b(
                         dirtyAttrs,
                         dirtyIndex;
 
-                    data = this.__meta.data = this.__meta.data || {};
-                    this.__meta.originalData = this.__meta.originalData || clone(data);
-                    isDirty = this.__meta.originalData[key] !== val;
+                    data = this.__data = this.__data || {};
+                    this.__originalData = this.__originalData || clone(data);
+                    isDirty = this.__originalData[key] !== val;
 
                     dirtyAttrs = this.get('dirtyAttributes');
                     dirtyIndex = dirtyAttrs.indexOf(key);
@@ -60,7 +60,7 @@ $b(
                 },
 
                 serialize : function () {
-                    return this.__meta.data ? this.__meta.data[attr.key] : null;
+                    return this.__data ? this.__data[attr.key] : null;
                 },
 
                 deserialize : function (val) {

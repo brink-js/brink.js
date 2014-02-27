@@ -100,6 +100,7 @@ $b.init = function (deps, cb) {
 			'brink/utils/flatten',
 			'brink/utils/inject',
 			'brink/utils/intersect',
+			'brink/utils/promise',
 
 			'brink/utils/isBrinkInstance',
 			'brink/utils/isBrinkObject',
@@ -122,11 +123,12 @@ $b.init = function (deps, cb) {
 			'brink/data/attr',
 			'brink/data/belongsTo',
 			'brink/data/hasMany',
-			'brink/data/Adapter',
-			'brink/data/RESTAdapter',
+			'brink/data/store',
+
 			'brink/data/Model',
 			'brink/data/Collection',
-			'brink/data/Store',
+			'brink/data/Adapter',
+			'brink/data/RESTAdapter',
 
 			'brink/node/build'
 		]

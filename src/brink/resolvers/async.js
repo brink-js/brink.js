@@ -96,6 +96,12 @@
                         attachPath : this.attachPath
                     };
 
+                    module = this.module.exports || this.module;
+
+                    module.toString = function () {
+                        return id;
+                    };
+
                     if (this.attachTo) {
                         idPart = this.id.split('/').pop();
 

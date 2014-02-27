@@ -103,7 +103,7 @@ $b(
 
                 var meta = this.__meta;
 
-                val = this._super.apply(this, arguments);
+                val = Class.prototype.descriptor.apply(this, arguments);
 
                 if (val.isAttribute) {
                     meta.attributes.push(p);
@@ -123,7 +123,7 @@ $b(
                 meta.atttributes = clone(meta.attributes || []);
                 meta.relationships = clone(meta.relationships || []);
 
-                this._super();
+                Class.prototype.__parsePrototype.apply(this, arguments);
             },
 
             getAttributes : function () {

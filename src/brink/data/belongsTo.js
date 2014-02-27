@@ -22,7 +22,7 @@ $b(
                 value : options.defaultValue,
 
                 get : function () {
-                    return this.__meta.data ? this.__meta.data[attr.key] : null;
+                    return this.__data ? this.__data[attr.key] : null;
                 },
 
                 set : function (val) {
@@ -38,9 +38,9 @@ $b(
 
                     factory = attr.factory = attr.factory || this.store.getFactory(factoryName);
 
-                    data = this.__meta.data = this.__meta.data || {};
-                    this.__meta.originalData = this.__meta.originalData || clone(data);
-                    isDirty = this.__meta.originalData[key] !== val;
+                    data = this.__data = this.__data || {};
+                    this.__originalData = this.__originalData || clone(data);
+                    isDirty = this.__originalData[key] !== val;
 
                     dirtyAttrs = this.get('dirtyAttributes');
                     dirtyIndex = dirtyAttrs.indexOf(key);
@@ -71,7 +71,7 @@ $b(
                     var val,
                         data;
 
-                    data = this.__meta.data = this.__meta.data || {};
+                    data = this.__data = this.__data || {};
 
                     val = data ? data[attr.key] : null;
 

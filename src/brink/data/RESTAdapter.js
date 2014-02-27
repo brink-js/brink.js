@@ -101,10 +101,6 @@ $b(
                 );
             },
 
-            saveRecord : function () {
-
-            },
-
             createRecord : function (record) {
                 return this.httpPost(
                     this.getURL(record.constructor),
