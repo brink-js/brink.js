@@ -19,7 +19,7 @@ $b(
             val = a.get(prop);
 
             if (!isDefined) {
-                a.property(prop);
+                a.descriptor(prop);
             }
 
             b = computed({

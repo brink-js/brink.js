@@ -1881,7 +1881,7 @@
     
                     else {
                         for (p in o) {
-                            this.property(p, o[p]);
+                            this.descripor(p, o[p]);
                         }
                     }
     
@@ -1938,14 +1938,14 @@
     
                         else if (this.hasOwnProperty(p)) {
     
-                            if (p.indexOf('__') !== 0) {
+                            if (p !== '__meta') {
     
                                 if (v && v.__isRequire) {
                                     dependencies.push(p);
                                 }
     
                                 else {
-                                    this.property.call(this, p, v);
+                                    this.descriptor.call(this, p, v);
                                 }
                             }
                         }
@@ -2062,7 +2062,7 @@
                     }
                 },
     
-                serialize : function () {
+                getProperties : function () {
     
                     var i,
                         p,
@@ -2093,7 +2093,7 @@
                     return this.serialize.apply(this, this.__meta.changedProps);
                 },
     
-                property : function (key, val) {
+                descriptor : function (key, val) {
     
                     if (typeof this.__meta.properties[key] !== 'undefined') {
                         if (typeof val === 'undefined') {
@@ -2111,9 +2111,10 @@
                     }
     
                     val = this.__meta.properties[key] = defineProperty(this, key, val);
+                    val.key = key;
     
                     val.bindTo = function (o, p) {
-                        o.property(p, bindTo(this, key, true));
+                        o.descripor(p, bindTo(this, key, true));
                     }.bind(this);
     
                     val.didChange = function () {

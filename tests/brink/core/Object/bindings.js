@@ -26,7 +26,7 @@ describe('bindings', function () {
         done();
     });
 
-    it('should two-way data bind between $b.Object instances when using property().bindTo()', function (done) {
+    it('should two-way data bind between $b.Object instances when using bindProperty()', function (done) {
 
         var a,
             b;
@@ -39,7 +39,7 @@ describe('bindings', function () {
             test : 2
         });
 
-        a.property('test').bindTo(b, 'test');
+        a.bindProperty('test', b, 'test');
 
         expect(a.test).to.equal(1);
         expect(b.test).to.equal(1);
