@@ -1,61 +1,31 @@
 $b(
 
     [
-    	'./Object',
-    	'../utils/flatten',
-    	'../utils/merge'
+    	'./Object'
     ],
 
-    function (Obj, flatten, merge) {
+    function (Obj) {
 
     	var Arr,
-    		AP,
-    		METHODS;
+    		AP;
 
     	AP = Array.prototype;
 
-    	(function () {
+		Arr = Obj({
 
-    		var p;
+            content : null,
+            length : 0,
 
-    		function alias (p) {
+            oldContent : null,
+            pristineContent : null,
 
-    			return function (r, l) {
-    				r = AP[p].apply(this.content, arguments);
-    				this.length = this.content.length;
-    				return r;
-    			}
-    		}
+			init : function (content) {
 
-    		for (p in AP) {
-    			if (AP.hasOwnProperty(p) && typeof AP[p] === 'function') {
-    				METHODS[p] = alias(p);
-    			}
-    		}
+				this.set('content', content);
+                this.set('oldContent', content.concat());
+				this.set('length', this.content.length);
 
-    	})();
-
-		Arr = Obj.extend(merge(METHODS, {
-
-			content : null,
-			addedItems : null,
-			removedItems : null,
-
-			__notifyPropertyListeners : function () {
-				Obj.prototype.__notifyPropertyListeners.apply(this, arguments);
-
-				Obj.watchLoop.once(function () {
-					this.addedItems = [];
-					this.removedItems = [];
-				}.bind(this));
-			},
-
-			init : function (a) {
-				this.content = a;
-				this.__meta.cache = this.content.concat();
-				this.__meta.addedItems = [];
-				this.__meta.removedItems = [];
-				this.length = this.content.length;
+                this.watch('content', this.contentDidChange);
 			},
 
 			get : function (i) {
@@ -77,24 +47,18 @@ $b(
 				return val;
 			},
 
+            findBy : function (q, v) {
+
+                var i;
+
+                for (i = 0; i < this.content.length; i ++) {
+
+                }
+            },
+
 			concat : function () {
-				var r = AP.filter.apply(this.content, arguments);
+				var r = AP.concat.apply(this.content, arguments);
 				return this.prototype.constructor.create(r);
-			},
-
-			filter : function () {
-				var r = AP.filter.apply(this.content, arguments);
-				return this.prototype.constructor.create(r);
-			},
-
-			flatten : function () {
-				flatten(this.content);
-				this.contentDidChange(null, 'reorder');
-			},
-
-			merge : function (o) {
-				merge(this.content, o);
-				this.contentDidChange(null, 'reorder');
 			},
 
 			insert : function () {
@@ -103,7 +67,7 @@ $b(
 
 			insertAt : function (i, o) {
 				this.splice(i, 0, o);
-				return this.length;
+				return this.get('length');
 			},
 
 			push : function () {
@@ -135,7 +99,7 @@ $b(
 
 			removeAt : function (i, r) {
 				r = AP.splice.call(this.content, i, 1);
-				this.contentDidChange(i, 'removed');
+				this.contentDidChange();
 				return r[0];
 			},
 
@@ -175,7 +139,7 @@ $b(
 
 				for (j = 0; j < rest.length; j ++) {
 					this.content.splice(i + j, 0, rest[j]);
-					this.contentDidChange(i + j, 'added');
+					this.contentDidChange();
 				}
 
 				return removed;
@@ -194,16 +158,139 @@ $b(
 			},
 
 			reverse : function () {
+
+                if (!this.pristineContent) {
+                    this.pristineContent = this.content;
+                }
+
 				r = AP.reverse.apply(this.content, arguments)
-				this.contentDidChange(null, 'reorder');
+				this.contentDidChange();
 				return this;
 			},
 
+            filter : function () {
+
+                if (!this.pristineContent) {
+                    this.pristineContent = this.content;
+                }
+
+                this.content = AP.filter.apply(this.content, arguments)
+                this.contentDidChange();
+                return this.content;
+            },
+
 			sort : function () {
-				r = AP.sort.apply(this.content, arguments)
-				this.contentDidChange(null, 'reorder');
-				return this;
+
+                if (!this.pristineContent) {
+                    this.pristineContent = this.content;
+                    this.content = this.content.concat();
+                }
+
+				AP.sort.apply(this.content, arguments)
+				this.contentDidChange();
+				return this.content;
 			},
+
+            reset : function () {
+                this.content = this.pristineContent;
+                this.pristineContent = null;
+            },
+
+            willNotifyWatchers : function () {
+
+                this.getChanges = function () {
+
+                    var i,
+                        changes,
+                        newItem,
+                        oldItem,
+                        newIndex,
+                        oldIndex,
+                        oldContent,
+                        newContent;
+
+                    oldContent = this.oldContent;
+                    newContent = this.content;
+
+                    changes = {
+                        added : [],
+                        removed : [],
+                        moved : []
+                    };
+
+                    for (i = 0; i < Math.max(oldContent.length, newContent.length); i ++) {
+
+                        newItem = newContent[i];
+                        oldItem = oldContent[i];
+
+                        if (newItem === oldItem) {
+                            continue;
+                        }
+
+                        if (oldItem) {
+
+                            newIndex = newContent.indexOf(oldItem);
+
+                            // Has it been moved?
+                            if (~newIndex) {
+                                changes.moved.push({
+                                    oldIndex : i,
+                                    newIndex : newIndex,
+                                    item : oldItem
+                                });
+                            }
+
+                            // Nope, it's been removed
+                            else {
+                                changes.removed.push({
+                                    index : i,
+                                    item : oldItem
+                                });
+                            }
+                        }
+
+                        else {
+
+                            oldIndex = oldContent.indexOf(newItem);
+
+                            // Has it been moved?
+                            if (~oldIndex) {
+                                changes.moved.push({
+                                    oldIndex : oldIndex,
+                                    newIndex : i,
+                                    item : newItem
+                                });
+                            }
+
+                            // Nope, it's been added
+                            else {
+                                changes.added.push({
+                                    index : i,
+                                    item : newItem
+                                });
+                            }
+                        }
+                    }
+
+                    this.getChanges = function () {
+                        return changes;
+                    };
+
+                    return changes;
+
+                }.bind(this);
+            },
+
+            didNotifyWatchers : function () {
+
+                this.oldContent = this.content.concat();
+
+                if (this.__meta) {
+                    this.__meta.changedProps = [];
+                    this.__meta.contentChanges = {};
+                }
+
+            },
 
             __resetChangedProps : function () {
 
@@ -216,49 +303,12 @@ $b(
                 }
             },
 
-            getChanges : function () {
-
-            	var o,
-            		meta;
-
-            	o = {};
-            	meta = this.__meta;
-
-            	if (meta) {
-            		o = {
-            			added : meta.addedItems,
-            			removed : meta.removedItems
-            		};
-            	}
-
-            	return o;
-            },
-
-			contentDidChange : function (i, action) {
-
-				var meta = this.__meta;
-
-				if (action === 'reorder' || meta.invalid === true) {
-					merge(meta.addedItems, this.content.concat());
-					merge(meta.removedItems, meta.cache.concat());
-					this.__invalid = true;
-				}
-
-				else if (action === 'added') {
-					meta.addedItems.push(this.content[i]);
-				}
-
-				else if (action === 'removed') {
-					meta.removedItems.push(meta.cache[i]);
-				}
-
-				this.propertyDidChange('@each');
-
-				this.length = this.content.length;
-				meta.cache = this.content.concat();
+			contentDidChange : function () {
+				this.set('length', this.content.length);
+                this.propertyDidChange('@each');
 			}
 
-		}));
+		});
 
 
 		return Arr;

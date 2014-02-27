@@ -46,8 +46,7 @@ describe('mutations', function () {
         a = $b.Array.create([1,2,3]);
 
         a.watch('@each', function () {
-
-            expect(a.getChanges().removed[0]).to.equal(1);
+            expect(a.getChanges().removed[0].item).to.equal(1);
             done();
         });
 
