@@ -55,7 +55,7 @@ $b(
 			}
 
 			Obj.prototype = proto;
-			extend(Obj, this, proto.classProps || {});
+			extend(Obj, this, proto.statics || {});
 
 			Obj.prototype.constructor = Obj;
 
