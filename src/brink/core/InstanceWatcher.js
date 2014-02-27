@@ -68,14 +68,14 @@ $b(
                 }
 
                 if (willNotify) {
-                    instance.willNotifyWatchers();
+                    instance.willNotifyWatchers.call(instance);
                 }
 
                 while(this.watchLoop.run()) {
 
                 }
 
-                instance.didNotifyWatchers();
+                instance.didNotifyWatchers.call(instance);
             },
 
             run : function () {

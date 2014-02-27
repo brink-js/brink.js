@@ -39,9 +39,14 @@ $b(
                     d,
                     meta;
 
-                this.__meta = meta = clone(this.__meta || {});
-                meta.values = {};
+                meta = this.__meta = this.__meta ? clone(this.__meta) : null;
 
+                if (!meta) {
+                    this.__parsePrototype.call(this);
+                    meta = this.__meta;
+                }
+
+                meta.values = {};
                 meta.watchers = {
                     fns : [],
                     props : []
@@ -55,15 +60,8 @@ $b(
                     o = {};
                 }
 
-                if (!meta.isExtended) {
-                    merge(this, o);
-                    this.__parsePrototype();
-                }
-
-                else {
-                    for (p in o) {
-                        this.descripor(p, o[p]);
-                    }
+                for (p in o) {
+                    this.descriptor(p, o[p]);
                 }
 
                 for (i = 0; i < meta.methods.length; i ++) {
@@ -93,27 +91,24 @@ $b(
 
                 var p,
                     v,
-                    meta,
-                    methods,
-                    dependencies;
+                    meta;
 
                 meta = this.__meta = clone(this.__meta || {});
-
-                methods = clone(meta.methods || []);
-                dependencies = clone(meta.dependencies || []);
 
                 meta.getters = clone(meta.getters || {});
                 meta.setters = clone(meta.setters || {});
 
                 meta.properties = clone(meta.properties || {});
+                meta.methods = clone(meta.methods || []);
+                meta.dependencies = clone(meta.dependencies || []);
 
                 for (p in this) {
 
                     v = this[p];
 
                     if (isFunction(v)) {
-                        if (p !== 'constructor') {
-                            methods.push(p);
+                        if (p !== 'constructor' && !~meta.methods.indexOf(p)) {
+                           meta.methods.push(p);
                         }
                     }
 
@@ -121,8 +116,8 @@ $b(
 
                         if (p !== '__meta') {
 
-                            if (v && v.__isRequire) {
-                                dependencies.push(p);
+                            if (v && v.__isRequire && ~!meta.dependencies.indexOf(p)) {
+                                meta.dependencies.push(p);
                             }
 
                             else {
@@ -132,8 +127,6 @@ $b(
                     }
                 }
 
-                meta.methods = methods;
-                meta.dependencies = dependencies;
             },
 
             __defineProperty : function (p) {
@@ -449,7 +442,8 @@ $b(
 
         Obj.extend = function () {
 
-            var proto,
+            var meta,
+                proto,
                 SubObj;
 
             SubObj = CoreObject.extend.apply(this, arguments);

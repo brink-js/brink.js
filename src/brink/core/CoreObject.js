@@ -14,28 +14,26 @@ $b(
 
 		CoreObject = function () {};
 
-		CoreObject.extend = function () {
+		CoreObject.extend = function (props) {
 
-			var A,
+			var C,
 				i,
-				o,
-				props,
 				proto;
 
 			if (arguments.length > 1) {
 
 				i = 0;
+				C = this;
 
 				while (i < arguments.length - 1) {
-					o = arguments[i];
-					A = A || (isBrinkObject(o) ? o : this);
-					A = A.extend(arguments[++ i]);
+					C = C.extend(arguments[i]);
+					i ++;
 				}
 
-				return A;
+				return C;
 			}
 
-			proto = this.buildPrototype.apply(this, arguments);
+			proto = this.buildPrototype.call(this, props);
 
 			function Obj (callInit) {
 
@@ -101,7 +99,7 @@ $b(
 			init = instance.__init || instance.init;
 
 			if (init) {
-				init.apply(instance, args);
+				return init.apply(instance, args) || instance;
 			}
 
 			return instance;

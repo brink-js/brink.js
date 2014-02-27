@@ -26,16 +26,16 @@ describe('mutations', function () {
 
     it('should call watchers on addition of items', function (done) {
 
-        var c;
+        var a;
 
-        c = $b.Array.create([1,2,3]);
+        a = $b.Array.create([1,2,3]);
 
-        c.watch(function () {
-            expect(c.getChanges().added.length).to.equal(3);
+        a.watch(function () {
+            expect(a.getChanges().added.length).to.equal(3);
             done();
         });
 
-        c.push(4,5,6);
+        a.push(4,5,6);
 
     });
 
