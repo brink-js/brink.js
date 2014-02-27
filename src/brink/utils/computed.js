@@ -10,7 +10,7 @@ $b(
 
         'use strict';
 
-        return function (o, v) {
+        return function (o) {
 
             if (isFunction(o)) {
                 o = {
