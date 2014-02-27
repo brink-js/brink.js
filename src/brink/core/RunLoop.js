@@ -105,7 +105,7 @@ $b(
                     scope;
 
                 if (!this.__once.length && !this.__loop.length) {
-                    return;
+                    return false;
                 }
 
                 for (i = 0; i < this.__once.length; i ++) {
@@ -128,6 +128,8 @@ $b(
 
                 this.__once = [];
                 this.__onceArgs = [];
+
+                return true;
             },
 
             once : function (fn, args, scope) {
