@@ -13,7 +13,7 @@ $b.configure({
 $b.build({
     cwd : __dirname,
     file : '../brink.js',
-    exclude : ['brink/browser/**'],
+    exclude : [],
     minify : false
 });
 

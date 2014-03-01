@@ -1037,6 +1037,8 @@
                 "brink/core/RunLoop",
                 "brink/core/InstanceWatcher",
                 "brink/core/InstanceManager",
+                "brink/browser/ajax",
+                "brink/browser/ReactMixin",
                 "brink/data/attr",
                 "brink/data/Adapter",
                 "brink/data/RESTAdapter",
@@ -5798,6 +5800,53 @@
     	}
     
     ).attach('$b');
+
+    $b('brink/browser/ajax', 
+    
+        [],
+    
+        function () {
+    
+            'use strict';
+    
+            if (typeof window !== 'undefined') {
+    
+                include('../../node_modules/component-ajax/index.js');
+    
+                return ajax;
+            }
+    
+            return $b.F;
+        }
+    
+    ).attach('$b');
+
+    $b('brink/browser/ReactMixin', 
+    
+        function () {
+    
+            'use strict';
+    
+            return {
+    
+                __propsChanged : function () {
+                    this.setProps(this.__props.getChangedProperties());
+                },
+    
+                componentWillMount : function () {
+                    this.__props = this.props;
+                    this.props = this.__props.getProperties();
+                    this.__props.watch(this.__propsChanged);
+                },
+    
+                componentWillUnmount : function () {
+                    this.__props.unwatch(this.__propsChanged);
+                }
+            };
+        }
+    
+    ).attach('$b');
+    
 
     $b('brink/data/attr', 
     
