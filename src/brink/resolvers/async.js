@@ -4,7 +4,10 @@
 
     var _global,
         origRequire,
-        resolver;
+        resolver,
+        moduleIndex;
+
+    moduleIndex = 0;
 
     _global = typeof window !== 'undefined' ? window : global;
     origRequire = typeof require !== 'undefined' ? require : null;
@@ -93,7 +96,8 @@
                         module : this.module,
                         id : this.id,
                         url : this.url,
-                        attachPath : this.attachPath
+                        attachPath : this.attachPath,
+                        order : moduleIndex ++
                     };
 
                     module = this.module.exports || this.module;
@@ -732,7 +736,19 @@
         };
 
         require.metas = function () {
-            return _metas;
+
+            var p,
+                metasArray;
+
+            metasArray = [];
+
+            for (p in _metas) {
+                metasArray.push(_metas[p]);
+            }
+
+            return metasArray.sort(function (a, b) {
+                return a.order - b.order;
+            });
         };
 
         /**
