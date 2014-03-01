@@ -12,7 +12,6 @@ EMPTY_FN = function () {};
 
 if (typeof window === 'undefined') {
 	_global = global;
-	console.log('zzz');
 	_global.include = _global.include || require;
 }
 
