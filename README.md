@@ -1,16 +1,17 @@
 # brink.js
-#####A highly-modular and extendable M*C framework.
+#####A highly-modular and extendable MVC framework.
 
 - Solves low-level problems with as little magic and opinion as possible.
-- Is NOT a monolothic framework. Maintaining a large code base is just not practical.
-- Is less than 10kb minified and gzipped.
 - Focuses on extensibiity and granularity. Use as much or as little of it as you want.
-- Plays nice with other frameworks. Easily use side-by-side with ReactJS or Angular.
+- No external dependencies on other libraries or frameworks.
+- Plays nice with other libraries/frameworks. Easily use side-by-side with ReactJS or Angular.
+- < 20kb (minified and gzipped)
 
 ---------------------
 
 #### Core Features
 
+- Inheritance
 - Two-way data binding
 - Computed properties
 - Works in the browser and node.js
@@ -61,7 +62,7 @@ var a,
 a = $b.Object.create();
 b = $b.Object.create();
 
-a.property('color').bindTo(b, 'color');
+a.bindToProperty('color', b, 'color');
 
 a.color = 'green';
 
@@ -79,11 +80,11 @@ var a;
 
 a = $b.Object.create({
     color : 'green',
-    
+
     init : function () {
         this.watch('color', this.colorChanged);
     },
-    
+
     colorChanged : function () {
         this.color; // red
     }
@@ -99,9 +100,9 @@ Data binding works by using `Object.defineProperty()` in browsers that support i
 
 What this means though is that for browers that don't support `Object.defineProperty()` bindings are not propagated instantly.
 
-To support instant bindings in <= IE8, you can call `get()` to get properties and `set()` to set them. 
+To support instant bindings in <= IE8, you can call `get()` to get properties and `set()` to set them.
 
-Usually though, you don't need instantaneous bindings and you can get and set properties like any normal object in all browsers. Brink will make sure your changes get propagated on the next run looop.
+Usually though, you don't need instantaneous bindings and you can get and set properties like any normal object in all browsers. Brink will make sure your changes get propagated on the next run loop.
 
 Watchers are not invoked immediately when a property changes, they are called every run loop if their watched properties have changed. This means that even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
@@ -109,7 +110,7 @@ Watchers are not invoked immediately when a property changes, they are called ev
 
 Computed properties are properties that are dependent on other values.
 
-While you could setup watcher functions to watch for property changes, then update 
+While you could setup watcher functions to watch for property changes, then update
 the dependent property, using computed properties is far less cumbersome:
 
 ```javascript
@@ -121,7 +122,7 @@ A = $b.Object({
 
     prop1 : 1,
     prop2 : 2,
-    
+
     sum : $b.computed({
 
         watch : ['prop1', 'prop2'],
@@ -153,7 +154,7 @@ A = $b.Object({
 
     firstName : '',
     lastName : '',
-    
+
     fullName : $b.computed({
 
         watch : ['firstName', 'lastName'],
@@ -161,7 +162,7 @@ A = $b.Object({
         get : function () {
             return [this.firstName, this.lastName].join(' ');
         },
-        
+
         set : function (val) {
             val = val.split(' ');
             this.firstName = val[0];
@@ -193,7 +194,7 @@ You can bind properties to computed properties.
 
     $ npm install
     $ node tasks/build.js
-        
+
 #### Running Unit Tests
 
     $ npm install
