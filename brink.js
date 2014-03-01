@@ -1710,7 +1710,7 @@
     
 
     // https://github.com/tildeio/rsvp.js/
-    ('brink/utils/promise', function(global) {
+    (function(global) {
     
     var define, requireModule, require, requirejs;
     
@@ -3896,7 +3896,7 @@
     
     }($b));
     
-    $b(
+    $b('brink/utils/promise', 
     
         [],
     
@@ -7172,7 +7172,7 @@
                 function replaceAnonymousDefine (id, src) {
     
                     // Replace the first instance of '$b(' or '$b.define('
-                    src = src.replace(/(\$b|\.define)?(\s)?(\()/, "$1$2$3'" + id + "', ");
+                    src = src.replace(/(\$b|\.define)(\s)?(\()/, "$1$2$3'" + id + "', ");
                     return src;
                 }
     

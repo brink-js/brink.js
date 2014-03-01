@@ -24,7 +24,7 @@ $b(
             function replaceAnonymousDefine (id, src) {
 
                 // Replace the first instance of '$b(' or '$b.define('
-                src = src.replace(/(\$b|\.define)?(\s)?(\()/, "$1$2$3'" + id + "', ");
+                src = src.replace(/(\$b|\.define)(\s)?(\()/, "$1$2$3'" + id + "', ");
                 return src;
             }
 
