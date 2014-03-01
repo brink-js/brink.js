@@ -1028,6 +1028,7 @@
                 "brink/utils/isBrinkObject",
                 "brink/utils/next",
                 "brink/core/CoreObject",
+                "brink/utils/bindFunction",
                 "brink/core/Object",
                 "brink/core/NotificationManager",
                 "brink/core/Class",
@@ -3969,7 +3970,7 @@
     
     					if (callInit) {
     						fn = this.__init || this.init || this.constructor;
-    						fn.apply(this, arguments);
+    						fn.call(this);
     					}
     
     					return this;
@@ -4008,25 +4009,24 @@
     		CoreObject.create = function (o) {
     
     			var p,
-    				args,
     				init,
     				instance;
     
-    			args = arguments;
+                var start = (+new Date());
     
-    			if (typeof o === 'function') {
-    				instance = new this(true);
-    				o.call(instance);
-    				args = [];
-    			}
-    
-    			instance = instance || new this(false);
+    			instance = new this(false);
     
     			init = instance.__init || instance.init;
     
     			if (init) {
-    				return init.apply(instance, args) || instance;
+    				instance = init.apply(instance, arguments) || instance;
     			}
+    
+                var time = (+new Date()) - start;
+    
+                if (time > 1) {
+                	//console.log(time, instance);
+                }
     
     			return instance;
     		};
@@ -4037,11 +4037,31 @@
     ).attach('$b');
     
 
+    $b('brink/utils/bindFunction', 
+    
+        [],
+    
+        function () {
+    
+            'use strict';
+    
+            // Faster than Function.prototype.bind in V8, not sure about others.
+            return function (fn, scope) {
+                return function () {
+                    return fn.apply(scope, arguments);
+                }
+            };
+        }
+    
+    ).attach('$b');
+    
+
     $b('brink/core/Object', 
     
         [
             '../config',
             './CoreObject',
+            '../utils/bindFunction',
             '../utils/bindTo',
             '../utils/clone',
             '../utils/merge',
@@ -4055,6 +4075,7 @@
         function (
             config,
             CoreObject,
+            bindFunction,
             bindTo,
             clone,
             merge,
@@ -4078,46 +4099,33 @@
                         d,
                         meta;
     
-                    meta = this.__meta = this.__meta ? clone(this.__meta) : null;
-    
-                    if (!meta) {
+                    if (!this.__meta) {
                         this.__parsePrototype.call(this);
                         meta = this.__meta;
                     }
     
-                    meta.values = {};
-                    meta.watchers = {
-                        fns : [],
-                        props : []
-                    };
-    
-                    if (typeof o === 'object' && !Array.isArray(o)) {
-                        o = clone(o);
-                    }
-    
                     else {
-                        o = {};
+                        meta = this.__buildMeta();
                     }
     
-                    for (p in o) {
-                        this.descriptor(p, o[p]);
-                    }
+                    if (o && typeof o === 'object' && !Array.isArray(o)) {
     
-                    for (i = 0; i < meta.methods.length; i ++) {
-                        p = meta.methods[i];
-                        this[p] = this[p].bind(this);
+                        o = clone(o);
+    
+                        for (p in o) {
+                            this.descriptor(p, o[p]);
+                        }
                     }
     
                     for (p in meta.properties) {
-                        this.__defineProperty(p);
+                        this.__defineProperty.call(this, p, meta.properties[p]);
                     }
     
-                    if (isFunction(this.init)) {
+                    if (this.init) {
                         this.init.apply(this, arguments);
                     }
     
                     meta.isInitialized = true;
-                    meta.isExtended = true;
     
                     if ($b.instanceManager) {
                         $b.instanceManager.add(this, meta);
@@ -4126,11 +4134,9 @@
                     return this;
                 },
     
-                __parsePrototype : function () {
+                __buildMeta : function () {
     
-                    var p,
-                        v,
-                        meta;
+                    var meta;
     
                     meta = this.__meta = clone(this.__meta || {});
     
@@ -4140,6 +4146,23 @@
                     meta.properties = clone(meta.properties || {});
                     meta.methods = clone(meta.methods || []);
                     meta.dependencies = clone(meta.dependencies || []);
+    
+                    meta.values = {};
+                    meta.watchers = {
+                        fns : [],
+                        props : []
+                    };
+    
+                    return meta;
+                },
+    
+                __parsePrototype : function () {
+    
+                    var p,
+                        v,
+                        meta;
+    
+                    meta = this.__buildMeta();
     
                     for (p in this) {
     
@@ -4168,23 +4191,19 @@
     
                 },
     
-                __defineProperty : function (p) {
-    
-                    var d;
-    
-                    d = this.__meta.properties[p];
+                __defineProperty : function (p, d) {
     
                     if (!config.DIRTY_CHECK) {
     
                         d = clone(d);
     
                         if (d.get) {
-                            d.get = d.get.bind(this);
+                            d.get = bindFunction(d.get, this);
     
                         }
     
                         if (d.set) {
-                            d.set = d.set.bind(this);
+                            d.set = bindFunction(d.set, this);
                         }
     
                        // Modern browsers, IE9 +
@@ -4227,18 +4246,18 @@
                 __readOnly : function (p) {
     
                     if (this.__meta.pojoStyle) {
-                        return function (val) {
+                        return bindFunction(function (val) {
                             return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
-                        }.bind(this);
+                        }, this);
                     };
                 },
     
                 __writeOnly : function (p) {
     
                     if (this.__meta.pojoStyle) {
-                        return function () {
+                        return bindFunction(function () {
                             return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
-                        }.bind(this);
+                        }, this);
                     };
                 },
     
@@ -4326,16 +4345,16 @@
                     val = this.__meta.properties[key] = defineProperty(this, key, val);
                     val.key = key;
     
-                    val.bindTo = function (o, p) {
+                    val.bindTo = bindFunction(function (o, p) {
                         o.descriptor(p, bindTo(this, key, true));
-                    }.bind(this);
+                    }, this);
     
-                    val.didChange = function () {
+                    val.didChange = bindFunction(function () {
                         this.propertyDidChange(key);
-                    }.bind(this);
+                    }, this);
     
                     if (this.__meta.isInitialized) {
-                        this.__defineProperty(key);
+                        this.__defineProperty(key, val);
                     }
     
                     return val;
@@ -4489,13 +4508,12 @@
                 proto = SubObj.prototype;
     
                 proto.__parsePrototype.call(proto);
-                proto.__meta.isExtended = true;
     
                 return SubObj;
             };
     
             Obj.define = function () {
-                $b.define(this.prototype.__dependencies, this.resolveDependencies.bind(this));
+                $b.define(this.prototype.__dependencies, bindFunction(this.resolveDependencies.bind, this));
                 return this;
             };
     
@@ -4523,10 +4541,10 @@
                     cb(this);
                 }
     
-                $b.require(this.prototype.__dependencies, function () {
+                $b.require(this.prototype.__dependencies, bindFunction(function () {
                     this.resolveDependencies.call(this);
                     cb(this);
-                }.bind(this));
+                }, this));
     
                 return this;
             };
@@ -4710,11 +4728,14 @@
     $b('brink/core/Class', 
     
         [
+        	'../config',
         	'./Object',
-        	'./NotificationManager'
+        	'./NotificationManager',
+        	'../utils/bindFunction',
+        	'../utils/clone'
         ],
     
-        function (Obj, NotificationManager) {
+        function (config, Obj, NotificationManager, bindFunction, clone) {
     
             'use strict';
     
@@ -4722,8 +4743,10 @@
             	superfy,
             	doesCallSuper;
     
-    		superfy = function (fn, superFn) {
+    		function superfy (fn, superFn) {
+    
     			return function () {
+    
     				var r, tmp = this._super || null;
     
     				// Reference the prototypes method, as super temporarily
@@ -4731,7 +4754,7 @@
     
     				r = fn.apply(this, arguments);
     
-    				// Reset this._super
+    				// Reset _super
     				this._super = tmp;
     				return r;
     			};
@@ -4748,6 +4771,42 @@
     		}) ? (/\bthis\._super\b/) : (/.*/);
     
     		Class = Obj({
+    
+    			__init : superfy(function () {
+    
+    				var i,
+    					p,
+    					meta;
+    
+                    this._super();
+    
+                    meta = this.__meta;
+    
+                    /*
+                        Auto-binding methods is very expensive as we have to do
+                        it every time an instance is created. It roughly doubles
+                        the time it takes to instantiate
+    
+                        Still, it's not really an issue unless you are creating thousands
+                        of instances at once. Creating 10,000 instances with auto-bound
+                        methods should still take < 500ms.
+    
+                        We auto-bind on $b.Class and not on $b.Object because it's
+                        far more likely you'd be creating a lot of Object instances at once
+                        and shouldn't need the overhead of this.
+                    */
+                    if (config.AUTO_BIND_METHODS || 1) {
+                        for (i = 0; i < meta.methods.length; i ++) {
+                            p = meta.methods[i];
+                        	if (!~p.indexOf('__')) {
+    	                        this[p] = bindFunction(this[p], this);
+    	                    }
+    	                }
+                    }
+    
+                    return this;
+    
+    			}, Obj.prototype.__init),
     
     			subscribe : function (name, handler, priority) {
     
@@ -5164,17 +5223,6 @@
     
                 },
     
-                __resetChangedProps : function () {
-    
-                	var meta = this.__meta;
-    
-                    if (meta) {
-                        meta.changedProps = [];
-                        meta.addedItems = [];
-                        meta.removedItems = [];
-                    }
-                },
-    
     			contentDidChange : function () {
     				this.set('length', this.content.length);
                     this.propertyDidChange('@each');
@@ -5201,10 +5249,6 @@
                 keys : null,
                 values : null,
     
-                // Not inherited
-                flatten : null,
-                merge : null,
-    
                 init : function () {
     
                     var i,
@@ -5219,8 +5263,6 @@
                         this.add.apply(this, [].concat(arguments[i]));
                     }
     
-                    this.addedItems = [];
-                    this.removedItems = [];
     
                     this.length = this.keys.length;
                 },
