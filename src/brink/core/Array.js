@@ -150,7 +150,8 @@ $b(
 
 			splice : function (i, l) {
 
-				var rest,
+				var j,
+                    rest,
 					removed;
 
 				removed = [];

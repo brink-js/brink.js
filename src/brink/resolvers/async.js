@@ -512,7 +512,7 @@
             * This means that this is a CommonJS-type module...
             */
 
-            if (!dependencies.length && factory.length && typeof factory === "function") {
+            if (!dependencies.length && factory.length && typeof factory === "function" && !factory.__meta) {
 
                 /**
                 * Let's check for any references of sync-type require("moduleID")
@@ -560,7 +560,7 @@
             module = _module(id, 0, 1);
             module = module || {exports: {}};
 
-            if (typeof factory === "function") {
+            if (typeof factory === "function" && !factory.__meta) {
 
                 /**
                 * If the factory is a function, we need to invoke it.

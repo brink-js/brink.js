@@ -724,7 +724,7 @@
                     * This means that this is a CommonJS-type module...
                     */
         
-                    if (!dependencies.length && factory.length && typeof factory === "function") {
+                    if (!dependencies.length && factory.length && typeof factory === "function" && !factory.__meta) {
         
                         /**
                         * Let's check for any references of sync-type require("moduleID")
@@ -772,7 +772,7 @@
                     module = _module(id, 0, 1);
                     module = module || {exports: {}};
         
-                    if (typeof factory === "function") {
+                    if (typeof factory === "function" && !factory.__meta) {
         
                         /**
                         * If the factory is a function, we need to invoke it.
@@ -4029,8 +4029,6 @@
     				init,
     				instance;
     
-                var start = (+new Date());
-    
     			instance = new this(false);
     
     			init = instance.__init || instance.init;
@@ -4038,12 +4036,6 @@
     			if (init) {
     				instance = init.apply(instance, arguments) || instance;
     			}
-    
-                var time = (+new Date()) - start;
-    
-                if (time > 1) {
-                	//console.log(time, instance);
-                }
     
     			return instance;
     		};
@@ -4522,8 +4514,8 @@
                     SubObj;
     
                 SubObj = CoreObject.extend.apply(this, arguments);
-                proto = SubObj.prototype;
     
+                proto = SubObj.prototype;
                 proto.__parsePrototype.call(proto);
     
                 return SubObj;
@@ -5067,7 +5059,8 @@
     
     			splice : function (i, l) {
     
-    				var rest,
+    				var j,
+                        rest,
     					removed;
     
     				removed = [];

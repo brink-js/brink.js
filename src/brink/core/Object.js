@@ -447,8 +447,8 @@ $b(
                 SubObj;
 
             SubObj = CoreObject.extend.apply(this, arguments);
-            proto = SubObj.prototype;
 
+            proto = SubObj.prototype;
             proto.__parsePrototype.call(proto);
 
             return SubObj;

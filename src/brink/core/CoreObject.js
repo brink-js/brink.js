@@ -85,8 +85,6 @@ $b(
 				init,
 				instance;
 
-            var start = (+new Date());
-
 			instance = new this(false);
 
 			init = instance.__init || instance.init;
@@ -94,12 +92,6 @@ $b(
 			if (init) {
 				instance = init.apply(instance, arguments) || instance;
 			}
-
-            var time = (+new Date()) - start;
-
-            if (time > 1) {
-            	//console.log(time, instance);
-            }
 
 			return instance;
 		};
