@@ -73,7 +73,7 @@ $b(
 
                         d = meta.properties[p2];
 
-                        if (~(d.watch || []).indexOf(p)) {
+                        if (~(Array.isArray(d.watch) ? d.watch : []).indexOf(p)) {
                             this.propertyDidChange(obj, p2);
                         }
                     }
@@ -143,9 +143,10 @@ $b(
                 meta.watchedProps = [];
             }
 
-		}).create();
+		});
 
-        $b.define('instanceManager', InstanceManager).attach('$b');
+        $b.define('instanceManager', InstanceManager.create({})).attach('$b');
+
+        return $b('instanceManager');
 	}
-
-).attach('$b');
+);

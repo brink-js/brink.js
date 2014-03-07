@@ -4469,7 +4469,7 @@
                     }
     
                     else {
-                        $b.error('InstanceManager does not exist, can\'t watch for property changes.');
+                        //$b.error('InstanceManager does not exist, can\'t watch for property changes.');
                     }
                 },
     
@@ -4480,7 +4480,7 @@
                     }
     
                     else {
-                        $b.error('InstanceManager does not exist, can\'t watch for property changes.');
+                        //$b.error('InstanceManager does not exist, can\'t watch for property changes.');
                     }
     
                 },
@@ -5266,7 +5266,7 @@
     
         function (Obj) {
     
-    		return Obj({
+    		return Obj.extend({
     
                 keys : null,
                 values : null,
@@ -5284,7 +5284,6 @@
                     for (i = 0; i < arguments.length; i ++) {
                         this.add.apply(this, [].concat(arguments[i]));
                     }
-    
     
                     this.length = this.keys.length;
                 },
@@ -5744,7 +5743,7 @@
     
                             d = meta.properties[p2];
     
-                            if (~(d.watch || []).indexOf(p)) {
+                            if (~(Array.isArray(d.watch) ? d.watch : []).indexOf(p)) {
                                 this.propertyDidChange(obj, p2);
                             }
                         }
@@ -5814,12 +5813,13 @@
                     meta.watchedProps = [];
                 }
     
-    		}).create();
+    		});
     
-            $b.define('instanceManager', InstanceManager).attach('$b');
+            $b.define('instanceManager', InstanceManager.create({})).attach('$b');
+    
+            return $b('instanceManager');
     	}
-    
-    ).attach('$b');
+    );
 
     $b('brink/browser/ajax', 
     

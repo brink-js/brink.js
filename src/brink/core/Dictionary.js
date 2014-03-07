@@ -6,7 +6,7 @@ $b(
 
     function (Obj) {
 
-		return Obj({
+		return Obj.extend({
 
             keys : null,
             values : null,
@@ -24,7 +24,6 @@ $b(
                 for (i = 0; i < arguments.length; i ++) {
                     this.add.apply(this, [].concat(arguments[i]));
                 }
-
 
                 this.length = this.keys.length;
             },

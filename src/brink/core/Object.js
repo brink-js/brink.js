@@ -390,7 +390,7 @@ $b(
                 }
 
                 else {
-                    $b.error('InstanceManager does not exist, can\'t watch for property changes.');
+                    //$b.error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
             },
 
@@ -401,7 +401,7 @@ $b(
                 }
 
                 else {
-                    $b.error('InstanceManager does not exist, can\'t watch for property changes.');
+                    //$b.error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
 
             },
