@@ -5780,7 +5780,8 @@
     
                     var i,
                         fn,
-                        idx;
+                        idx,
+                        meta;
     
                     meta = obj.__meta;
     
