@@ -264,7 +264,7 @@ $b(
             },
 
             getChangedProperties : function () {
-                return this.serialize.apply(this, this.__meta.changedProps);
+                return this.getProperties.apply(this, this.__meta.changedProps);
             },
 
             descriptor : function (key, val) {

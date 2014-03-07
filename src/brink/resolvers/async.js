@@ -74,10 +74,9 @@
                         this.attachTo = this.attachTo[s[i]] = this.attachTo[s[i]] || {};
                     }
 
-                    if (this.id) {
+                    if (this.module) {
                         this.resolve();
                     }
-
                 },
 
                 resolve : function (id, module) {
@@ -102,18 +101,30 @@
 
                     module = this.module.exports || this.module;
 
-                    module.toString = function () {
-                        return id;
-                    };
-
                     if (this.attachTo) {
                         idPart = this.id.split('/').pop();
 
                         if (this.attachPath === '$b') {
                             _module(idPart, this.module);
+
+                            if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
+                                module.toString = function () {
+                                    return 'Brink.' + idPart;
+                                }
+                            }
                         }
 
                         this.attachTo[idPart] = this.module.exports || this.module;
+                    }
+
+                    if (this.id && module && !module.hasOwnProperty('toString')) {
+
+                        if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
+
+                            module.toString = function () {
+                                return id;
+                            }
+                        }
                     }
                 }
             }

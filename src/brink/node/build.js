@@ -96,6 +96,8 @@ $b(
 
                         metas = $b.require.metas();
 
+                        metas.forEach(function (item){console.log(item.id);});
+
                         for (p in metas) {
 
                             meta = metas[p];

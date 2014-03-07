@@ -21,16 +21,25 @@ else {
 
 $b = _global.$b = _global.Brink = function () {
 
-	if (arguments.length) {
+	var args;
 
-		if (arguments.length === 1 && typeof arguments[0] === 'string') {
+	args = Array.prototype.slice.call(arguments, 0);
+
+	if (args.length) {
+
+		if (args.length === 1 && typeof args[0] === 'string') {
 			if ($b.require) {
-				return $b.require.apply(_global, arguments);
+				return $b.require.apply(_global, args);
 			}
 		}
 
 		if ($b.define) {
-			return $b.define.apply(_global, arguments);
+
+			if (!Array.isArray(args[0]) && !Array.isArray(args[1])) {
+				args.splice(args.length - 1, 0, []);
+			}
+
+			return $b.define.apply(_global, args);
 		}
 	}
 
@@ -118,16 +127,6 @@ $b.init = function (deps, cb) {
 
 			'brink/browser/ajax',
 			'brink/browser/ReactMixin',
-
-			'brink/data/attr',
-			'brink/data/belongsTo',
-			'brink/data/hasMany',
-			'brink/data/store',
-
-			'brink/data/Model',
-			'brink/data/Collection',
-			'brink/data/Adapter',
-			'brink/data/RESTAdapter',
 
 			'brink/node/build'
 		]

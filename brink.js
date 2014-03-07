@@ -23,16 +23,25 @@
     
     $b = _global.$b = _global.Brink = function () {
     
-    	if (arguments.length) {
+    	var args;
     
-    		if (arguments.length === 1 && typeof arguments[0] === 'string') {
+    	args = Array.prototype.slice.call(arguments, 0);
+    
+    	if (args.length) {
+    
+    		if (args.length === 1 && typeof args[0] === 'string') {
     			if ($b.require) {
-    				return $b.require.apply(_global, arguments);
+    				return $b.require.apply(_global, args);
     			}
     		}
     
     		if ($b.define) {
-    			return $b.define.apply(_global, arguments);
+    
+    			if (!Array.isArray(args[0]) && !Array.isArray(args[1])) {
+    				args.splice(args.length - 1, 0, []);
+    			}
+    
+    			return $b.define.apply(_global, args);
     		}
     	}
     
@@ -286,10 +295,9 @@
                                 this.attachTo = this.attachTo[s[i]] = this.attachTo[s[i]] || {};
                             }
         
-                            if (this.id) {
+                            if (this.module) {
                                 this.resolve();
                             }
-        
                         },
         
                         resolve : function (id, module) {
@@ -314,18 +322,30 @@
         
                             module = this.module.exports || this.module;
         
-                            module.toString = function () {
-                                return id;
-                            };
-        
                             if (this.attachTo) {
                                 idPart = this.id.split('/').pop();
         
                                 if (this.attachPath === '$b') {
                                     _module(idPart, this.module);
+        
+                                    if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
+                                        module.toString = function () {
+                                            return 'Brink.' + idPart;
+                                        }
+                                    }
                                 }
         
                                 this.attachTo[idPart] = this.module.exports || this.module;
+                            }
+        
+                            if (this.id && module && !module.hasOwnProperty('toString')) {
+        
+                                if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
+        
+                                    module.toString = function () {
+                                        return id;
+                                    }
+                                }
                             }
                         }
                     }
@@ -1054,14 +1074,6 @@
                 "brink/core/InstanceManager",
                 "brink/browser/ajax",
                 "brink/browser/ReactMixin",
-                "brink/data/attr",
-                "brink/data/Adapter",
-                "brink/data/RESTAdapter",
-                "brink/data/Model",
-                "brink/data/belongsTo",
-                "brink/data/Collection",
-                "brink/data/hasMany",
-                "brink/data/store",
                 "brink/node/build"
             ]
     
@@ -3979,7 +3991,7 @@
     
     			proto = this.buildPrototype.call(this, props);
     
-    			function Obj (callInit) {
+    			function BrinkObject (callInit) {
     
     				var fn;
     
@@ -3993,21 +4005,21 @@
     					return this;
     				}
     
-    				return Obj.extend.apply(Obj, arguments);
+    				return BrinkObject.extend.apply(BrinkObject, arguments);
     			}
     
-    			Obj.prototype = proto;
-    			extend(Obj, this, proto.statics || {});
+    			BrinkObject.prototype = proto;
+    			extend(BrinkObject, this, proto.statics || {});
     
-    			Obj.prototype.constructor = Obj;
+    			BrinkObject.prototype.constructor = BrinkObject;
     
-    			return Obj;
+    			return BrinkObject;
     		};
     
     		CoreObject.buildPrototype = function (props) {
-    			var F = function () {};
-    			F.prototype = this.prototype;
-    			return extend(new F(), props);
+    			var BrinkPrototype = function () {};
+    			BrinkPrototype.prototype = this.prototype;
+    			return extend(new BrinkPrototype(), props);
     		};
     
     		CoreObject.inject = function (p, v) {
@@ -4331,7 +4343,7 @@
                 },
     
                 getChangedProperties : function () {
-                    return this.serialize.apply(this, this.__meta.changedProps);
+                    return this.getProperties.apply(this, this.__meta.changedProps);
                 },
     
                 descriptor : function (key, val) {
@@ -5828,1316 +5840,57 @@
     
             'use strict';
     
+            if (typeof window !== 'undefined' && window.React) {
+    
+                var origCreateClass = window.React.createClass;
+    
+                React.createClass = function () {
+    
+                    var Constructor = origCreateClass.apply(this, arguments);
+    
+                    return function (props, children) {
+    
+                        var instance,
+                            __props;
+    
+                        if (props instanceof $b.Object) {
+                            __props = props;
+                            props = props.getProperties();
+                        }
+    
+                        instance = Constructor.call(this, props, children);
+    
+                        if (__props) {
+                            instance.__props = __props;
+                        }
+    
+                        return instance;
+                    };
+                };
+            }
+    
             return {
+    
+                componentWillMount : function () {
+                    if (this.__props) {
+                        this.__props.watch(this.__propsChanged);
+                    }
+                },
     
                 __propsChanged : function () {
                     this.setProps(this.__props.getChangedProperties());
                 },
     
-                componentWillMount : function () {
-                    this.__props = this.props;
-                    this.props = this.__props.getProperties();
-                    this.__props.watch(this.__propsChanged);
-                },
-    
                 componentWillUnmount : function () {
-                    this.__props.unwatch(this.__propsChanged);
+                    if (this.__props) {
+                        this.__props.unwatch(this.__propsChanged);
+                    }
                 }
             };
         }
     
     ).attach('$b');
     
-
-    $b('brink/data/attr', 
-    
-        [
-            '../utils/computed',
-            '../utils/clone'
-        ],
-    
-        function (computed, clone) {
-    
-            'use strict';
-    
-            return function (type, options) {
-    
-                if (typeof type === 'object') {
-                    type = 'auto';
-                    options = type;
-                }
-    
-                type = type || 'auto';
-    
-                options = options || {};
-    
-                var attr = computed({
-    
-                    type : type,
-                    options : options,
-                    isAttribute : true,
-    
-                    value : options.defaultValue,
-    
-                    get : function (key) {
-                        return this.__data ? this.__data[key] : null;
-                    },
-    
-                    set : function (val, key) {
-    
-                        var data,
-                            isDirty,
-                            dirtyAttrs,
-                            dirtyIndex;
-    
-                        data = this.__data = this.__data || {};
-                        this.__originalData = this.__originalData || clone(data);
-                        isDirty = this.__originalData[key] !== val;
-    
-                        dirtyAttrs = this.get('dirtyAttributes');
-                        dirtyIndex = dirtyAttrs.indexOf(key);
-    
-                        if (dirtyIndex < 0 && isDirty) {
-                            dirtyAttrs.push(key);
-                            this.set('dirtyAttributes') = dirtyAttrs;
-                        }
-    
-                        else if (!isDirty && dirtyIndex >= 0) {
-                            dirtyAttrs.splice(dirtyIndex, 1);
-                            this.set('dirtyAttributes', dirtyAttrs);
-                        }
-    
-                        data[key] = val;
-                    },
-    
-                    serialize : function () {
-                        return this.__data ? this.__data[attr.key] : null;
-                    },
-    
-                    deserialize : function (val) {
-                        return val;
-                    }
-                });
-    
-                return attr;
-            };
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/data/Adapter', 
-    
-        [
-            '../core/Class'
-        ],
-    
-        function (Class) {
-    
-            'use strict';
-    
-            return Class({
-    
-                find : function (model, q) {
-                    return this.store.find(model, q);
-                },
-    
-                all : function (model) {
-                    return this.store.all(model);
-                },
-    
-                saveRecord : function (model) {
-    
-                    if (model.get('isNew')) {
-                        return this.createRecord(model);
-                    }
-    
-                    return this.updateRecord(model);
-                },
-    
-                fetch : $b.required('Adapters must implement the `fetch()` method'),
-                fetchAll : $b.required('Adapters must implement the `fetchAll()` method'),
-                createRecord : $b.required('Adapters must implement the `createRecord()` method'),
-                updateRecord : $b.required('Adapters must implement the `updateRecord()` method'),
-                deleteRecord : $b.required('Adapters must implement the `deleteRecord()` method')
-            });
-        }
-    
-    ).attach('$b');
-
-    $b('brink/data/RESTAdapter', 
-    
-        [
-            './Adapter',
-            '../browser/ajax',
-            '../utils/promise'
-        ],
-    
-        function (Adapter, ajax, promise) {
-    
-            'use strict';
-    
-            return Adapter({
-    
-                host : '',
-                prefix : '',
-    
-                ajaxOptions : function (url, method) {
-    
-                    return {
-                        url : url,
-                        type : method,
-                        contentType : "application/json",
-                        dataType : "json"
-                    };
-                },
-    
-                ajax : function (url, data, method, options) {
-    
-                    options = options || this.ajaxOptions(url, method);
-    
-                    data = data || {};
-    
-                    return promise(function (resolve, reject) {
-    
-                        if (method === "GET") {
-                            options.data = data;
-                        }
-    
-                        else {
-                            options.data = JSON.stringify(data);
-                        }
-    
-                        options.success = function (json) {
-                            Ember.run(null, resolve, json);
-                        };
-    
-                        options.error = function(jqXHR, textStatus, errorThrown) {
-                            if (jqXHR) {
-                                jqXHR.then = null;
-                            }
-    
-                            Ember.run(null, reject, jqXHR);
-                        };
-    
-    
-                        ajax(options);
-                    });
-                },
-    
-                httpGet : function (url, data) {
-                    return this.ajax(url, data, 'GET');
-                },
-    
-                httpPost : function (url, data) {
-                    return this.ajax(url, data, 'POST');
-                },
-    
-                httpPut : function (url, data) {
-                    return this.ajax(url, data, 'PUT');
-                },
-    
-                httpDelete : function (url, data) {
-                    return this.ajax(url, data, 'DELETE');
-                },
-    
-                getURL : function (factory, id) {
-    
-                    var url;
-    
-                    url = [this.get('host'), this.get('prefix')];
-    
-                    url.push(factory.url || factory.typeKey);
-    
-                    if (id) {
-                        url.push(id);
-                    }
-    
-                    return url.join('/').replace(/([^:]\/)\/+/g, "$1");
-                },
-    
-                fetch : function (factory, id) {
-                    return this.httpGet(
-                        this.getURL(factory, id)
-                    );
-                },
-    
-                fetchAll : function (factory) {
-                    return this.httpGet(
-                        this.getURL(factory)
-                    );
-                },
-    
-                createRecord : function (record) {
-                    return this.httpPost(
-                        this.getURL(record.constructor),
-                        record.serialize()
-                    );
-                },
-    
-                updateRecord : function (record) {
-                    return this.httpPut(
-                        this.getURL(record.constructor, record.get('pk')),
-                        record.serialize()
-                    );
-                },
-    
-                deleteRecord : function (record) {
-                    return this.httpDelete(
-                        this.getURL(record.constructor, record.get('pk'))
-                    );
-                }
-            });
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/data/Model', 
-    
-        [
-            './RESTAdapter',
-            '../core/Class',
-            '../utils/clone',
-            '../utils/promise'
-        ],
-    
-        function (RESTAdapter, Class, clone, promise) {
-    
-            'use strict';
-    
-            var Model = Class({
-    
-                primaryKey : 'id',
-    
-                url : null,
-                adapter : RESTAdapter.create(),
-    
-                typeKey : null,
-                collectionKey : null,
-    
-                __data : null,
-                __dirtyAttributes : null,
-    
-                __currentPromise : null,
-    
-                __isDirty : false,
-                __isSaving : false,
-                __isLoaded : false,
-                __isDeleting : false,
-                __isDeleted : false,
-    
-                pk : $b.computed({
-    
-                    watch : ['primaryKey'],
-    
-                    get : function () {
-    
-                        var pk = this.get('primaryKey');
-    
-                        if (!pk) {
-                            return null;
-                        }
-    
-                        return this.get(pk);
-                    },
-    
-                    set : function (val) {
-    
-                        var pk = this.get('primaryKey');
-    
-                        return this.set(pk, val);
-                    }
-                }),
-    
-                dirtyAttributes : $b.computed({
-    
-                    watch : ['__dirtyAttributes'],
-    
-                    get : function () {
-                        return this.get('__dirtyAttributes') || [];
-                    },
-    
-                    set : function (val) {
-    
-                        val = val || [];
-    
-                        this.set('__dirtyAttributes', val);
-                        this.set('__isDirty', val && !!val.length);
-    
-                        return val;
-                    }
-    
-                }),
-    
-                isValid : $b.computed(function () {
-                    return this.validate();
-                }),
-    
-                isNew : $b.computed(function () {
-                    return this.primaryKey ? !this.get('pk') : false;
-                }, 'pk'),
-    
-                isLoaded : $b.computed(function () {
-                    return this.get('__isLoaded');
-                }, '__isLoaded'),
-    
-                isLoading : $b.computed(function () {
-                    return !this.get('__isLoaded');
-                }, '__isLoaded'),
-    
-                isDeleted : $b.computed(function () {
-                    return this.get('__isDeleted');
-                }, '__isDeleted'),
-    
-                isClean : $b.computed(function () {
-                    return !this.get('isDirty');
-                }, 'isDirty'),
-    
-                descriptor : function (key, val) {
-    
-                    var meta = this.__meta;
-    
-                    val = Class.prototype.descriptor.apply(this, arguments);
-    
-                    if (val.isAttribute) {
-                        meta.attributes.push(p);
-                    }
-    
-                    else if (val.isRelationship) {
-                        meta.relationships.push(p);
-                    }
-    
-                    return val;
-                },
-    
-                __parsePrototype : function () {
-    
-                    var meta = this.__meta = this.__meta || {};
-    
-                    meta.atttributes = clone(meta.attributes || []);
-                    meta.relationships = clone(meta.relationships || []);
-    
-                    Class.prototype.__parsePrototype.apply(this, arguments);
-                },
-    
-                getAttributes : function () {
-                    return this.__meta.attributes;
-                },
-    
-                getRelationships : function () {
-                    return this.__meta.relationships;
-                },
-    
-                serialize : function (isNested) {
-    
-                    var p,
-                        pk,
-                        key,
-                        meta,
-                        json,
-                        nestedJson,
-                        attributes,
-                        properties,
-                        relationships;
-    
-                    pk = this.get('pk');
-                    json = {};
-                    attributes = this.getAttributes();
-                    relationships = this.getRelationships();
-    
-                    properties = this.getProperties(attributes.concat(relationships));
-    
-                    for (p in properties) {
-    
-                        meta = this.constructor.metaForProperty(p);
-                        key = meta.options.key || p;
-    
-                        json[key] = meta.serialize.call(this);
-                    }
-    
-                    if (this.primaryKey) {
-                        json[this.primaryKey] = pk;
-                    }
-    
-                    if (isNested) {
-                        nestedJson = json;
-                        json = {};
-                        json[this.typeKey] = nestedJson;
-                    }
-    
-                    return json;
-                },
-    
-                deserialize : function (json) {
-    
-                    var p,
-                        pk,
-                        key,
-                        meta,
-                        item,
-                        data,
-                        jsonItem,
-                        attributes,
-                        properties,
-                        relationships;
-    
-                    data = {};
-                    attributes = this.getAttributes();
-                    relationships = this.getRelationships();
-    
-                    properties = this.getProperties(attributes.concat(relationships));
-    
-                    pk = this.get('pk');
-    
-                    for (p in properties) {
-    
-                        meta = this.constructor.metaForProperty(p);
-                        key = meta.options.key || p;
-    
-                        jsonItem = json[key];
-    
-                        if (typeof jsonItem !== 'undefined') {
-                            data[meta.key] = jsonItem === null ? null : meta.deserialize.call(this, jsonItem);
-                        }
-                    }
-    
-                    if (this.primaryKey) {
-                        this.set('pk', json[this.primaryKey] || pk);
-                    }
-    
-                    this.set('__data', data);
-                    this.set('__isLoaded', true);
-                    this.set('dirtyAttributes', []);
-                },
-    
-                validate : function () {
-                    return true;
-                },
-    
-                merge : function (data) {
-    
-                    data = data instanceof Model ? data.deserialize() : data;
-                    data[this.primaryKey] = null;
-    
-                    this.deserialize(data);
-                },
-    
-                save : function () {
-                    return this.saveRecord();
-                },
-    
-                fetch : function () {
-                    return this.fetchRecord();
-                },
-    
-                fetchRecord : function () {
-    
-                    this.set('__isLoaded', false);
-    
-                    if (this.__currentPromise) {
-                        if (this.__currentPromise._state !== 1 && this.__currentPromise._state !== 2) {
-                            return this.__currentPromise = this.__currentPromise.then(this.fetchRecord.bind(this));
-                        }
-                    }
-    
-                    return this.__currentPromise = this.adapter.fetch(this.constructor, this.get('pk')).then(function (json) {
-    
-                        json = json[this.typeKey] || json;
-                        json = Array.isArray(json) ? json[0] : json;
-    
-                        this.deserialize(json);
-    
-                    }.bind(this));
-                },
-    
-                saveRecord : function () {
-    
-                    if (this.get('isValid')) {
-    
-                        if (this.__currentPromise) {
-                            if (this.__currentPromise._state !== 1 && this.__currentPromise._state !== 2) {
-                                return this.__currentPromise = this.__currentPromise.then(this.saveRecord.bind(this));
-                            }
-                        }
-    
-                        this.set('dirtyAttributes', []);
-    
-                        return this.__currentPromise = this.adapter.saveRecord(this).then(function (json) {
-    
-                            var isNew = this.get('isNew');
-    
-                            json = json[this.typeKey] || json;
-                            json = Array.isArray(json) ? json[0] : json;
-    
-                            this.deserialize(json);
-    
-                            if (isNew) {
-                                this.store.add(this);
-                            }
-    
-                            this.set('__isSaving', false);
-    
-                        }.bind(this));
-                    }
-    
-                    else {
-                        return promise(function (resolve, reject) {
-                            reject(new Error('Tried to save an invalid record.'));
-                        });
-                    }
-                },
-    
-                deleteRecord : function () {
-    
-                    this.set('__isDeleting', true);
-    
-                    if (this.__currentPromise) {
-                        if (this.__currentPromise._state !== 1 && this.__currentPromise._state !== 2) {
-                            return this.__currentPromise = this.__currentPromise.then(this.deleteRecord.bind(this));
-                        }
-                    }
-    
-                    return this.__currentPromise = this.adapter.deleteRecord(this).then(function (json) {
-    
-                        this.store.remove(this);
-    
-                        this.set('__isDeleting', false);
-                        this.set('__isDeleted', true);
-    
-                        this.destroy();
-    
-                    }.bind(this));
-                },
-    
-                clone : function () {
-    
-                    var copy,
-                        data;
-    
-                    data = this.get('__data') || {};
-    
-                    copy = this.constructor.create();
-                    copy.set('__data', clone(data));
-                    copy.set('pk', null);
-    
-                    copy.set('__isLoaded', true);
-                    copy.set('dirtyAttributes', []);
-    
-                    return copy;
-                },
-    
-                revert : function () {
-                    this.merge(this.__originalData);
-                    this.__originalData = null;
-                    this.set('dirtyAttributes', []);
-                }
-            });
-    
-            Model.extend = function () {
-    
-                var i,
-                    p,
-                    v,
-                    props,
-                    proto,
-                    classProps,
-                    SubModel;
-    
-                SubModel = Class.extend.apply(this, arguments);
-                proto = SubModel.prototype;
-    
-                d = {};
-                classProps = ['primaryKey', 'url', 'adapter', 'typeKey', 'collectionKey'];
-    
-                props = [].slice.apply(arguments, [-1])[0];
-    
-                for (i = 0; i < classProps.length; i ++) {
-    
-                    p = classProps[i];
-                    v = props[p];
-    
-                    if (p) {
-                        SubModel[p] = v;
-                    }
-                }
-    
-                /*
-                    TODO : Need to re-implement this
-    
-                    relationships = proto.getRelationships();
-                    dirtyChecks = ['__isDirty'];
-    
-                    for (i = 0; i < relationships.length; i ++) {
-                        p = relationships[i];
-                        meta = r.metaForProperty(p);
-    
-                        if (meta.isRelationship && meta.options.embedded) {
-                            dirtyChecks.push(p + '.__isDirty');
-                        }
-                    }
-    
-                    defineProperty(r.prototype, 'isDirty', computed.or.apply(this, dirtyChecks));
-                */
-    
-                return SubModel;
-            };
-    
-            return Model;
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/data/belongsTo', 
-    
-        [
-            './Model',
-            '../utils/computed',
-            '../utils/clone'
-        ],
-    
-        function (Model, computed, clone) {
-    
-            'use strict';
-    
-            return function (factoryName, options) {
-    
-                var attr = computed({
-    
-                    type : 'belongsTo',
-                    factory : null,
-                    options : options,
-                    isRelationship : true,
-    
-                    value : options.defaultValue,
-    
-                    get : function () {
-                        return this.__data ? this.__data[attr.key] : null;
-                    },
-    
-                    set : function (val) {
-    
-                        var key,
-                            data,
-                            factory,
-                            isDirty,
-                            dirtyAttrs,
-                            dirtyIndex;
-    
-                        key = attr.key;
-    
-                        factory = attr.factory = attr.factory || this.store.getFactory(factoryName);
-    
-                        data = this.__data = this.__data || {};
-                        this.__originalData = this.__originalData || clone(data);
-                        isDirty = this.__originalData[key] !== val;
-    
-                        dirtyAttrs = this.get('dirtyAttributes');
-                        dirtyIndex = dirtyAttrs.indexOf(key);
-    
-                        if (dirtyIndex < 0 && isDirty) {
-                            dirtyAttrs.push(key);
-                            this.set('dirtyAttributes') = dirtyAttrs;
-                        }
-    
-                        else if (!isDirty && dirtyIndex >= 0) {
-                            dirtyAttrs.splice(dirtyIndex, 1);
-                            this.set('dirtyAttributes', dirtyAttrs);
-                        }
-    
-                        if (typeof val === 'string' || typeof val === 'number') {
-                            val = this.store.findInCacheOrCreate(factoryName, val);
-                        }
-    
-                        if (val) {
-                            $b.assert('Invalid relationship assignment. Expected value of type : ' + factoryName, val instanceof factory);
-                        }
-    
-                        data[key] = val;
-                    },
-    
-                    serialize : function () {
-    
-                        var val,
-                            data;
-    
-                        data = this.__data = this.__data || {};
-    
-                        val = data ? data[attr.key] : null;
-    
-                        if (val && val instanceof Model) {
-    
-                            if (options.embedded) {
-                                return val.serialize();
-                            }
-    
-                            return val.get('pk');
-                        }
-    
-                        return val;
-                    },
-    
-                    deserialize : function (val) {
-    
-                        var record,
-                            factory;
-    
-                        factory = attr.factory = attr.factory || this.store.getFactory(factoryName);
-    
-                        if (options.embedded && typeof val === 'object') {
-                            record = factory.create(val);
-                        }
-    
-                        else {
-                            record = this.store.findInCacheOrCreate(factoryName, val);
-                        }
-    
-                        return record;
-                    }
-    
-                });
-    
-                return attr;
-            };
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/data/Collection', 
-    
-        [
-           '../core/Array'
-        ],
-    
-        function (Arr) {
-    
-            'use strict';
-    
-            return Arr({
-    
-                factory : null,
-                primaryKey : null,
-    
-                typeKey : null,
-                collectionKey : null,
-    
-                findByPrimaryKey : function (q) {
-                    return this.findBy(this.primaryKey, q);
-                },
-    
-                removeByPrimaryKey : function (q) {
-    
-                    var index;
-    
-                    index = this.findIndexBy(this.primaryKey, q);
-    
-                    if (~r) {
-                        return this.removeAt(index);
-                    }
-                },
-    
-                serialize : function (isEmbedded) {
-    
-                    var a = [];
-    
-                    this.forEach(function (item, index, collection) {
-    
-                        if (isEmbedded) {
-                            a.push(item.serialize());
-                        }
-    
-                        else {
-                            a.push(item.get('pk'));
-                        }
-    
-                    }, this);
-    
-                    return a;
-                }
-    
-            });
-        }
-    
-    ).attach('$b');
-
-    $b('brink/data/hasMany', 
-    
-        [
-            './Model',
-            './Collection',
-            '../utils/computed',
-            '../utils/clone'
-        ],
-    
-        function (Model, Collection, computed, clone) {
-    
-            'use strict';
-    
-            return function (factoryName, options) {
-    
-                var attr = computed({
-    
-                    type : 'hasMany',
-                    factory : null,
-                    options : options,
-                    isRelationship : true,
-    
-                    value : options.defaultValue,
-    
-                    get : function () {
-                        return this.__data ? this.__data[attr.key] : null;
-                    },
-    
-                    set : function (val) {
-    
-                        var key,
-                            data,
-                            factory,
-                            isDirty,
-                            dirtyAttrs,
-                            dirtyIndex;
-    
-                        key = attr.key;
-    
-                        factory = attr.factory = attr.factory || this.store.getFactory(factoryName);
-    
-                        data = this.__data = this.__data || {};
-                        this.__originalData = this.__originalData || clone(data);
-                        isDirty = this.__originalData[key] !== val;
-    
-                        dirtyAttrs = this.get('dirtyAttributes');
-                        dirtyIndex = dirtyAttrs.indexOf(key);
-    
-                        if (dirtyIndex < 0 && isDirty) {
-                            dirtyAttrs.push(key);
-                            this.set('dirtyAttributes') = dirtyAttrs;
-                        }
-    
-                        else if (!isDirty && dirtyIndex >= 0) {
-                            dirtyAttrs.splice(dirtyIndex, 1);
-                            this.set('dirtyAttributes', dirtyAttrs);
-                        }
-    
-                        if (val) {
-                            $b.assert('Invalid relationship assignment. Expected value of type : $b.Collection', val instanceof Collection);
-                        }
-    
-                        data[key] = val;
-                    },
-    
-                    serialize : function () {
-    
-                        var val,
-                            data;
-    
-                        data = this.__data = this.__data || {};
-    
-                        val = data ? data[attr.key] : null;
-    
-                        return val ? val.serialize(options.embedded) : null;
-                    },
-    
-                    deserialize : function (val) {
-    
-                        var i,
-                            meta,
-                            record,
-                            records,
-                            factory,
-                            collection;
-    
-                        val = [].concat(val);
-                        records = [];
-    
-                        factory = attr.factory = attr.factory || this.store.getFactory(factoryName);
-    
-                        collection = Collection.create();
-    
-                        for (i = 0; i < val.length; i ++) {
-    
-                            if (val[i]) {
-    
-                                if (options.embedded && typeof val[i] === 'object') {
-                                    record = factory.create();
-                                    record.deserialize(val[i]);
-                                }
-    
-                                else {
-                                    record = this.store.findInCacheOrCreate(factoryName, val);
-                                }
-    
-                                records.push(record);
-                            }
-                        }
-    
-                        if (records.length) {
-                            collection.set('factory', factory);
-                            collection.set('primaryKey', factory.primaryKey);
-                            collection.set('typeKey', factory.typeKey);
-                            collection.set('collectionKey', factory.collectionKey);
-    
-                            collection.push.apply(collection, records);
-                        }
-    
-                        return collection;
-                    }
-    
-                });
-    
-                return attr;
-            };
-        }
-    
-    ).attach('$b');
-
-    $b('brink/data/store', 
-    
-        [
-            './Model',
-            './Collection',
-            '../core/Class',
-            '../core/Array',
-            '../utils/next'
-        ],
-    
-        function (Model, Collection, Class, Arr, next) {
-    
-            'use strict';
-    
-            var Store = Class({
-    
-                factoryPrefix : '',
-                factorySuffix : '',
-    
-                __cache : null,
-                __registry : null,
-                __store : null,
-    
-                init : function () {
-    
-                    this.__cache = {};
-                    this.__registry = {};
-                    this.__store = {};
-                },
-    
-                getTypeKey : function (key) {
-                    key = key.split('.');
-                    key = key[key.length - 1];
-                    key = key.charAt(0).toLowerCase() + key.slice(1);
-                    return key;
-                },
-    
-                addToCache : function (model, records) {
-    
-                    var i,
-                        pk,
-                        cache,
-                        record,
-                        factory;
-    
-                    factory = this.getFactory(model);
-                    cache = this.__cache[factory.collectionKey] = this.__cache[factory.collectionKey] || {};
-    
-                    for (i = 0; i < records.length; i ++) {
-    
-                        record = records[i];
-                        pk = record.get('pk');
-    
-                        cache[pk] = record;
-                    }
-    
-                    return cache;
-                },
-    
-                removeFromCache : function (model, records) {
-    
-                    var i,
-                        pk,
-                        cache,
-                        record,
-                        factory;
-    
-                    factory = this.getFactory(model);
-                    cache = this.__cache[factory.collectionKey] = this.__cache[factory.collectionKey] || {};
-    
-                    for (i = 0; i < records.length; i ++) {
-    
-                        record = records[i];
-                        pk = record.get('pk');
-    
-                        cache[pk] = null;
-                    }
-    
-                    return cache;
-                },
-    
-                findInCache : function (model, id) {
-    
-                    var cache,
-                        factory;
-    
-                    factory = this.getFactory(model);
-                    cache = this.__cache[factory.collectionKey] = this.__cache[factory.collectionKey] || {};
-                    return cache[id];
-                },
-    
-                findInCacheOrCreate : function (model, id) {
-    
-                    var record,
-                        factory;
-    
-                    factory = this.getFactory(model);
-    
-                    if (id) {
-                        record = this.findInCache(model, id);
-                    }
-    
-                    if (!record) {
-                        record = factory.create();
-                        record.set('pk', id);
-                        this.add(factory, record);
-                    }
-    
-                    return record;
-                },
-    
-                getCollection : function (model) {
-    
-                    var factory,
-                        collection;
-    
-                    factory = this.getFactory(model);
-    
-                    if (!factory) {
-                        $b.error('No model was found for \'' + model + '\'');
-                    }
-    
-                    collection = this.__store[factory.collectionKey];
-    
-                    if (!collection) {
-                        collection = this.__store[factory.collectionKey] = Collection.create({content : Arr.create()});
-    
-                        collection.set('factory', factory);
-                        collection.set('primaryKey', factory.primaryKey);
-                        collection.set('typeKey', factory.typeKey);
-                        collection.set('collectionKey', factory.collectionKey);
-                    }
-    
-                    return collection;
-                },
-    
-                getFactory : function (key) {
-    
-                    var factory,
-                        typeKey,
-                        normalizedKey;
-    
-                    factory = typeof key !== 'string' ? key : null;
-    
-                    if (!factory) {
-                        factory = this.__registry[key];
-                    }
-    
-                    if (!factory) {
-    
-                        normalizedKey = this.container.normalize('model:' + key);
-                        typeKey = this.getTypeKey(key);
-    
-                        factory = this.container.lookupFactory(normalizedKey);
-    
-                        if (factory) {
-                            factory.typeKey = factory.typeKey || typeKey;
-                            factory.collectionKey = factory.collectionKey || factory.typeKey + 's';
-                        }
-                    }
-    
-                    if (factory) {
-                        factory.store = factory.prototype.store = this;
-                    }
-    
-                    return factory;
-                },
-    
-                registerModel : function (key) {
-    
-                    var factory = this.getFactory(key);
-    
-                    this.__registry[factory.typeKey] = factory;
-                    this.__registry[factory.collectionKey] = factory;
-    
-                    return factory;
-                },
-    
-                find : function (model, q) {
-    
-                    var collection;
-    
-                    collection = this.getCollection(model);
-    
-                    if (typeof q === 'number' || typeof q === 'string') {
-                        return this.findInCache(model, q);
-                    }
-    
-                    return collection.filter(function (item, index, collection) {
-    
-                        var p,
-                            doesMatch;
-    
-                        doesMatch = true;
-    
-                        for (p in q) {
-                            if (item.get(p) !== q[p]) {
-                                doesMatch = false;
-                            }
-                        }
-    
-                        return doesMatch;
-    
-                    }, this);
-                },
-    
-                all : function (model) {
-                    return this.getCollection(model);
-                },
-    
-                fetchUnloadedRecords : function () {
-    
-                    var p,
-                        i,
-                        r;
-    
-                    for (p in this.__cache) {
-                        for (i in this.__cache[p]) {
-                            r = this.__cache[p][i];
-                            if (!r.get('isLoaded')) {
-                                r.fetchRecord();
-                            }
-                        }
-                    };
-                },
-    
-                fetch : function (model, q) {
-    
-                    var record,
-                        factory;
-    
-                    factory = this.getFactory(model);
-    
-                    return factory.adapter.fetch(factory, q).then(function (json) {
-    
-                        json = json[factory.typeKey] || json;
-                        json = Array.isArray(json) ? json[0] : json;
-    
-                        record = this.findInCacheOrCreate(model, json[factory.primaryKey]);
-                        record.deserialize(json);
-    
-                        return record;
-    
-                    }.bind(this));
-                },
-    
-                fetchAll : function (model) {
-    
-                    var i,
-                        item,
-                        record,
-                        records,
-                        factory,
-                        collection;
-    
-                    records = [];
-                    factory = this.getFactory(model);
-    
-                    return factory.adapter.fetchAll(factory).then(function (json) {
-    
-                        json = json[factory.collectionKey] || json;
-                        json = Array.isArray(json) ? json : [json];
-    
-                        for (i = 0; i < json.length; i ++) {
-                            item = json[i];
-                            record = this.findInCacheOrCreate(model, item[factory.primaryKey]);
-                            record.deserialize(item);
-                            records.push(record);
-                        }
-    
-                        collection = Collection.create({content : records});
-                        return collection;
-    
-                    }.bind(this));
-                },
-    
-                add : function (model, records) {
-    
-                    if (model instanceof Model || model instanceof Collection) {
-                        records = model;
-                        model = model.factory || model.constructor;
-                    }
-    
-                    records = [].concat(records);
-                    this.addToCache(model, records);
-                    return this.getCollection(model).pushObjects(records);
-                },
-    
-                remove : function (model, records) {
-    
-                    if (model instanceof Model || model instanceof Collection) {
-                        records = model;
-                        model = model.factory || model.constructor;
-                    }
-    
-                    records = [].concat(records);
-                    this.removeFromCache(model, records);
-                    return this.getCollection(model).removeObjects(records);
-                },
-    
-                injectType : function (type, data) {
-    
-                    var i,
-                        item,
-                        record,
-                        factory;
-    
-                    factory = this.getFactory(type);
-                    data = Array.isArray(data) ? data : [data];
-    
-                    for (i = 0; i < data.length; i ++) {
-                        item = data[i];
-                        if (item) {
-                            record = this.findInCacheOrCreate(factory, item[factory.primaryKey]);
-                            record.deserialize(item);
-                        }
-                    }
-                },
-    
-                inject : function (type, data) {
-    
-                    var p;
-    
-                    if (typeof type === 'object') {
-                        data = type;
-                        type = null;
-                    }
-    
-                    if (type) {
-                        return this.injectType(type, data);
-                    }
-    
-                    for (p in data) {
-                        if (this.__registry[p]) {
-                            this.injectType(p, data[p]);
-                        }
-                    }
-    
-                    next(this.fetchUnloadedRecords);
-                }
-            });
-    
-            return Store.create();
-        }
-    
-    ).attach('$b');
 
     $b('brink/node/build', 
     
@@ -7236,6 +5989,8 @@
                                 minifiedSrc;
     
                             metas = $b.require.metas();
+    
+                            metas.forEach(function (item){console.log(item.id);});
     
                             for (p in metas) {
     

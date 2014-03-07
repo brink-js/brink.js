@@ -48,7 +48,7 @@ $b(
 
                     if (dirtyIndex < 0 && isDirty) {
                         dirtyAttrs.push(key);
-                        this.set('dirtyAttributes') = dirtyAttrs;
+                        this.set('dirtyAttributes', dirtyAttrs);
                     }
 
                     else if (!isDirty && dirtyIndex >= 0) {

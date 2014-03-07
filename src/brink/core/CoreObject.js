@@ -35,7 +35,7 @@ $b(
 
 			proto = this.buildPrototype.call(this, props);
 
-			function Obj (callInit) {
+			function BrinkObject (callInit) {
 
 				var fn;
 
@@ -49,21 +49,21 @@ $b(
 					return this;
 				}
 
-				return Obj.extend.apply(Obj, arguments);
+				return BrinkObject.extend.apply(BrinkObject, arguments);
 			}
 
-			Obj.prototype = proto;
-			extend(Obj, this, proto.statics || {});
+			BrinkObject.prototype = proto;
+			extend(BrinkObject, this, proto.statics || {});
 
-			Obj.prototype.constructor = Obj;
+			BrinkObject.prototype.constructor = BrinkObject;
 
-			return Obj;
+			return BrinkObject;
 		};
 
 		CoreObject.buildPrototype = function (props) {
-			var F = function () {};
-			F.prototype = this.prototype;
-			return extend(new F(), props);
+			var BrinkPrototype = function () {};
+			BrinkPrototype.prototype = this.prototype;
+			return extend(new BrinkPrototype(), props);
 		};
 
 		CoreObject.inject = function (p, v) {
