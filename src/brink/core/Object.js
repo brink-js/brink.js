@@ -139,15 +139,6 @@ $b(
 
                     d = clone(d);
 
-                    if (d.get) {
-                        d.get = bindFunction(d.get, this);
-
-                    }
-
-                    if (d.set) {
-                        d.set = bindFunction(d.set, this);
-                    }
-
                    // Modern browsers, IE9 +
                     if (Object.defineProperty) {
                         Object.defineProperty(this, p, d);
@@ -188,18 +179,14 @@ $b(
             __readOnly : function (p) {
 
                 if (this.__meta.pojoStyle) {
-                    return bindFunction(function (val) {
-                        return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
-                    }, this);
+                    return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
                 };
             },
 
             __writeOnly : function (p) {
 
                 if (this.__meta.pojoStyle) {
-                    return bindFunction(function () {
-                        return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
-                    }, this);
+                    return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
                 };
             },
 
@@ -210,7 +197,7 @@ $b(
                 }
 
                 return function () {
-                    return this.get.call(this, p);
+                    return this.get(p);
                 }
             },
 
@@ -221,10 +208,11 @@ $b(
                 }
 
                 return function (val) {
-                    return this.set.call(this, p, val);
+                    return this.set(p, val);
                 }
             },
 
+            /* @doc Object.propertyDidChange */
             propertyDidChange : function () {
 
                 var props;
@@ -236,6 +224,7 @@ $b(
                 }
             },
 
+            /* @doc Object.getProperties */
             getProperties : function () {
 
                 var i,
@@ -263,10 +252,12 @@ $b(
                 return o;
             },
 
+            /* @doc Object.getChangedProperties */
             getChangedProperties : function () {
                 return this.getProperties.apply(this, this.__meta.changedProps);
             },
 
+            /* @doc Object.descriptor */
             descriptor : function (key, val) {
 
                 if (typeof this.__meta.properties[key] !== 'undefined') {
@@ -302,10 +293,12 @@ $b(
                 return val;
             },
 
+            /* @doc Object.bindProperty */
             bindProperty : function (key, obj, key2) {
                 return this.descriptor(key).bindTo(obj, key2);
             },
 
+            /* @doc Object.get */
             get : function (key) {
 
                 if (this.__meta.getters[key]) {
@@ -315,6 +308,7 @@ $b(
                 return this.__meta.pojoStyle ? this[key] : this.__meta.values[key];
             },
 
+            /* @doc Object.set */
             set : function (key, val, quiet, skipCompare) {
 
                 var i,
@@ -359,6 +353,7 @@ $b(
                 $b.error('Tried to call set with unsupported arguments', arguments);
             },
 
+            /* @doc Object.watch */
             watch : function (fn, props) {
 
                 var fn,
@@ -390,10 +385,11 @@ $b(
                 }
 
                 else {
-                    //$b.error('InstanceManager does not exist, can\'t watch for property changes.');
+                    $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
             },
 
+            /* @doc Object.unwatch */
             unwatch : function (fns) {
 
                 if ($b.instanceManager) {
@@ -401,11 +397,12 @@ $b(
                 }
 
                 else {
-                    //$b.error('InstanceManager does not exist, can\'t watch for property changes.');
+                    $b.error('InstanceManager does not exist, can\'t watch for property changes.');
                 }
 
             },
 
+            /* @doc Object.unwatchAll */
             unwatchAll : function () {
 
                 if ($b.instanceManager) {
@@ -417,16 +414,19 @@ $b(
                 }
             },
 
+            /* @doc Object.willNotifyWatchers */
             willNotifyWatchers : function () {
 
             },
 
+            /* @doc Object.didNotifyWatchers */
             didNotifyWatchers : function () {
                 if (this.__meta) {
                     this.__meta.changedProps = [];
                 }
             },
 
+            /* @doc Object.destroy */
             destroy : function () {
 
                 this.unwatchAll();
@@ -455,7 +455,7 @@ $b(
         };
 
         Obj.define = function () {
-            $b.define(this.prototype.__dependencies, bindFunction(this.resolveDependencies.bind, this));
+            $b.define(this.prototype.__dependencies, bindFunction(this.resolveDependencies, this));
             return this;
         };
 

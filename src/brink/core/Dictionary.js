@@ -6,7 +6,7 @@ $b(
 
     function (Obj) {
 
-		return Obj.extend({
+		return Obj({
 
             keys : null,
             values : null,
