@@ -2,14 +2,17 @@
 
     'use strict';
 
-    var _global,
+    var IS_NODE,
+        _global,
         origRequire,
         resolver,
         moduleIndex;
 
     moduleIndex = 0;
 
-    _global = typeof window !== 'undefined' ? window : global;
+    IS_NODE = typeof exports !== 'undefined' && this.exports !== exports;
+
+    _global = IS_NODE ? global : window;
     origRequire = typeof require !== 'undefined' ? require : null;
 
     resolver = (function () {
@@ -215,7 +218,7 @@
         function _inject (f, m, script, q, isReady, timeoutID) {
 
             // If in a CJS environment, resolve immediately.
-            if (typeof window === 'undefined') {
+            if (IS_NODE) {
                 origRequire(f);
                 _invokeAnonymousDefine(m, f);
                 return 1;
@@ -795,4 +798,4 @@
     if (origRequire) {
         require = origRequire;
     }
-})();
+}).call(this);

@@ -2,49 +2,64 @@ $b(
 
     [
         './computed',
+        './getObjKeyPair',
         './isBrinkInstance'
     ],
 
-    function (computed, isBrinkInstance) {
+    function (computed, getObjKeyPair, isBrinkInstance) {
 
         'use strict';
 
         return function (a, prop, isDefined) {
 
-            var b,
-                val;
+            var b;
 
-            $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
+            if (arguments.length > 1) {
 
-            val = a.get(prop);
+                $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
 
-            if (!isDefined) {
-                a.descriptor(prop);
+                if (!isDefined) {
+                    a.descriptor(prop);
+                }
+
+                b = computed({
+
+                    get : function () {
+                        return a ? a.get(prop) : val;
+                    },
+
+                    set : function (val) {
+                        val = val;
+                        return a ? a.set(prop, val) : val;
+                    },
+
+                    __didChange : function () {
+                        return b.didChange();
+                    },
+
+                    value : a.get(prop)
+                });
+
+                a.watch(prop, b.__didChange);
             }
 
-            b = computed({
+            else {
 
-                get : function () {
-                    return a ? a.get(prop) : val;
-                },
+                prop = a;
 
-                set : function (val) {
-                    val = val;
-                    return a ? a.set(prop, val) : val;
-                },
+                b = computed({
 
-                __didChange : function () {
-                    return b.didChange();
-                },
+                    watch : prop,
 
-                didChange : function () {
+                    get : function () {
+                        return this.get(prop);
+                    },
 
-                },
-
-                value : val
-            });
-
-            a.watch(prop, b.__didChange);
+                    set : function (val) {
+                        return this.set(prop, val);
+                    }
+                });
+            }
 
             return b;
         };

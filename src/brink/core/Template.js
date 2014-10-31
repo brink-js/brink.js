@@ -1,79 +1,134 @@
-$B.Template = $B.Class.extend({
+$b(
 
-    node : null,
-    isEmpty : false,
+    [
+        './Class',
+        '../dom/Node'
+    ],
 
-    context : $B.computed({
+    function (Class, Node) {
 
-        get : function () {
-            return this._context;
-        },
+        var HTMLNode;
 
-        set : function (val) {
+        if (typeof window !== 'undefined') {
 
-            this._context = val;
+            HTMLNode = window.Node;
+        }
 
-            if (this.node) {
-                this.node.set('context', val);
+        function replaceTags (s) {
+
+            var s2,
+                re;
+
+            re = /\{\s*\%\s*(\S*)\s([^%}]*?)\s*\%\s*\}([\s\S]*)\{\s*\%\s*(end\1)\s*\%\s*\}/gi;
+
+            while (s2 !== s) {
+
+                if (s2) {
+                    s = s2;
+                }
+
+                s2 = s.replace(re, '<br-tag $1="$2">$3</br-tag>');
             }
 
-            return val;
-        }
-    }),
-
-    parseHTML : function (s) {
-
-        var $ = this.parseHTML = window.$ || window.jQuery || function (s, el) {
-            el = document.createElement('div');
-            el.innerHTML = str;
-            return el.children;
+            return s;
         }
 
-        return $(s);
-    },
-
-    compile : function () {
-
-        var el;
-
-        el = this.el;
-
-        if (!el instanceof HTMLElement && !el instanceof Text && !el instanceof Attr) {
-            el = this.parseHTML(el);
-            $B.assert(el.length > 1, 'Templates must specify a root node.');
-            this.isEmpty(el.length === 0);
-            el = el[0];
+        function fixWhitespace (s) {
+            str.replace(/\s{2,}/g,' ');
         }
 
-        this.set('node', $B.DOM.Node.create({
-            node : el
-        }));
+        return Class({
 
-        return this.render;
-    },
+            el : null,
+            _context : null,
+            node : null,
+            isEmpty : false,
 
-    precompile : function () {
-        return this.compile();
-    },
+            context : $b.computed({
 
-    render : function (context) {
-        this.set('context', context);
-        return this;
-    },
+                get : function () {
+                    return this._context;
+                },
 
-    destroy : function () {
-        this.set('context', null);
-        this.node.destroy();
-        return this._super();
+                set : function (val) {
+
+                    this._context = val;
+
+                    return val;
+                }
+            }),
+
+            dom : $b.computed({
+
+                watch : 'node',
+
+                get : function () {
+
+                    var node = this.get('node');
+                    return node && node.get('node');
+                }
+
+            }),
+
+            init : function (el) {
+
+                $b.assert(!!el, 'Must pass a string or HTMLElement when constructing a Template');
+
+                this.el = el;
+                this.compile();
+            },
+
+            parseHTML : function (s) {
+
+                var $ = this.parseHTML = window.$ || window.jQuery || function (s, el) {
+                    el = document.createElement('div');
+                    el.innerHTML = s;
+                    return el.childNodes;
+                }
+
+                return $(s);
+            },
+
+            compile : function () {
+
+                var el;
+
+                el = this.el;
+
+                if (!(el instanceof HTMLNode)) {
+                    el = replaceTags(el);
+                    el = this.parseHTML(el);
+                    $b.assert('Templates must specify a root node.', el.length === 1);
+                    el = el[0];
+                }
+
+                this.set('node', Node.create({
+                    node : el,
+                    parent : this
+                }));
+
+                return this.render;
+            },
+
+            precompile : function () {
+                return this.compile();
+            },
+
+            render : function (context) {
+                this.set('context', context);
+
+                //this.node.propertyDidChange('context');
+                //this.get('node').set('context', context);
+                return this;
+            },
+
+            destroy : function () {
+                this.node.destroy();
+                this.set('context', null);
+                return this._super();
+            }
+
+        });
     }
-});
 
-$B.compileTemplate = $B.Template.compile = function (el) {
-    var tmpl = $B.Template.create({el: el});
-    return tmpl.compile();
-};
-
-$B.precompileTemplate = $B.Template.precompile = function (el) {
-    var tmpl = $B.Template.create({el: el});
-    return tmpl.precompile();
-};
+).attach('$b');

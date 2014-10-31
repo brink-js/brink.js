@@ -2,29 +2,41 @@ $b(
 
     [
         '../config',
+
         './CoreObject',
-        '../utils/bindFunction',
-        '../utils/bindTo',
+
+        '../utils/get',
+        '../utils/set',
         '../utils/clone',
         '../utils/merge',
+        '../utils/bindTo',
         '../utils/flatten',
         '../utils/intersect',
-        '../utils/expandProps',
         '../utils/isFunction',
+        '../utils/expandProps',
+        '../utils/bindFunction',
+        '../utils/getObjKeyPair',
         '../utils/defineProperty'
+
     ],
 
     function (
+
         config,
+
         CoreObject,
-        bindFunction,
-        bindTo,
+
+        get,
+        set,
         clone,
         merge,
+        bindTo,
         flatten,
         intersect,
-        expandProps,
         isFunction,
+        expandProps,
+        bindFunction,
+        getObjKeyPair,
         defineProperty
     ) {
 
@@ -154,7 +166,9 @@ $b(
                         this.__meta.pojoStyle = true;
                     }
 
-                    this.set(p, d.defaultValue, true, true);
+                    if (typeof d.defaultValue !== 'undefined') {
+                        this.set(p, d.defaultValue, true, true);
+                    }
                 }
 
                 else {
@@ -260,9 +274,15 @@ $b(
             /* @doc Object.descriptor */
             descriptor : function (key, val) {
 
-                if (typeof this.__meta.properties[key] !== 'undefined') {
+                var obj;
+
+                obj = getObjKeyPair(this, key);
+                key = obj[1];
+                obj = obj[0];
+
+                if (typeof obj.__meta.properties[key] !== 'undefined') {
                     if (typeof val === 'undefined') {
-                        return this.__meta.properties[key];
+                        return obj.__meta.properties[key];
                     }
                 }
 
@@ -275,19 +295,19 @@ $b(
                     };
                 }
 
-                val = this.__meta.properties[key] = defineProperty(this, key, val);
+                val = obj.__meta.properties[key] = defineProperty(obj, key, val);
                 val.key = key;
 
                 val.bindTo = bindFunction(function (o, p) {
-                    o.descriptor(p, bindTo(this, key, true));
-                }, this);
+                    o.descriptor(p, bindTo(obj, key, true));
+                }, obj);
 
                 val.didChange = bindFunction(function () {
-                    this.propertyDidChange(key);
-                }, this);
+                    obj.propertyDidChange(key);
+                }, obj);
 
-                if (this.__meta.isInitialized) {
-                    this.__defineProperty(key, val);
+                if (obj.__meta.isInitialized) {
+                    obj.__defineProperty(key, val);
                 }
 
                 return val;
@@ -300,57 +320,12 @@ $b(
 
             /* @doc Object.get */
             get : function (key) {
-
-                if (this.__meta.getters[key]) {
-                    return this.__meta.getters[key].call(this, key);
-                }
-
-                return this.__meta.pojoStyle ? this[key] : this.__meta.values[key];
+                return get(this, key);
             },
 
             /* @doc Object.set */
             set : function (key, val, quiet, skipCompare) {
-
-                var i,
-                    old;
-
-                if (typeof key === 'string') {
-
-                    old = this.get(key);
-
-                    if (skipCompare || old !== val) {
-
-                        if (this.__meta.setters[key]) {
-                            val = this.__meta.setters[key].call(this, val, key);
-                        }
-
-                        else {
-
-                            if (this.__meta.pojoStyle) {
-                                this[key] = val;
-                            }
-
-                            this.__meta.values[key] = val;
-                        }
-
-                        if (!quiet) {
-                            this.propertyDidChange(key);
-                        }
-                    }
-
-                    return val;
-                }
-
-                else if (arguments.length === 1) {
-
-                    for (i in key) {
-                        this.set(i, key[i], val);
-                    }
-
-                    return this;
-                }
-
-                $b.error('Tried to call set with unsupported arguments', arguments);
+                return set(this, key, val, quiet, skipCompare);
             },
 
             /* @doc Object.watch */
@@ -378,7 +353,7 @@ $b(
                     }
 
                     else {
-                        props = [].concat(props);
+                        props = expandProps([].concat(props));
                     }
 
                     $b.instanceManager.watch(this, props, fn);

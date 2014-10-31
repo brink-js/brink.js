@@ -1,247 +1,261 @@
-$B.DOM.Node = $B.Class.extend({
+$b(
 
-    childNodes : null,
-    domNodes : $B.alias('childNodes'),
+    [
+        '../core/Class',
+        '../utils/trim',
+        '../utils/merge',
+        '../utils/computed',
+        '../utils/intersect'
+    ],
 
-    helperNodes : null,
+    function (Class, trim, merge, computed, intersect) {
 
-    isDynamic : false,
-    watchedProperties : null,
-    templateString : null,
+        var Node = Class({
 
-    isElement : $B.computed({
+            childNodes : null,
+            watchedProperties : null,
+            isDynamic : false,
+            tokens : null,
 
-        watch : 'node',
+            context : $b.bindTo('parent.context'),
 
-        get : function () {
-            return this.get('node.nodeType') === 1;
+            isElement : computed({
 
-        }
-    }),
+                watch : 'node',
 
-    isAttr : $B.computed({
+                get : function () {
+                    var node = this.get('node');
+                    return node && node.nodeType === 1;
 
-        watch : 'node',
+                }
+            }),
 
-        get : function () {
-            return this.get('node.nodeType') === 3;
+            isAttr : computed({
 
-        }
-    }),
+                watch : 'node',
 
-    isText : $B.computed({
+                get : function () {
+                    var node = this.get('node');
+                    return node && node.nodeType === 2;
 
-        watch : 'node',
+                }
+            }),
 
-        get : function () {
-            return this.get('node.nodeType') === 3;
+            isText : computed({
 
-        }
-    }),
+                watch : 'node',
 
-    isHelperNode : $B.computed({
+                get : function () {
+                    var node = this.get('node');
+                    return node && node.nodeType === 3;
 
-        watch : 'node',
+                }
+            }),
 
-        get : function () {
-            return this.get('isText') && (this.get('isStartHelperNode') || this.get('isEndHelperNode'));
-        }
-    }),
+            node : computed({
 
-    isStartHelperNode : $B.computed({
+                get : function () {
+                    return this._node;
+                },
 
-        watch : 'node',
+                set : function (node) {
 
-        get : function () {
-            return this.get('value').indexOf('{{#') > -1;
-        }
+                    var i,
+                        child,
+                        childNodes;
 
-    }),
+                    this._node = node;
 
-    isEndHelperNode : $B.computed({
+                    childNodes = this.set('childNodes', []);
 
-        watch : 'node',
+                    if (!this.set('isDynamic', !node.childNodes.length)) {
 
-        get : function () {
-            return this.get('value').indexOf('{{/') > -1;
-        }
+                        this.set('watchedProperties', []);
 
-    }),
+                        for (i = 0; i < node.childNodes.length; i ++) {
 
-    context : $B.computed({
+                            child = Node.create({
+                                node : node.childNodes[i],
+                                parent : this
+                            });
+                            //console.log(child);
+                            childNodes.push(child);
 
-        watch : 'watchedProperties',
-
-        get : function () {
-            return this._context;
-        },
-
-        set : function (val) {
-            this._context = val;
-            this.update(null, true);
-            return val;
-        }
-    }),
-
-    node : $B.computed({
-
-        get : function () {
-            return this._node;
-        },
-
-        set : function (val) {
-
-            var i,
-                child,
-                childNodes,
-                helperNode,
-                helperNodes,
-                origChildNodes,
-                origHelperNodes;
-
-            this._node = node;
-            this.set('templateString', this.get('value');
-
-            childNodes = this.set('childNodes', []);
-            helperNodes = this.set('helperNodes', []);
-
-            this.set('watchedProperties', []);
-
-            if (!this.set('isDynamic', !node.childNodes.length)) {
-
-                for (i = 0; i < node.childNodes.length; i ++) {
-
-                    child = $B.DOM.Node.create({
-                        node : node.childNodes[i],
-                        parent : this
-                    });
-
-                    if (child.get('isHelperNode')) {
-
-                        child = $B.DOM.HelperNode.create({
-                            node : node.childNodes[i],
-                            parent : this
-                        });
-
-                        helperNodes.push(child);
-
-                        if (child.get('needsClosingHelperNode')) {
-
-                            helperNode = child;
-
-                            origChildNodes = childNodes;
-                            origHelperNodes = helperNodes;
-
-                            childNodes = [];
-                            helperNodes = [];
+                            this.set('watchedProperties', merge(this.get('watchedProperties'), child.get('watchedProperties')));
                         }
 
-                        else if (helperNode && child.get('isEndHelperNode')) {
-
-                            helperNode.set('endNode', child);
-                            helperNode.set('childNodes', childNodes);
-                            helperNode.set('helpderNodes', helperNodes);
-
-                            childNodes = origChildNodes;
-                            helperNodes = origHelperNodes;
-                            helperNode = null;
-                        }
+                        this.set('childNodes', childNodes);
                     }
 
                     else {
-                        childNodes.push(child);
+                        this.set('templateString', this.get('value'));
                     }
 
-                    this.set('watchedProperties', $B.merge(this.get('watchedProperties'), child.get('watchedProperties')));
+                    if (this.get('context')) {
+                        this.update(null, true);
+                    }
+
+                    return this._node;
+                }
+            }),
+
+            watchedProperties : $b.computed({
+
+                watch : ['isDynamic', 'templateString'],
+
+                get : function () {
+
+                    if (this.get('isDynamic')) {
+
+                    }
                 }
 
-                if (childNodes[0].isHelperNode()) {
+            }),
 
-                    $B.assert(!childNodes[childNodes.length -1].isHelperNode(), childNodes[i].get('value') ' is not property closed.');
+            valueProp : $b.computed({
 
+                watch : 'node',
+
+                get : function () {
+                    return this.get('isElement') ? 'innerHTML' : this.get('isAttr') ? 'value' : this.get('isText') ? 'nodeValue' : null;
+                }
+            }),
+
+            value : $b.computed({
+
+                get : function () {
+                    var node = this.get('node');
+                    return node && node[this.get('valueProp')];
+
+                },
+
+                set : function (val) {
+
+                    var node = this.get('node');
+
+                    if (node && val) {
+                        //console.log('fdsfdasf', val);
+                        node[this.get('valueProp')] = val;
+                    }
+
+                    return val;
+                }
+            }),
+
+            templateString : $b.computed({
+
+                get : function () {
+                    return this._templateString;
+                },
+
+                set : function (val) {
+
+                    var re,
+                        match,
+                        tokens;
+
+                    tokens = [];
+
+                    if (val) {
+
+                        re = /(?:\{\{\s*)([^\||}]+)(?:\|?)([\s\S]*?)(?:\s*\}\})/gi;
+
+                        val = val.replace(re, function (token, name, filter) {
+
+                            tokens.push({
+                                string : token,
+                                name : name,
+                                filter : filter || null
+                            });
+
+                            return '{{$' + (tokens.length - 1) + '}}';
+                        });
+
+                        val = trim(val);
+                    }
+
+                    this.set('tokens', tokens);
+                    this._templateString =  val || '';
+                }
+            }),
+
+            init : function () {
+
+                if (this.parent) {
+
+                    this.watch('parent', function () {
+                        console.log('aaa', this.context);
+                    }.bind(this));
+
+                    this.watch('context', function () {
+                        console.log('bbb', this.context);
+                        this.update(null, true);
+                    }.bind(this));
                 }
 
-                else {
-                    this.set('childNodes', childNodes);
+                //console.log('fdfa');
+                //this.watch(['context', 'watchedProperties'], this.contextWatcher.bind(this));
+            },
+
+            contextWatcher : function () {
+
+                var context,
+                    props;
+
+                context = this.get('context');
+                props = this.get('watchedProperties');
+
+                if (this.updateWatcher) {
+                    context.unwatch(this.update);
+                }
+
+                if (context && props && props.length) {
+                    context.watch(props, this.update);
+                }
+
+            },
+
+            appendTo : function (el) {
+                el.appendChild(this.node);
+            },
+
+            prependTo : function (el) {
+                el.insertBefore(this.node, el.firstChild);
+            },
+
+            parseTemplateString : function () {
+
+                var str,
+                    tokens;
+
+                this.set('templateString', this.get('value'));
+                str = this.get('templateString');
+                tokens = this.get('tokens');
+
+                for (i = 0; i < tokens.length; i ++) {
+                    str = str.replace('{{$' + i + '}}', this.get('context')[tokens[i].name]);
+                }
+
+                return str;
+            },
+
+            update : function (properties, forceUpdate) {
+
+                var i,
+                    childNodes;
+
+                //console.log('zzz', properties, this.get('watchedProperties'));
+
+                if (forceUpdate || intersect(this.get('watchedProperties'), properties).length) {
+                    //console.log('zzz', this.get('node'), this.get('isDynamic'));
+                    if (this.get('node') && this.get('isDynamic')) {
+                        this.set('value', this.parseTemplateString());
+                    }
                 }
             }
+        });
 
-            if (this.get('context')) {
-                this.update(null, true);
-            }
-
-            return this._node;
-        }
-    }),
-
-    valueProp : $B.computed({
-
-        watch : 'node',
-
-        get : function () {
-            return this.get('isElement') ? 'innerHTML' : this.get('isAttr') ? 'value' : this.get('isText') ? 'nodeValue' : null;
-        }
-    }),
-
-    value : $B.computed({
-
-        get : function () {
-            return this._node && this._node[this.get('valueProp')];
-
-        },
-
-        set : function (val) {
-
-            if (this._node) {
-                this._node[this.get('valueProp')] = val;
-            }
-
-            return val;
-        }
-    });
-
-    contextWatcher : $B.watch(function () {
-
-        var context,
-            props;
-
-        context = this.get('context');
-        props = this.get('watchedProperties');
-
-        if (this.updateWatcher) {
-            $B.unwatch(this.updateWatcher);
-            this.updateWatcher = null;
-        }
-
-        if (this.context && this.props && this.props.length) {
-            this.updateWatcher = $B.watch(this.update, context, props));
-        }
-
-    }, 'context', 'watchedProperties');
-
-    appendTo : function (el) {
-        el.appendChild(this.node);
-    },
-
-    prependTo : function (el) {
-        el.insertBefore(this.node, el.firstChild);
-    },
-
-    parseTemplateString : function () {
-        return $B.parseTemplateString(this.get('templateString'), this.get('context'), this.get('watchedProperties'));
-    },
-
-    update : function (properties, forceUpdate) {
-
-        var i,
-            childNodes;
-
-        if (forceUpdate || $B.intersect(this.get('watchedProperties'), properties).length) {
-
-            if (this.get('node') && this.isDynamic) {
-                this.set('value', this.parseTemplateString());
-            }
-        }
+        return Node;
     }
 
-});
+).attach('$b.dom');

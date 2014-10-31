@@ -51,7 +51,7 @@ $b(
 					p,
 					meta;
 
-                this._super();
+                this._super.apply(this, arguments);
 
                 meta = this.__meta;
 

@@ -1,41 +1,29 @@
-$B.DOM.HelperNode = $B.DOM.Node.extend({
+$b(
+    [
+        './Node',
+        '../utils/intersect'
+    ],
 
-    props : {
-        domNodes : null
-    },
+    function (Node, intersect) {
 
-    isHelperNode : $B.C(true),
+        var HelperNode = Node({
 
-    helper : function (val) {
+            isHelperNode : true,
 
-        if (typeof val !== undefined) {
-            this._helper = $B.getTemplateHelper(val);
-            $B.assert(this._helper, 'Invalid template helper "' + val + '"');
-        }
+            update : function (context, properties) {
 
-        return this._helper;
-    },
+                var domNodes,
+                    origDomNodes;
 
-    helperOptions : function (val) {
+                if (intersect(this.watchedProperties(), properties).length) {
+                    //this.nodes(this._helper(context, this.helperOptions(), this.childNodes));
+                }
 
-        if (typeof val !== undefined) {
-            this._helperOptions = val;
-            this.watchedProperties(this._helper.properties(val));
-        }
+            }
 
-        return this._helperOptions;
-    },
+        });
 
-    update : function (context, properties) {
-
-        var domNodes,
-            origDomNodes;
-
-        if ($B.intersect(this.watchedProperties(), properties).length) {
-            this.domNodes(this._helper(context, this.helperOptions(), this.childNodes()));
-        }
-
+        return HelperNode;
     }
 
-
-});
+).attach('$b.dom');

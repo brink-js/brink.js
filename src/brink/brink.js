@@ -3,14 +3,17 @@
 var $b,
 	_global,
 	CONFIG,
+	IS_NODE,
 	EMPTY_FN;
 
-_global = typeof window !== 'undefined' ? window : global;
+IS_NODE = typeof exports !== 'undefined' && this.exports !== exports;
+
+_global = IS_NODE ? global : window;
 CONFIG = _global.Brink || _global.$b || {};
 
 EMPTY_FN = function () {};
 
-if (typeof window === 'undefined') {
+if (IS_NODE) {
 	_global = global;
 	_global.include = _global.include || require;
 }
@@ -125,6 +128,10 @@ $b.init = function (deps, cb) {
 
 			'brink/core/InstanceManager',
 
+			'brink/core/Template',
+			'brink/dom/Node',
+			'brink/dom/HelperNode',
+
 			'brink/browser/ajax',
 			'brink/browser/ReactMixin',
 
@@ -156,7 +163,7 @@ $b.init = function (deps, cb) {
 	);
 };
 
-if (typeof window === 'undefined' && module && module.exports) {
+if (IS_NODE) {
 
 	$b.build = function () {
 
