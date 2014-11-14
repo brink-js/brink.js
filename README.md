@@ -4,7 +4,7 @@
 - Solves low-level problems with as little magic and opinion as possible.
 - Focuses on extensibiity and granularity. Use as much or as little of it as you want.
 - No external dependencies on other libraries or frameworks.
-- Plays nice with other libraries/frameworks. Easily use side-by-side with ReactJS or Angular.
+- Plays nice with other libraries/frameworks. Easily use side-by-side with <a href="http://jsfiddle.net/gigafied/VkebS/233/" target="_blank">ReactJS</a> or Angular.
 - < 20kb (minified and gzipped)
 
 ---------------------
