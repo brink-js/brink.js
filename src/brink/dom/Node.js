@@ -99,19 +99,6 @@ $b(
                 }
             }),
 
-            watchedProperties : $b.computed({
-
-                watch : ['isDynamic', 'templateString'],
-
-                get : function () {
-
-                    if (this.get('isDynamic')) {
-
-                    }
-                }
-
-            }),
-
             valueProp : $b.computed({
 
                 watch : 'node',

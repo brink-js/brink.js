@@ -6097,19 +6097,6 @@
                     }
                 }),
     
-                watchedProperties : $b.computed({
-    
-                    watch : ['isDynamic', 'templateString'],
-    
-                    get : function () {
-    
-                        if (this.get('isDynamic')) {
-    
-                        }
-                    }
-    
-                }),
-    
                 valueProp : $b.computed({
     
                     watch : 'node',
@@ -6613,7 +6600,7 @@
                                 }
                             }
     
-                            src = ';(function () {\n' + replaceModules(modules, src) + '\n})();';
+                            src = ';(function () {\n' + replaceModules(modules, src) + '\n}).call(this);';
     
                             if (opts.minifiedFile) {
     
@@ -6652,4 +6639,4 @@
     ).attach('$b');
     
 
-})();
+}).call(this);

@@ -116,7 +116,7 @@ $b(
                             }
                         }
 
-                        src = ';(function () {\n' + replaceModules(modules, src) + '\n})();';
+                        src = ';(function () {\n' + replaceModules(modules, src) + '\n}).call(this);';
 
                         if (opts.minifiedFile) {
 
