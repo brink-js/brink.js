@@ -22,4 +22,3 @@ jscs.on('exit', function (code, signal) {
     }
 
 });
-
