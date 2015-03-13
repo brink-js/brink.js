@@ -128,10 +128,6 @@ $b.init = function (deps, cb) {
 
 			'brink/core/InstanceManager',
 
-			'brink/core/Template',
-			'brink/dom/Node',
-			'brink/dom/HelperNode',
-
 			'brink/browser/ajax',
 			'brink/browser/ReactMixin',
 
