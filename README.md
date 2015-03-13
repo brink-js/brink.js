@@ -62,7 +62,7 @@ var a,
 a = $b.Object.create();
 b = $b.Object.create();
 
-a.bindToProperty('color', b, 'color');
+a.prop('color').bindTo(b, 'color');
 
 a.color = 'green';
 
@@ -193,9 +193,9 @@ You can bind properties to computed properties.
 #### Building
 
     $ npm install
-    $ node tasks/build.js
+    $ node tasks/build
 
 #### Running Unit Tests
 
     $ npm install
-    $ node tasks/test.js
+    $ node tasks/test

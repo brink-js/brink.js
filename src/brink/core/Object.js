@@ -65,7 +65,7 @@ $b(
                     o = clone(o);
 
                     for (p in o) {
-                        this.descriptor(p, o[p]);
+                        this.prop(p, o[p]);
                     }
                 }
 
@@ -135,7 +135,7 @@ $b(
                             }
 
                             else {
-                                this.descriptor.call(this, p, v);
+                                this.prop.call(this, p, v);
                             }
                         }
                     }
@@ -268,8 +268,8 @@ $b(
                 return this.getProperties.apply(this, this.__meta.changedProps);
             },
 
-            /* @doc Object.descriptor */
-            descriptor : function (key, val) {
+            /* @doc Object.prop */
+            prop : function (key, val) {
 
                 var obj;
 
@@ -296,7 +296,7 @@ $b(
                 val.key = key;
 
                 val.bindTo = bindFunction(function (o, p) {
-                    o.descriptor(p, bindTo(obj, key, true));
+                    o.prop(p, bindTo(obj, key, true));
                 }, obj);
 
                 val.didChange = bindFunction(function () {
@@ -312,7 +312,7 @@ $b(
 
             /* @doc Object.bindProperty */
             bindProperty : function (key, obj, key2) {
-                return this.descriptor(key).bindTo(obj, key2);
+                return this.prop(key).bindTo(obj, key2);
             },
 
             /* @doc Object.get */

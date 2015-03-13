@@ -8,7 +8,9 @@
         IS_NODE,
         EMPTY_FN;
     
-    IS_NODE = (typeof exports !== 'undefined') && (this.exports !== exports);
+    /*jshint ignore : start */
+    IS_NODE = typeof exports !== 'undefined' && this.exports !== exports;
+    /*jshint ignore : end */
     
     _global = IS_NODE ? global : window;
     CONFIG = _global.Brink || _global.$b || {};
@@ -1595,7 +1597,7 @@
                     $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
     
                     if (!isDefined) {
-                        a.descriptor(prop);
+                        a.prop(prop);
                     }
     
                     b = computed({
@@ -1739,7 +1741,15 @@
     
             'use strict';
     
-            return function (target) {
+            function isPlainObject (o) {
+                return isObject(o) && o.constructor === Object;
+            }
+    
+            function isArray (a) {
+                return Array.isArray(a);
+            }
+    
+            function extend (target) {
     
                 var i,
                     l,
@@ -1801,7 +1811,9 @@
                 }
     
                 return target;
-            };
+            }
+    
+            return extend;
         }
     
     ).attach('$b');
@@ -4343,7 +4355,7 @@
                         o = clone(o);
     
                         for (p in o) {
-                            this.descriptor(p, o[p]);
+                            this.prop(p, o[p]);
                         }
                     }
     
@@ -4413,7 +4425,7 @@
                                 }
     
                                 else {
-                                    this.descriptor.call(this, p, v);
+                                    this.prop.call(this, p, v);
                                 }
                             }
                         }
@@ -4546,8 +4558,8 @@
                     return this.getProperties.apply(this, this.__meta.changedProps);
                 },
     
-                /* @doc Object.descriptor */
-                descriptor : function (key, val) {
+                /* @doc Object.prop */
+                prop : function (key, val) {
     
                     var obj;
     
@@ -4574,7 +4586,7 @@
                     val.key = key;
     
                     val.bindTo = bindFunction(function (o, p) {
-                        o.descriptor(p, bindTo(obj, key, true));
+                        o.prop(p, bindTo(obj, key, true));
                     }, obj);
     
                     val.didChange = bindFunction(function () {
@@ -4590,7 +4602,7 @@
     
                 /* @doc Object.bindProperty */
                 bindProperty : function (key, obj, key2) {
-                    return this.descriptor(key).bindTo(obj, key2);
+                    return this.prop(key).bindTo(obj, key2);
                 },
     
                 /* @doc Object.get */
@@ -6070,20 +6082,18 @@
     
             return function (opts) {
     
-                var vm = require('vm'),
-                    fs = require('fs'),
-                    zlib = require('zlib'),
+                var fs = require('fs'),
                     path = require('path'),
                     includer = require('includer'),
                     wrench = require('wrench'),
                     uglify = require('uglify-js'),
                     minimatch = require('minimatch'),
-                    modules = [],
-                    src;
+                    modules = [];
     
                 console.log('');
     
                 /* jscs : disable validateQuoteMarks */
+                /* jshint quotmark : false */
     
                 function replaceAnonymousDefine (id, src) {
     
@@ -6211,7 +6221,7 @@
                         };
     
                         if (opts.modules.length) {
-                            b.require(opts.modules, cb);
+                            $b.require(opts.modules, cb);
                         }
     
                         else {

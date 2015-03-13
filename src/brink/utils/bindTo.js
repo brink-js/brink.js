@@ -19,7 +19,7 @@ $b(
                 $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(a));
 
                 if (!isDefined) {
-                    a.descriptor(prop);
+                    a.prop(prop);
                 }
 
                 b = computed({
