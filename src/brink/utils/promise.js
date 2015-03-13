@@ -1,4 +1,5 @@
 // https://github.com/tildeio/rsvp.js/
+/* jshint ignore:start */
 (function(global) {
 
 var define, requireModule, require, requirejs;
@@ -1697,7 +1698,7 @@ define("rsvp/promise/all",
     */
     __exports__["default"] = function all(entries, label) {
 
-      /*jshint validthis:true */
+
       var Constructor = this;
 
       return new Constructor(function(resolve, reject) {
@@ -1801,7 +1802,7 @@ define("rsvp/promise/cast",
     */
 
     __exports__["default"] = function cast(object, label) {
-      /*jshint validthis:true */
+
       var Constructor = this;
 
       if (object && typeof object === 'object' && object.constructor === Constructor) {
@@ -1817,8 +1818,6 @@ define("rsvp/promise/race",
   ["../utils","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
-    /* global toString */
-
     var isArray = __dependency1__.isArray;
     var isFunction = __dependency1__.isFunction;
     var isNonThenable = __dependency1__.isNonThenable;
@@ -1884,7 +1883,7 @@ define("rsvp/promise/race",
       promise to settle.
     */
     __exports__["default"] = function race(entries, label) {
-      /*jshint validthis:true */
+
       var Constructor = this, entry;
 
       return new Constructor(function(resolve, reject) {
@@ -1950,7 +1949,7 @@ define("rsvp/promise/reject",
       @return {Promise} a promise rejected with the given `reason`.
     */
     __exports__["default"] = function reject(reason, label) {
-      /*jshint validthis:true */
+
       var Constructor = this;
 
       return new Constructor(function (resolve, reject) {
@@ -1995,7 +1994,7 @@ define("rsvp/promise/resolve",
       `value`
     */
     __exports__["default"] = function resolve(value, label) {
-      /*jshint validthis:true */
+
       var Constructor = this;
 
       return new Constructor(function(resolve, reject) {
@@ -2181,9 +2180,10 @@ define("rsvp",
     __exports__.map = map;
     __exports__.filter = filter;
   });
-global.RSVP = requireModule('rsvp');
 
+global.RSVP = requireModule('rsvp');
 }($b));
+/* jshint ignore:end */
 
 $b(
 
@@ -2199,3 +2199,4 @@ $b(
     }
 
 ).attach('$b');
+

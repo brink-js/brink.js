@@ -25,7 +25,7 @@ $b(
                 b = computed({
 
                     get : function () {
-                        return a ? a.get(prop) : val;
+                        return a ? a.get(prop) : null;
                     },
 
                     set : function (val) {

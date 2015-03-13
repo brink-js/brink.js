@@ -11,8 +11,7 @@ $b(
 
         return function (obj, key, val, quiet, skipCompare) {
 
-            var i,
-                k;
+            var i;
 
             if (typeof key === 'string') {
 

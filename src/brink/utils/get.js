@@ -10,8 +10,7 @@ $b(
         return function (obj, key) {
 
             var i,
-                k,
-                val;
+                k;
 
             key = key.split('.');
 

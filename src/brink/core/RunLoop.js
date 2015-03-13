@@ -1,7 +1,7 @@
 $b(
 
     [
-        "./CoreObject"
+        './CoreObject'
     ],
 
     function (CoreObject) {
@@ -30,7 +30,7 @@ $b(
                 val = isNaN(val) ? val.toLowerCase() : val;
                 this.__interval = (val === 'raf' || val === 'requestanimationframe') ? 'raf' : val;
 
-                if(this.stopTimer()) {
+                if (this.stopTimer()) {
                     this.start();
                 }
             },
@@ -69,6 +69,7 @@ $b(
                 this.__started = true;
                 if (!this.__timerID || restart) {
                     this.stopTimer();
+                    /* jshint boss : true */
                     return this.__timerID = this.startTimer(function () {
                         this.start(true);
                         this.run();
@@ -91,6 +92,7 @@ $b(
 
             deferOnce : function () {
                 this.stopTimer();
+                /* jshint boss : true */
                 return this.__timerID = this.startTimer(function () {
                     this.stopTimer();
                     this.run();

@@ -14,7 +14,7 @@ $b(
                 o,
                 d;
 
-            function arrayOrObject (o, r) {
+            function arrayOrObject (o) {
                 return Array.isArray(o) ? [] : isObject(o) ? {} : false;
             }
 

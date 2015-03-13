@@ -6,7 +6,7 @@ $b(
 
         'use strict';
 
-        return function (Class, p, v) {
+        return function (Class) {
 
             Class.inject.apply(Class, arguments);
 

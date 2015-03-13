@@ -1,17 +1,19 @@
 $b(
 
     [
-    	'./Object'
+        './Object'
     ],
 
     function (Obj) {
 
-    	var Arr,
-    		AP;
+        'use strict';
 
-    	AP = Array.prototype;
+        var Arr,
+            AP;
 
-		Arr = Obj({
+        AP = Array.prototype;
+
+        Arr = Obj({
 
             content : null,
             length : 0,
@@ -19,33 +21,33 @@ $b(
             oldContent : null,
             pristineContent : null,
 
-			init : function (content) {
+            init : function (content) {
 
-				this.set('content', content);
+                this.set('content', content);
                 this.set('oldContent', content.concat());
-				this.set('length', this.content.length);
+                this.set('length', this.content.length);
 
                 this.watch('content', this.contentDidChange);
-			},
+            },
 
-			get : function (i) {
+            get : function (i) {
 
-				if (isNaN(i)) {
-					return Obj.prototype.get.apply(this, arguments);
-				}
+                if (isNaN(i)) {
+                    return Obj.prototype.get.apply(this, arguments);
+                }
 
-				return this.content[i];
-			},
+                return this.content[i];
+            },
 
-			set : function (i, val) {
+            set : function (i, val) {
 
-				if (isNaN(i)) {
-					return Obj.prototype.set.apply(this, arguments);
-				}
+                if (isNaN(i)) {
+                    return Obj.prototype.set.apply(this, arguments);
+                }
 
-				this.replaceAt(i, val);
-				return val;
-			},
+                this.replaceAt(i, val);
+                return val;
+            },
 
             findBy : function (q, v) {
 
@@ -87,118 +89,119 @@ $b(
 
             },
 
-			concat : function () {
-				var r = AP.concat.apply(this.content, arguments);
-				return this.prototype.constructor.create(r);
-			},
+            concat : function () {
+                var r = AP.concat.apply(this.content, arguments);
+                return this.prototype.constructor.create(r);
+            },
 
-			insert : function () {
-				return this.push.apply(this, arguments);
-			},
+            insert : function () {
+                return this.push.apply(this, arguments);
+            },
 
-			insertAt : function (i, o) {
-				this.splice(i, 0, o);
-				return this.get('length');
-			},
+            insertAt : function (i, o) {
+                this.splice(i, 0, o);
+                return this.get('length');
+            },
 
-			push : function () {
+            push : function () {
 
-				var i;
+                var i;
 
-				for (i = 0; i < arguments.length; i ++) {
-					this.insertAt(this.length, arguments[i]);
-				}
+                for (i = 0; i < arguments.length; i ++) {
+                    this.insertAt(this.length, arguments[i]);
+                }
 
-				return this.length;
-			},
+                return this.length;
+            },
 
-			pop : function (i) {
-				i = this.length - 1;
-				return this.removeAt(i);
-			},
+            pop : function (i) {
+                i = this.length - 1;
+                return this.removeAt(i);
+            },
 
-			remove : function (o, i) {
+            remove : function (o, i) {
 
-				i = this.content.indexOf(o);
+                i = this.content.indexOf(o);
 
-				if (~i) {
-					return this.removeAt(i);
-				}
+                if (~i) {
+                    return this.removeAt(i);
+                }
 
-				return false;
-			},
+                return false;
+            },
 
-			removeAt : function (i, r) {
-				r = AP.splice.call(this.content, i, 1);
-				this.contentDidChange();
-				return r[0];
-			},
+            removeAt : function (i, r) {
+                r = AP.splice.call(this.content, i, 1);
+                this.contentDidChange();
+                return r[0];
+            },
 
-			replace : function (a, b, i) {
+            replace : function (a, b, i) {
 
-				i = this.content.indexOf(a);
+                i = this.content.indexOf(a);
 
-				if (~i) {
-					return this.replaceAt(i, b);
-				}
-			},
+                if (~i) {
+                    return this.replaceAt(i, b);
+                }
+            },
 
-			replaceAt : function (i, o) {
-				this.removeAt(i);
-				return this.insertAt(i, o);
-			},
+            replaceAt : function (i, o) {
+                this.removeAt(i);
+                return this.insertAt(i, o);
+            },
 
-			splice : function (i, l) {
+            splice : function (i, l) {
 
-				var j,
+                var j,
                     rest,
-					removed;
+                    removed;
 
-				removed = [];
-				rest = AP.splice.call(arguments, 2, arguments.length);
+                removed = [];
+                rest = AP.splice.call(arguments, 2, arguments.length);
 
-				if (l > 0) {
+                if (l > 0) {
 
-					j = i;
-					l = i + l;
+                    j = i;
+                    l = i + l;
 
-					while (j < l) {
-						removed.push(this.removeAt(i));
+                    while (j < l) {
+                        removed.push(this.removeAt(i));
 
-						j ++;
-					}
-				}
+                        j ++;
+                    }
+                }
 
-				for (j = 0; j < rest.length; j ++) {
-					this.content.splice(i + j, 0, rest[j]);
-					this.contentDidChange();
-				}
+                for (j = 0; j < rest.length; j ++) {
+                    this.content.splice(i + j, 0, rest[j]);
+                    this.contentDidChange();
+                }
 
-				return removed;
-			},
+                return removed;
+            },
 
-			shift : function () {
-				return this.removeAt(0);
-			},
+            shift : function () {
+                return this.removeAt(0);
+            },
 
-			unshift : function () {
-				for (i = 0; i < arguments.length; i ++) {
-					this.insertAt(0, this.arguments[i]);
-				}
+            unshift : function () {
+                var i;
+                for (i = 0; i < arguments.length; i ++) {
+                    this.insertAt(0, this.arguments[i]);
+                }
 
-				return this.length;
-			},
+                return this.length;
+            },
 
-			reverse : function () {
-
+            reverse : function () {
+                var r;
                 if (!this.pristineContent) {
                     this.pristineContent = this.content;
                 }
 
-				r = AP.reverse.apply(this.content, arguments)
-				this.contentDidChange();
-				return this;
-			},
+                r = AP.reverse.apply(this.content, arguments);
+                this.contentDidChange();
+                return this;
+            },
 
             filter : function () {
 
@@ -206,22 +209,22 @@ $b(
                     this.pristineContent = this.content;
                 }
 
-                this.content = AP.filter.apply(this.content, arguments)
+                this.content = AP.filter.apply(this.content, arguments);
                 this.contentDidChange();
                 return this.content;
             },
 
-			sort : function () {
+            sort : function () {
 
                 if (!this.pristineContent) {
                     this.pristineContent = this.content;
                     this.content = this.content.concat();
                 }
 
-				AP.sort.apply(this.content, arguments)
-				this.contentDidChange();
-				return this.content;
-			},
+                AP.sort.apply(this.content, arguments);
+                this.contentDidChange();
+                return this.content;
+            },
 
             reset : function () {
                 this.content = this.pristineContent;
@@ -324,15 +327,14 @@ $b(
 
             },
 
-			contentDidChange : function () {
-				this.set('length', this.content.length);
+            contentDidChange : function () {
+                this.set('length', this.content.length);
                 this.propertyDidChange('@each');
-			}
+            }
 
-		});
+        });
 
-
-		return Arr;
-	}
+        return Arr;
+    }
 
 ).attach('$b');

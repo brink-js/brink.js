@@ -1,55 +1,54 @@
 $b(
 
     [
-    	'../config',
-    	'./Object',
-    	'./NotificationManager',
-    	'../utils/bindFunction',
-    	'../utils/clone'
+        '../config',
+        './Object',
+        './NotificationManager',
+        '../utils/bindFunction',
+        '../utils/merge'
     ],
 
-    function (config, Obj, NotificationManager, bindFunction, clone) {
+    function (config, Obj, NotificationManager, bindFunction, merge) {
 
         'use strict';
 
         var Class,
-        	superfy,
-        	doesCallSuper;
+            doesCallSuper;
 
-		function superfy (fn, superFn) {
+        function superfy (fn, superFn) {
 
-			return function () {
+            return function () {
 
-				var r, tmp = this._super || null;
+                var r, tmp = this._super || null;
 
-				// Reference the prototypes method, as super temporarily
-				this._super = superFn;
+                // Reference the prototypes method, as super temporarily
+                this._super = superFn;
 
-				r = fn.apply(this, arguments);
+                r = fn.apply(this, arguments);
 
-				// Reset _super
-				this._super = tmp;
-				return r;
-			};
-		};
+                // Reset _super
+                this._super = tmp;
+                return r;
+            };
+        }
 
-		/*
-		If Function.toString() works as expected, return a regex that checks for `this._super`
-		otherwise return a regex that passes everything.
-		*/
+        /*
+        If Function.toString() works as expected, return a regex that checks for `this._super`
+        otherwise return a regex that passes everything.
+        */
 
-		doesCallSuper = (/xyz/).test(function () {
-			var xyz;
-			xyz = true;
-		}) ? (/\bthis\._super\b/) : (/.*/);
+        doesCallSuper = (/xyz/).test(function () {
+            var xyz;
+            xyz = true;
+        }) ? (/\bthis\._super\b/) : (/.*/);
 
-		Class = Obj({
+        Class = Obj({
 
-			__init : superfy(function () {
+            __init : superfy(function () {
 
-				var i,
-					p,
-					meta;
+                var i,
+                    p,
+                    meta;
 
                 this._super.apply(this, arguments);
 
@@ -71,100 +70,98 @@ $b(
                 if (config.AUTO_BIND_METHODS || 1) {
                     for (i = 0; i < meta.methods.length; i ++) {
                         p = meta.methods[i];
-                    	if (!~p.indexOf('__')) {
-	                        this[p] = bindFunction(this[p], this);
-	                    }
-	                }
+                        if (!~p.indexOf('__')) {
+                            this[p] = bindFunction(this[p], this);
+                        }
+                    }
                 }
 
                 return this;
 
-			}, Obj.prototype.__init),
+            }, Obj.prototype.__init),
 
-			subscribe : function (name, handler, priority) {
+            subscribe : function (name, handler, priority) {
 
-				this._interestHandlers = this._interestHandlers || {};
+                this._interestHandlers = this._interestHandlers || {};
 
-				if (handler && !this._interestHandlers[name]) {
-					handler = handler;
-					NotificationManager.subscribe(name, handler, priority);
-					this._interestHandlers[name] = handler;
-				}
-			},
+                if (handler && !this._interestHandlers[name]) {
+                    handler = handler;
+                    NotificationManager.subscribe(name, handler, priority);
+                    this._interestHandlers[name] = handler;
+                }
+            },
 
-			unsubscribe : function (name) {
+            unsubscribe : function (name) {
 
-				if (this._interestHandlers && this._interestHandlers[name]) {
-					NotificationManager.unsubscribe(name, this._interestHandlers[name]);
-					delete this._interestHandlers[name];
-				}
-			},
+                if (this._interestHandlers && this._interestHandlers[name]) {
+                    NotificationManager.unsubscribe(name, this._interestHandlers[name]);
+                    delete this._interestHandlers[name];
+                }
+            },
 
-			unsubscribeAll : function () {
+            unsubscribeAll : function () {
 
-				var interest;
+                var interest;
 
-				for (interest in this._interestHandlers) {
-					if (this._interestHandlers.hasOwnProperty(interest)) {
-						this.unsubscribe(interest);
-					}
-				}
+                for (interest in this._interestHandlers) {
+                    if (this._interestHandlers.hasOwnProperty(interest)) {
+                        this.unsubscribe(interest);
+                    }
+                }
 
-				this._interestHandlers = [];
-			},
+                this._interestHandlers = [];
+            },
 
-			publish : function (/*name, arg1, arg2, arg3..., callback*/) {
-				var args = Array.prototype.slice.call(arguments);
-				NotificationManager.publish.apply(NotificationManager, [].concat(args, this));
-			},
+            publish : function (/*name, arg1, arg2, arg3..., callback*/) {
+                var args = Array.prototype.slice.call(arguments);
+                NotificationManager.publish.apply(NotificationManager, [].concat(args, this));
+            },
 
-			setTimeout : function (func, delay) {
-				return setTimeout(func.bind(this), delay);
-			},
+            setTimeout : function (func, delay) {
+                return setTimeout(func.bind(this), delay);
+            },
 
-			setInterval : function (func, delay) {
-				return setInterval(func.bind(this), delay);
-			},
+            setInterval : function (func, delay) {
+                return setInterval(func.bind(this), delay);
+            },
 
-			destroy : superfy(function () {
-				this.unsubscribeAll();
-				return this._super.apply(this, arguments);
-			}, Obj.prototype.destroy)
-		});
+            destroy : superfy(function () {
+                this.unsubscribeAll();
+                return this._super.apply(this, arguments);
+            }, Obj.prototype.destroy)
+        });
 
-		Class.buildPrototype = function (props) {
+        Class.buildPrototype = function (props) {
 
-			var p,
-				props,
-				proto;
+            var p,
+                proto;
 
-			proto = Obj.buildPrototype.call(this, props);
+            proto = Obj.buildPrototype.call(this, props);
 
-			for (p in props) {
+            for (p in props) {
 
-				if (
-					typeof props[p] === 'function' &&
-					typeof this.prototype[p] === 'function' &&
-					doesCallSuper.test(props[p])
-				) {
-					// this._super() magic, as-needed
-					proto[p] = superfy(props[p], this.prototype[p]);
-				}
+                if (
+                    typeof props[p] === 'function' &&
+                    typeof this.prototype[p] === 'function' &&
+                    doesCallSuper.test(props[p])
+                ) {
+                    // this._super() magic, as-needed
+                    proto[p] = superfy(props[p], this.prototype[p]);
+                }
 
+                else if (
+                    typeof props[p] === 'object' && (
+                        p === 'concatProps' ||
+                        ~(props.concatProps || []).indexOf(p) ||
+                        ~(this.prototype.concatProps || []).indexOf(p)
+                    )
+                ) {
+                    proto[p] = merge(this.prototype[p], props[p]);
+                }
+            }
 
-				else if (
-					typeof props[p] === 'object' && (
-						p === 'concatProps' ||
-						~(props.concatProps || []).indexOf(p) ||
-						~(this.prototype.concatProps || []).indexOf(p)
-					)
-				) {
-					proto[p] = merge(this.prototype[p], props[p]);
-				}
-			}
-
-			return proto;
-		};
+            return proto;
+        };
 
         return Class;
     }

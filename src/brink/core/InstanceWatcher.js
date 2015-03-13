@@ -71,7 +71,7 @@ $b(
                     instance.willNotifyWatchers.call(instance);
                 }
 
-                while(this.watchLoop.run()) {
+                while (this.watchLoop.run()) {
 
                 }
 
@@ -82,8 +82,13 @@ $b(
 
                 this.instances.forEach(function (meta, instance) {
 
-                    config.DIRTY_CHECK && this.dirtyCheck(meta, instance);
-                    meta.changedProps.length && this.notifyWatchers(meta, instance);
+                    if (config.DIRTY_CHECK) {
+                        this.dirtyCheck(meta, instance);
+                    }
+
+                    if (meta.changedProps.length) {
+                        this.notifyWatchers(meta, instance);
+                    }
 
                 }, this);
 

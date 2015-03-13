@@ -5,7 +5,7 @@ $b(
         'use strict';
 
         return function (obj) {
-            return typeof obj == 'function';
+            return typeof obj === 'function';
         };
     }
 

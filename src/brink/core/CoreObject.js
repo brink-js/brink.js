@@ -1,100 +1,97 @@
 $b(
 
     [
-    	'../utils/extend',
-    	'../utils/isBrinkObject'
+        '../utils/extend'
     ],
 
-    function (extend, isBrinkObject) {
+    function (extend) {
 
         'use strict';
 
-		var CoreObject,
-			Prototype;
+        var CoreObject;
 
-		CoreObject = function () {};
+        CoreObject = function () {};
 
-		CoreObject.extend = function (props) {
+        CoreObject.extend = function (props) {
 
-			var C,
-				i,
-				proto;
+            var C,
+                i,
+                proto;
 
-			if (arguments.length > 1) {
+            if (arguments.length > 1) {
 
-				i = 0;
-				C = this;
+                i = 0;
+                C = this;
 
-				while (i < arguments.length - 1) {
-					C = C.extend(arguments[i]);
-					i ++;
-				}
+                while (i < arguments.length - 1) {
+                    C = C.extend(arguments[i]);
+                    i ++;
+                }
 
-				return C;
-			}
+                return C;
+            }
 
-			proto = this.buildPrototype.call(this, props);
+            proto = this.buildPrototype.call(this, props);
 
-			function BrinkObject (callInit) {
+            function BrinkObject (callInit) {
 
-				var fn;
+                var fn;
 
-				if (callInit === true || callInit === false) {
+                if (callInit === true || callInit === false) {
 
-					if (callInit) {
-						fn = this.__init || this.init || this.constructor;
-						fn.call(this);
-					}
+                    if (callInit) {
+                        fn = this.__init || this.init || this.constructor;
+                        fn.call(this);
+                    }
 
-					return this;
-				}
+                    return this;
+                }
 
-				return BrinkObject.extend.apply(BrinkObject, arguments);
-			}
+                return BrinkObject.extend.apply(BrinkObject, arguments);
+            }
 
-			BrinkObject.prototype = proto;
-			extend(BrinkObject, this, proto.statics || {});
+            BrinkObject.prototype = proto;
+            extend(BrinkObject, this, proto.statics || {});
 
-			BrinkObject.prototype.constructor = BrinkObject;
+            BrinkObject.prototype.constructor = BrinkObject;
 
-			return BrinkObject;
-		};
+            return BrinkObject;
+        };
 
-		CoreObject.buildPrototype = function (props) {
-			var BrinkPrototype = function () {};
-			BrinkPrototype.prototype = this.prototype;
-			return extend(new BrinkPrototype(), props);
-		};
+        CoreObject.buildPrototype = function (props) {
+            var BrinkPrototype = function () {};
+            BrinkPrototype.prototype = this.prototype;
+            return extend(new BrinkPrototype(), props);
+        };
 
-		CoreObject.inject = function (p, v) {
+        CoreObject.inject = function (p, v) {
 
-			if (typeof p === 'object') {
-				extend(this.prototype, p);
-			}
+            if (typeof p === 'object') {
+                extend(this.prototype, p);
+            }
 
-			else {
-				this.prototype[p] = v;
-			}
+            else {
+                this.prototype[p] = v;
+            }
 
-			return this;
-		};
+            return this;
+        };
 
-		CoreObject.create = function (o) {
+        CoreObject.create = function () {
 
-			var p,
-				init,
-				instance;
+            var init,
+                instance;
 
-			instance = new this(false);
+            instance = new this(false);
 
-			init = instance.__init || instance.init;
+            init = instance.__init || instance.init;
 
-			if (init) {
-				instance = init.apply(instance, arguments) || instance;
-			}
+            if (init) {
+                instance = init.apply(instance, arguments) || instance;
+            }
 
-			return instance;
-		};
+            return instance;
+        };
 
         return CoreObject;
     }

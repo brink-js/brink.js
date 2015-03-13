@@ -23,7 +23,11 @@ $b(
             descriptor.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
             descriptor.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
 
-            descriptor.defaultValue = typeof descriptor.defaultValue !== 'undefined' ? descriptor.defaultValue : descriptor.value;
+            descriptor.defaultValue = (
+                typeof descriptor.defaultValue !== 'undefined' ?
+                descriptor.defaultValue :
+                descriptor.value
+            );
 
             delete descriptor.value;
             delete descriptor.writable;

@@ -8,18 +8,18 @@ $b(
 
         return function (opts) {
 
-            var vm = require('vm'),
-                fs = require('fs'),
-                zlib = require('zlib'),
+            var fs = require('fs'),
                 path = require('path'),
                 includer = require('includer'),
                 wrench = require('wrench'),
                 uglify = require('uglify-js'),
                 minimatch = require('minimatch'),
-                modules = [],
-                src;
+                modules = [];
 
             console.log('');
+
+            /* jscs : disable validateQuoteMarks */
+            /* jshint quotmark : false */
 
             function replaceAnonymousDefine (id, src) {
 
@@ -27,10 +27,14 @@ $b(
                 src = src.replace(/(\$b|\.define)(\s)?(\()/, "$1$2$3'" + id + "', ");
                 return src;
             }
+            /* jscs : enable */
 
             function replaceModules (modules, src) {
 
-                return src.replace(/([t| ]+)(\/\*{{modules}}\*\/)([\s\S]+?)(\/\*{{\/modules}}\*\/)/, '$1' + JSON.stringify(modules, null, '    ').split('\n').join('\n$1'));
+                return src.replace(
+                    /([t| ]+)(\/\*{{modules}}\*\/)([\s\S]+?)(\/\*{{\/modules}}\*\/)/,
+                    '$1' + JSON.stringify(modules, null, '    ').split('\n').join('\n$1')
+                );
             }
 
             function wrap (src) {
@@ -96,7 +100,9 @@ $b(
 
                         metas = $b.require.metas();
 
-                        metas.forEach(function (item){console.log(item.id);});
+                        metas.forEach(function (item) {
+                            console.log(item.id);
+                        });
 
                         for (p in metas) {
 
@@ -141,7 +147,7 @@ $b(
                     };
 
                     if (opts.modules.length) {
-                        b.require(opts.modules, cb);
+                        $b.require(opts.modules, cb);
                     }
 
                     else {

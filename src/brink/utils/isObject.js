@@ -5,9 +5,9 @@ $b(
         'use strict';
 
         var objectTypes = {
-            'function': true,
-            'object': true,
-            'unknown': true
+            'function' : true,
+            'object' : true,
+            'unknown' : true
         };
 
         return function (obj) {

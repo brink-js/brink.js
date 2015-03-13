@@ -48,9 +48,7 @@ $b(
 
             __init : function (o) {
 
-                var i,
-                    p,
-                    d,
+                var p,
                     meta;
 
                 if (!this.__meta) {
@@ -159,7 +157,7 @@ $b(
                     // Old FF
                     else if (this.__defineGetter__) {
                         this.__defineGetter__(p, d.get);
-                        this.__defineSetter__(p, d.set);
+                        this.__defineSetter__(p, d.set);
                     }
 
                     else {
@@ -194,14 +192,14 @@ $b(
 
                 if (this.__meta.pojoStyle) {
                     return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
-                };
+                }
             },
 
             __writeOnly : function (p) {
 
                 if (this.__meta.pojoStyle) {
                     return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
-                };
+                }
             },
 
             __defineGetter : function (p, fn) {
@@ -212,7 +210,7 @@ $b(
 
                 return function () {
                     return this.get(p);
-                }
+                };
             },
 
             __defineSetter : function (p, fn) {
@@ -223,7 +221,7 @@ $b(
 
                 return function (val) {
                     return this.set(p, val);
-                }
+                };
             },
 
             /* @doc Object.propertyDidChange */
@@ -257,7 +255,6 @@ $b(
 
                     return o;
                 }
-
 
                 for (p in this.__meta.properties) {
                     o[p] = this.get(p);
@@ -331,9 +328,6 @@ $b(
             /* @doc Object.watch */
             watch : function (fn, props) {
 
-                var fn,
-                    props;
-
                 fn = arguments[1];
                 props = arguments[0];
 
@@ -365,7 +359,7 @@ $b(
             },
 
             /* @doc Object.unwatch */
-            unwatch : function (fns) {
+            unwatch : function () {
 
                 if ($b.instanceManager) {
                     $b.instanceManager.unwatch(this, flatten(arguments));
@@ -417,8 +411,7 @@ $b(
 
         Obj.extend = function () {
 
-            var meta,
-                proto,
+            var proto,
                 SubObj;
 
             SubObj = CoreObject.extend.apply(this, arguments);

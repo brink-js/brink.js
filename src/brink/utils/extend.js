@@ -9,69 +9,79 @@ $b(
 
         'use strict';
 
-        return function (target) {
+        function isPlainObject (o) {
+            return isObject(o) && o.constructor === Object;
+        }
 
-			var i,
-				l,
-				src,
-				clone,
-				copy,
-				deep,
-				name,
-				options,
-				copyIsArray;
+        function isArray (a) {
+            return Array.isArray(a);
+        }
 
-			// Handle case when target is a string or something (possible in deep copy)
-			if (typeof target !== "object" && !isFunction(target)) {
-			    target = {};
-			}
+        function extend (target) {
 
-			i = isObject(arguments[1]) ? 1 : 2;
-			deep = (arguments[1] === true);
+            var i,
+                l,
+                src,
+                clone,
+                copy,
+                deep,
+                name,
+                options,
+                copyIsArray;
 
-			for (l = arguments.length; i < l; i ++) {
+            // Handle case when target is a string or something (possible in deep copy)
+            if (typeof target !== 'object' && !isFunction(target)) {
+                target = {};
+            }
 
-			    // Only deal with non-null/undefined values
-			    if ((options = arguments[i]) != null) {
+            i = isObject(arguments[1]) ? 1 : 2;
+            deep = (arguments[1] === true);
 
-			        // Extend the base object
-			        for (name in options) {
+            for (l = arguments.length; i < l; i ++) {
 
-			            src = target[name];
-			            copy = options[name];
+                // Only deal with non-null/undefined values
+                if ((options = arguments[i]) != null) {
 
-			            // Prevent never-ending loop
-			            if (target === copy) {
-			                continue;
-			            }
+                    // Extend the base object
+                    for (name in options) {
 
-			            // Recurse if we're merging plain objects or arrays
-			            if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+                        src = target[name];
+                        copy = options[name];
 
-			                if (copyIsArray) {
-			                    copyIsArray = false;
-			                    clone = src && isArray(src) ? src : [];
+                        // Prevent never-ending loop
+                        if (target === copy) {
+                            continue;
+                        }
 
-			                }
+                        // Recurse if we're merging plain objects or arrays
+                        if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
 
-			                else {
-			                    clone = src && isPlainObject(src) ? src : {};
-			                }
+                            if (copyIsArray) {
+                                copyIsArray = false;
+                                clone = src && isArray(src) ? src : [];
 
-			                // Never move original objects, clone them
-			                target[name] = extend(clone, deep, copy);
-			            }
+                            }
 
-			            // Don't bring in undefined values
-			            else if (copy !== undefined) {
-			                target[name] = copy;
-			            }
-			        }
-			    }
-			}
+                            else {
+                                clone = src && isPlainObject(src) ? src : {};
+                            }
 
-			return target;
-        };
+                            // Never move original objects, clone them
+                            target[name] = extend(clone, deep, copy);
+                        }
+
+                        // Don't bring in undefined values
+                        else if (copy !== undefined) {
+                            target[name] = copy;
+                        }
+                    }
+                }
+            }
+
+            return target;
+        }
+
+        return extend;
     }
 
 ).attach('$b');

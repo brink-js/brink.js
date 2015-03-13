@@ -1,7 +1,7 @@
 $b(
 
     [
-    	'./CoreObject',
+        './CoreObject',
         './Dictionary',
         './InstanceWatcher',
         '../config',
@@ -11,10 +11,12 @@ $b(
 
     function (CoreObject, Dictionary, InstanceWatcher, config, merge, flatten) {
 
+        'use strict';
+
         var InstanceManager,
             IID = 1;
 
-		InstanceManager = CoreObject.extend({
+        InstanceManager = CoreObject.extend({
 
             instances : null,
 
@@ -41,7 +43,7 @@ $b(
                 return meta;
             },
 
-            remove : function (instance) {
+            remove : function () {
                 this.instances.remove.apply(this.instances, arguments);
             },
 
@@ -86,11 +88,7 @@ $b(
 
             watch : function (obj, props, fn) {
 
-                var i,
-                    p,
-                    t,
-                    k,
-                    idx,
+                var idx,
                     meta;
 
                 meta = obj.__meta;
@@ -144,10 +142,10 @@ $b(
                 meta.watchedProps = [];
             }
 
-		});
+        });
 
         $b.define('instanceManager', InstanceManager.create({})).attach('$b');
 
         return $b('instanceManager');
-	}
+    }
 );

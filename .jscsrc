@@ -1,0 +1,14 @@
+{
+	"preset": "yandex",
+	"disallowKeywordsOnNewLine": null,
+	"disallowSpaceAfterObjectKeys": null,
+	"requireLineFeedAtFileEnd": null,
+	"disallowSpaceBeforePostfixUnaryOperators": null,
+	"disallowImplicitTypeConversion": null,
+	"disallowSpacesInFunctionDeclaration": null,
+	"disallowSpacesInNamedFunctionExpression": null,
+    "disallowMultipleVarDecl" : null,
+    "disallowQuotedKeysInObjects" : null,
+    "disallowEmptyBlocks" : null,
+    "excludeFiles": ["node_modules/**", "src/brink/utils/promise.js"]
+}

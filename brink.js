@@ -3,12 +3,12 @@
     'use strict';
     
     var $b,
-    	_global,
-    	CONFIG,
-    	IS_NODE,
-    	EMPTY_FN;
+        _global,
+        CONFIG,
+        IS_NODE,
+        EMPTY_FN;
     
-    IS_NODE = typeof exports !== 'undefined' && this.exports !== exports;
+    IS_NODE = (typeof exports !== 'undefined') && (this.exports !== exports);
     
     _global = IS_NODE ? global : window;
     CONFIG = _global.Brink || _global.$b || {};
@@ -16,39 +16,39 @@
     EMPTY_FN = function () {};
     
     if (IS_NODE) {
-    	_global = global;
-    	_global.include = _global.include || require;
+        _global = global;
+        _global.include = _global.include || require;
     }
     
     else {
-    	_global = window;
+        _global = window;
     }
     
     $b = _global.$b = _global.Brink = function () {
     
-    	var args;
+        var args;
     
-    	args = Array.prototype.slice.call(arguments, 0);
+        args = Array.prototype.slice.call(arguments, 0);
     
-    	if (args.length) {
+        if (args.length) {
     
-    		if (args.length === 1 && typeof args[0] === 'string') {
-    			if ($b.require) {
-    				return $b.require.apply(_global, args);
-    			}
-    		}
+            if (args.length === 1 && typeof args[0] === 'string') {
+                if ($b.require) {
+                    return $b.require.apply(_global, args);
+                }
+            }
     
-    		if ($b.define) {
+            if ($b.define) {
     
-    			if (!Array.isArray(args[0]) && !Array.isArray(args[1])) {
-    				args.splice(args.length - 1, 0, []);
-    			}
+                if (!Array.isArray(args[0]) && !Array.isArray(args[1])) {
+                    args.splice(args.length - 1, 0, []);
+                }
     
-    			return $b.define.apply(_global, args);
-    		}
-    	}
+                return $b.define.apply(_global, args);
+            }
+        }
     
-    	return $b;
+        return $b;
     };
     
     /********* POLYFILLS *********/
@@ -136,9 +136,9 @@
         
             if (!Array.isArray) {
         
-            	Array.isArray = function (vArg) {
-            		return Object.prototype.toString.call(vArg) === "[object Array]";
-            	};
+                Array.isArray = function (vArg) {
+                    return Object.prototype.toString.call(vArg) === '[object Array]';
+                };
             }
         
         })();
@@ -180,17 +180,18 @@
         
         	var _global = typeof window !== 'undefined' ? window : global;
         
-        	if (typeof _global !=="undefined" && (!_global.requestAnimationFrame || !_global.cancelAnimationFrame)) {
+        	if (typeof _global !== 'undefined' && (!_global.requestAnimationFrame || !_global.cancelAnimationFrame)) {
         
         		var lastTime = 0;
         		var vendors = ['ms', 'moz', 'webkit', 'o'];
         		for (var x = 0; x < vendors.length && !_global.requestAnimationFrame; x ++) {
         			_global.requestAnimationFrame = _global[vendors[x] + 'RequestAnimationFrame'];
-        			_global.cancelAnimationFrame = _global[vendors[x] + 'CancelAnimationFrame'] || _global[vendors[x] + 'CancelRequestAnimationFrame'];
+        			_global.cancelAnimationFrame = _global[vendors[x] + 'CancelAnimationFrame'] ||
+        				_global[vendors[x] + 'CancelRequestAnimationFrame'];
         		}
         
         		if (!_global.requestAnimationFrame) {
-        			_global.requestAnimationFrame = function (callback, element) {
+        			_global.requestAnimationFrame = function (callback) {
         				var currTime = new Date().getTime();
         				var timeToCall = Math.max(0, 16 - (currTime - lastTime));
         				var id = _global.setTimeout(function () {
@@ -213,9 +214,9 @@
         })();
     
     /*
-    	These are empty functions for production builds,
-    	only the dev version actually implements these, but
-    	we don't want code that uses them to Error.
+        These are empty functions for production builds,
+        only the dev version actually implements these, but
+        we don't want code that uses them to Error.
     */
     
     $b.assert = $b.error = $b.required = EMPTY_FN;
@@ -250,12 +251,12 @@
                     // Used for checking circular dependencies.
                     _dependencies = {},
                     // Used in various places, defined here for smaller file size
-                    _rem = ["require", "exports", "module"],
+                    _rem = ['require', 'exports', 'module'],
         
                     // Configurable properties...
                     _config = {},
-                    _baseUrl = "",
-                    _urlArgs = "",
+                    _baseUrl = '',
+                    _urlArgs = '',
                     _waitSeconds = 10,
                     _paths = {};
         
@@ -264,17 +265,17 @@
                 * takes care of `../` and `./` parts
                 */
                 function _normalize (path, prevPath) {
-                    // Replace any matches of "./"  with "/"
-                    path = path.replace(/(^|[^\.])(\.\/)/g, "$1");
+                    // Replace any matches of './'  with '/'
+                    path = path.replace(/(^|[^\.])(\.\/)/g, '$1');
         
-                    // Replace any matches of "some/path/../" with "some/"
+                    // Replace any matches of 'some/path/../' with 'some/'
                     while (prevPath !== path) {
                         prevPath = path;
-                        path = path.replace(/([\w,\-]*[\/]{1,})([\.]{2,}\/)/g, "");
+                        path = path.replace(/([\w,\-]*[\/]{1,})([\.]{2,}\/)/g, '');
                     }
         
-                    // Replace any matches of multiple "/" with a single "/"
-                    return path.replace(/(\/{2,})/g, "/");
+                    // Replace any matches of multiple '/' with a single '/'
+                    return path.replace(/(\/{2,})/g, '/');
                 }
         
                 function _meta () {
@@ -337,7 +338,7 @@
                                     if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
                                         module.toString = function () {
                                             return 'Brink.' + idPart;
-                                        }
+                                        };
                                     }
                                 }
         
@@ -350,18 +351,18 @@
         
                                     module.toString = function () {
                                         return id;
-                                    }
+                                    };
                                 }
                             }
                         }
-                    }
+                    };
                 }
         
                 /**
                 * Similar to UNIX dirname, returns the parent path of another path.
                 */
                 function _getContext (path) {
-                    return path.substr(0, path.lastIndexOf("/"));
+                    return path.substr(0, path.lastIndexOf('/'));
                 }
         
                 /**
@@ -371,22 +372,22 @@
                 function _resolve (path, context) {
         
                     /**
-                    * If the path does not start with a ".", it's relative
+                    * If the path does not start with a '.', it's relative
                     * to the base URL.
                     */
-                    context = (path.indexOf(".") < 0) ? "" : context;
+                    context = (path.indexOf('.') < 0) ? '' : context;
         
                     /**
-                    * Never resolve "require", "module" and "exports" to absolute paths
-                    * For plugins, only resolve the plugin path, not anything after the first "!"
+                    * Never resolve 'require', 'module' and 'exports' to absolute paths
+                    * For plugins, only resolve the plugin path, not anything after the first '!'
                     */
-                    if (~_rem.indexOf(path) || ~path.indexOf("!")) {
+                    if (~_rem.indexOf(path) || ~path.indexOf('!')) {
                         return path.replace(/([\d,\w,\s,\.\/]*)(?=\!)/, function ($0, $1) {
                             return _resolve($1, context);
                         });
                     }
         
-                    return _normalize((context ? context + "/" : "") + path);
+                    return _normalize((context ? context + '/' : '') + path);
                 }
         
                 /**
@@ -450,7 +451,7 @@
         
                     _head = _head || document.getElementsByTagName('head')[0];
         
-                    script = document.createElement("script");
+                    script = document.createElement('script');
                     script.src = f;
         
                     /**
@@ -459,7 +460,7 @@
                     */
                     script.onreadystatechange = script.onload = function () {
         
-                        if (!script.readyState || script.readyState === "complete" || script.readyState === "loaded") {
+                        if (!script.readyState || script.readyState === 'complete' || script.readyState === 'loaded') {
         
                             clearTimeout(timeoutID);
                             script.onload = script.onreadystatechange = script.onerror = null;
@@ -473,12 +474,12 @@
                     * The first, if a script request actually errors (i.e. a 404)
                     * The second, if a script takes more than X seconds to respond. Where X = _waitSeconds
                     */
-                    script.onerror = function (e) {
+                    script.onerror = function () {
         
                         clearTimeout(timeoutID);
                         script.onload = script.onreadystatechange = script.onerror = null;
         
-                        throw new Error(f + " failed to load.");
+                        throw new Error(f + ' failed to load.');
                     };
         
                     timeoutID = setTimeout(script.onerror, _waitSeconds * 1000);
@@ -499,9 +500,9 @@
         
                     for (i = 0; i < modules.length; i ++) {
                         m = modules[i];
-                        if (~m.indexOf("!")) {
+                        if (~m.indexOf('!')) {
                             /**
-                            * If the module id has a "!"" in it, it's a plugin...
+                            * If the module id has a '!' in it, it's a plugin...
                             */
                             _loadPluginModule(m, context, q, i);
                             continue;
@@ -523,10 +524,10 @@
         
                     /**
                     * Set the plugin path. Plugins are stored differently than normal modules
-                    * Essentially they are stored along with the context in a special "plugins"
-                    * subpath. This allows modules to lookup plugins with the sync require("index!./foo:./bar") method
+                    * Essentially they are stored along with the context in a special 'plugins'
+                    * subpath. This allows modules to lookup plugins with the sync require('index!./foo:./bar') method
                     */
-                    pluginPath = (context ? context + "/" : "") + "plugins/" + module.replace(/\//g, "_");
+                    pluginPath = (context ? context + '/' : '') + 'plugins/' + module.replace(/\//g, '_');
         
                     /*
                     * Update the path to this plugin in the queue
@@ -535,9 +536,9 @@
                         q.m[moduleIndex] = pluginPath;
                     }
         
-                    module = module.split("!");
-                    plugin = module.splice(0,1)[0];
-                    module = module.join("!");
+                    module = module.split('!');
+                    plugin = module.splice(0, 1)[0];
+                    module = module.join('!');
         
                     /*
                     * Let's check to see if the module is already defined.
@@ -588,7 +589,7 @@
                             * If you don't have any plugins using fromText(), feel free to comment
                             * the entire load.fromText() out and re-minify the source.
                             * I use Function vs eval() because nothing executing through fromText() should need access
-                            * to local vars, and Uglify does not mangle variables if it finds "eval()" in your code.
+                            * to local vars, and Uglify does not mangle variables if it finds 'eval()' in your code.
                             */
         
                             /*jslint evil: true */
@@ -615,7 +616,7 @@
                 function _module (id, def, noExports, module) {
         
                     /**
-                    * Always return back the id for "require", "module" and "exports",
+                    * Always return back the id for 'require', 'module' and 'exports',
                     * these are replaced by calling _swapValues
                     */
                     if (~_rem.indexOf(id)) {
@@ -642,18 +643,17 @@
                 function _getURL (id, prefix) {
         
                     /**
-                    * If the path starts with a "/", or "http", it's an absolute URL
+                    * If the path starts with a '/', or 'http', it's an absolute URL
                     * If it's not an absolute URL, prefix the request with baseUrl
                     */
         
-                    prefix = (!id.indexOf("/") || !id.indexOf("http")) ? "" : _baseUrl;
+                    prefix = (!id.indexOf('/') || !id.indexOf('http')) ? '' : _baseUrl;
         
-        
-                    for(var p in _paths) {
-                        id = id.replace(new RegExp("(^" + p + ")", "g"), _paths[p]);
+                    for (var p in _paths) {
+                        id = id.replace(new RegExp('(^' + p + ')', 'g'), _paths[p]);
                     }
         
-                    return prefix + id + (id.indexOf(".") < 0 ? ".js" : "") + _urlArgs;
+                    return prefix + id + (id.indexOf('.') < 0 ? '.js' : '') + _urlArgs;
                 }
         
                 /**
@@ -674,7 +674,7 @@
                 * Stores dependencies for this module id.
                 * Also checks for any circular dependencies, if found, it defines those modules as empty objects temporarily
                 */
-                function _resolveCircularReferences (id, dependencies, circulars, i, j, d, subDeps, sd, cid) {
+                function _resolveCircularReferences (id, dependencies, circulars, i, j, d, subDeps, sd) {
         
                     _dependencies[id] = dependencies;
         
@@ -691,7 +691,7 @@
                                     if (sd !== id) {
                                         dependencies.push(sd);
                                     }
-                                    else{
+                                    else {
                                         /**
                                         * Circular reference detected, define circular
                                         * references as empty modules to be defined later
@@ -707,7 +707,19 @@
                 /**
                 * Define modules. AMD-spec compliant.
                 */
-                function define (id, dependencies, factory, alreadyQed, depsLoaded, meta, module, facArgs, context, ri, localRequire) {
+                function define (
+                    id,
+                    dependencies,
+                    factory,
+                    alreadyQed,
+                    depsLoaded,
+                    meta,
+                    module,
+                    facArgs,
+                    context,
+                    ri,
+                    localRequire
+                ) {
         
                     if (!meta) {
                         meta = _meta();
@@ -739,7 +751,7 @@
                         * However, we still need to add an empty queue here to be cleaned up by onLoad
                         */
                         // TODO : REVISIT
-                        //_defineQ.push(0);
+                        // _defineQ.push(0);
                     }
         
                     context = _getContext(id);
@@ -750,14 +762,16 @@
                     * This means that this is a CommonJS-type module...
                     */
         
-                    if (!dependencies.length && factory.length && typeof factory === "function" && !factory.__meta) {
+                    if (!dependencies.length && factory.length && typeof factory === 'function' && !factory.__meta) {
         
                         /**
-                        * Let's check for any references of sync-type require("moduleID")
+                        * Let's check for any references of sync-type require('moduleID')
                         */
                         factory.toString()
-                            .replace(/(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, "") // Remove any comments first
-                            .replace(/(?:require)\(\s*["']([^'"\s]+)["']\s*\)/g, // Now let's check for any sync style require("module") calls
+                            // Remove any comments first
+                            .replace(/(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, '')
+                            // Now let's check for any sync style require('module') calls
+                            .replace(/(?:require)\(\s*['']([^''\s]+)['']\s*\)/g,
         
                                 function ($0, $1) {
                                     if (dependencies.indexOf($1) < 0) {
@@ -771,7 +785,7 @@
                                 }
                             );
         
-                        dependencies = (_rem.slice(0,factory.length)).concat(dependencies);
+                        dependencies = (_rem.slice(0, factory.length)).concat(dependencies);
                     }
         
                     if (dependencies.length && !depsLoaded) {
@@ -798,18 +812,18 @@
                     module = _module(id, 0, 1);
                     module = module || {exports: {}};
         
-                    if (typeof factory === "function" && !factory.__meta) {
+                    if (typeof factory === 'function' && !factory.__meta) {
         
                         /**
                         * If the factory is a function, we need to invoke it.
-                        * First let's swap "require", "module" and "exports" with actual objects
+                        * First let's swap 'require', 'module' and 'exports' with actual objects
                         */
-                        facArgs =_swapValues(
-                            dependencies.length ? dependencies : (_rem.slice(0,factory.length)),
+                        facArgs = _swapValues(
+                            dependencies.length ? dependencies : (_rem.slice(0, factory.length)),
                             {
-                                "require" : localRequire,
-                                "module" : module,
-                                "exports" : module.exports
+                                'require' : localRequire,
+                                'module' : module,
+                                'exports' : module.exports
                             }
                         );
         
@@ -931,9 +945,9 @@
         
                     /**
                     * Otherwise, we know all modules are already defined.
-                    * Invoke the callback immediately, swapping "require" with the actual require function
+                    * Invoke the callback immediately, swapping 'require' with the actual require function
                     */
-                    return callback.apply($b, _swapValues(modules, {"require" : require}));
+                    return callback.apply($b, _swapValues(modules, {'require' : require}));
                 }
         
                 /**
@@ -945,17 +959,15 @@
                 */
                 require.config = function (obj) {
         
-                    var cwd;
-        
                     _config = obj || {};
         
                     _baseUrl = _config.baseUrl ? _config.baseUrl : _baseUrl;
         
                     // Add a trailing slash to baseUrl if needed.
-                    _baseUrl += (_baseUrl && _baseUrl.charAt(_baseUrl.length-1) !== "/") ? "/" : "";
+                    _baseUrl += (_baseUrl && _baseUrl.charAt(_baseUrl.length - 1) !== '/') ? '/' : '';
                     _baseUrl = _normalize(_baseUrl);
         
-                    _urlArgs = _config.urlArgs ? "?" + _config.urlArgs : _urlArgs;
+                    _urlArgs = _config.urlArgs ? '?' + _config.urlArgs : _urlArgs;
         
                     _waitSeconds = _config.waitSeconds || _waitSeconds;
         
@@ -1018,10 +1030,12 @@
             $b.define = resolver.define;
             $b.undefine = resolver.undefine;
         
-        
+            /* jshint ignore : start */
             if (origRequire) {
                 require = origRequire;
             }
+            /* jshint ignore : end */
+        
         }).call(this);
     
     $b.require.config(CONFIG);
@@ -1030,20 +1044,22 @@
     
     $b.configure = function (o) {
     
-    	var p;
+        var p;
     
-    	for (p in o) {
-    		CONFIG[p] = o[p];
-    	}
+        for (p in o) {
+            CONFIG[p] = o[p];
+        }
     
-    	$b.require.config(CONFIG);
+        $b.require.config(CONFIG);
     
-    	return $b;
+        return $b;
     };
     
     $b.init = function (deps, cb) {
     
-    	$b.require(
+        $b.require(
+    
+            /* jscs : disable requireCommaBeforeLineBreak */
     
             [
                 "brink/config",
@@ -1081,51 +1097,48 @@
                 "brink/core/RunLoop",
                 "brink/core/InstanceWatcher",
                 "brink/core/InstanceManager",
-                "brink/utils/trim",
-                "brink/dom/Node",
-                "brink/core/Template",
-                "brink/dom/HelperNode",
                 "brink/browser/ajax",
                 "brink/browser/ReactMixin",
                 "brink/node/build"
             ]
     
-    		, function () {
+            , function () {
     
+            /* jscs : enable */
     
-    			/********* ALIASES *********/
+                /********* ALIASES *********/
     
-    			$b.merge($b, {
-    				F : EMPTY_FN
-    			});
+                $b.merge($b, {
+                    F : EMPTY_FN
+                });
     
-    			$b.merge($b.config, CONFIG);
+                $b.merge($b.config, CONFIG);
     
-    			if ($b.isFunction(deps)) {
-    				cb = deps;
-    				cb($b);
-    			}
+                if ($b.isFunction(deps)) {
+                    cb = deps;
+                    cb($b);
+                }
     
-    			else {
-    				$b.require(deps, cb);
-    			}
+                else {
+                    $b.require(deps, cb);
+                }
     
-    		}
-    	);
+            }
+        );
     };
     
     if (IS_NODE) {
     
-    	$b.build = function () {
+        $b.build = function () {
     
-    		var args = arguments;
+            var args = arguments;
     
-    		$b.init(function () {
-    			$b.build.apply(null, args);
-    		});
-    	};
+            $b.init(function () {
+                $b.build.apply(null, args);
+            });
+        };
     
-    	module.exports = $b;
+        module.exports = $b;
     }
 
     $b.define('brink/config', 
@@ -1140,13 +1153,13 @@
     
             IE_VERSION = (function (rv, ua, re) {
     
-                if (typeof navigator !== 'undefined' && navigator && navigator.appName == 'Microsoft Internet Explorer') {
+                if (typeof navigator !== 'undefined' && navigator && navigator.appName === 'Microsoft Internet Explorer') {
     
                     ua = navigator.userAgent;
                     re = new RegExp('MSIE ([0-9]{1,}[\.0-9]{0,})');
     
                     if (re.exec(ua) != null) {
-                        rv = parseFloat( RegExp.$1);
+                        rv = parseFloat(RegExp.$1);
                     }
                 }
     
@@ -1228,9 +1241,9 @@
             'use strict';
     
             var objectTypes = {
-                'function': true,
-                'object': true,
-                'unknown': true
+                'function' : true,
+                'object' : true,
+                'unknown' : true
             };
     
             return function (obj) {
@@ -1256,7 +1269,7 @@
                     o,
                     d;
     
-                function arrayOrObject (o, r) {
+                function arrayOrObject (o) {
                     return Array.isArray(o) ? [] : isObject(o) ? {} : false;
                 }
     
@@ -1350,7 +1363,7 @@
             'use strict';
     
             return function (obj) {
-                return typeof obj == 'function';
+                return typeof obj === 'function';
             };
         }
     
@@ -1481,8 +1494,7 @@
             return function (obj, key) {
     
                 var i,
-                    k,
-                    val;
+                    k;
     
                 key = key.split('.');
     
@@ -1589,7 +1601,7 @@
                     b = computed({
     
                         get : function () {
-                            return a ? a.get(prop) : val;
+                            return a ? a.get(prop) : null;
                         },
     
                         set : function (val) {
@@ -1644,7 +1656,7 @@
     
             return function (o, deep, a) {
     
-                function arrayOrObject (o, r) {
+                function arrayOrObject (o) {
                     return Array.isArray(o) ? [] : isObject(o) ? {} : null;
                 }
     
@@ -1701,7 +1713,11 @@
                 descriptor.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
                 descriptor.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
     
-                descriptor.defaultValue = typeof descriptor.defaultValue !== 'undefined' ? descriptor.defaultValue : descriptor.value;
+                descriptor.defaultValue = (
+                    typeof descriptor.defaultValue !== 'undefined' ?
+                    descriptor.defaultValue :
+                    descriptor.value
+                );
     
                 delete descriptor.value;
                 delete descriptor.writable;
@@ -1725,66 +1741,66 @@
     
             return function (target) {
     
-    			var i,
-    				l,
-    				src,
-    				clone,
-    				copy,
-    				deep,
-    				name,
-    				options,
-    				copyIsArray;
+                var i,
+                    l,
+                    src,
+                    clone,
+                    copy,
+                    deep,
+                    name,
+                    options,
+                    copyIsArray;
     
-    			// Handle case when target is a string or something (possible in deep copy)
-    			if (typeof target !== "object" && !isFunction(target)) {
-    			    target = {};
-    			}
+                // Handle case when target is a string or something (possible in deep copy)
+                if (typeof target !== 'object' && !isFunction(target)) {
+                    target = {};
+                }
     
-    			i = isObject(arguments[1]) ? 1 : 2;
-    			deep = (arguments[1] === true);
+                i = isObject(arguments[1]) ? 1 : 2;
+                deep = (arguments[1] === true);
     
-    			for (l = arguments.length; i < l; i ++) {
+                for (l = arguments.length; i < l; i ++) {
     
-    			    // Only deal with non-null/undefined values
-    			    if ((options = arguments[i]) != null) {
+                    // Only deal with non-null/undefined values
+                    if ((options = arguments[i]) != null) {
     
-    			        // Extend the base object
-    			        for (name in options) {
+                        // Extend the base object
+                        for (name in options) {
     
-    			            src = target[name];
-    			            copy = options[name];
+                            src = target[name];
+                            copy = options[name];
     
-    			            // Prevent never-ending loop
-    			            if (target === copy) {
-    			                continue;
-    			            }
+                            // Prevent never-ending loop
+                            if (target === copy) {
+                                continue;
+                            }
     
-    			            // Recurse if we're merging plain objects or arrays
-    			            if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+                            // Recurse if we're merging plain objects or arrays
+                            if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
     
-    			                if (copyIsArray) {
-    			                    copyIsArray = false;
-    			                    clone = src && isArray(src) ? src : [];
+                                if (copyIsArray) {
+                                    copyIsArray = false;
+                                    clone = src && isArray(src) ? src : [];
     
-    			                }
+                                }
     
-    			                else {
-    			                    clone = src && isPlainObject(src) ? src : {};
-    			                }
+                                else {
+                                    clone = src && isPlainObject(src) ? src : {};
+                                }
     
-    			                // Never move original objects, clone them
-    			                target[name] = extend(clone, deep, copy);
-    			            }
+                                // Never move original objects, clone them
+                                target[name] = extend(clone, deep, copy);
+                            }
     
-    			            // Don't bring in undefined values
-    			            else if (copy !== undefined) {
-    			                target[name] = copy;
-    			            }
-    			        }
-    			    }
-    			}
+                            // Don't bring in undefined values
+                            else if (copy !== undefined) {
+                                target[name] = copy;
+                            }
+                        }
+                    }
+                }
     
-    			return target;
+                return target;
             };
         }
     
@@ -1798,7 +1814,7 @@
     
             'use strict';
     
-            return function (Class, p, v) {
+            return function (Class) {
     
                 Class.inject.apply(Class, arguments);
     
@@ -1840,6 +1856,7 @@
     
 
     // https://github.com/tildeio/rsvp.js/
+    /* jshint ignore:start */
     (function(global) {
     
     var define, requireModule, require, requirejs;
@@ -3538,7 +3555,7 @@
         */
         __exports__["default"] = function all(entries, label) {
     
-          /*jshint validthis:true */
+    
           var Constructor = this;
     
           return new Constructor(function(resolve, reject) {
@@ -3642,7 +3659,7 @@
         */
     
         __exports__["default"] = function cast(object, label) {
-          /*jshint validthis:true */
+    
           var Constructor = this;
     
           if (object && typeof object === 'object' && object.constructor === Constructor) {
@@ -3658,8 +3675,6 @@
       ["../utils","exports"],
       function(__dependency1__, __exports__) {
         "use strict";
-        /* global toString */
-    
         var isArray = __dependency1__.isArray;
         var isFunction = __dependency1__.isFunction;
         var isNonThenable = __dependency1__.isNonThenable;
@@ -3725,7 +3740,7 @@
           promise to settle.
         */
         __exports__["default"] = function race(entries, label) {
-          /*jshint validthis:true */
+    
           var Constructor = this, entry;
     
           return new Constructor(function(resolve, reject) {
@@ -3791,7 +3806,7 @@
           @return {Promise} a promise rejected with the given `reason`.
         */
         __exports__["default"] = function reject(reason, label) {
-          /*jshint validthis:true */
+    
           var Constructor = this;
     
           return new Constructor(function (resolve, reject) {
@@ -3836,7 +3851,7 @@
           `value`
         */
         __exports__["default"] = function resolve(value, label) {
-          /*jshint validthis:true */
+    
           var Constructor = this;
     
           return new Constructor(function(resolve, reject) {
@@ -4022,9 +4037,10 @@
         __exports__.map = map;
         __exports__.filter = filter;
       });
-    global.RSVP = requireModule('rsvp');
     
+    global.RSVP = requireModule('rsvp');
     }($b));
+    /* jshint ignore:end */
     
     $b('brink/utils/promise', 
     
@@ -4040,6 +4056,7 @@
         }
     
     ).attach('$b');
+    
     
 
     $b('brink/utils/isBrinkObject', 
@@ -4075,100 +4092,97 @@
     $b('brink/core/CoreObject', 
     
         [
-        	'../utils/extend',
-        	'../utils/isBrinkObject'
+            '../utils/extend'
         ],
     
-        function (extend, isBrinkObject) {
+        function (extend) {
     
             'use strict';
     
-    		var CoreObject,
-    			Prototype;
+            var CoreObject;
     
-    		CoreObject = function () {};
+            CoreObject = function () {};
     
-    		CoreObject.extend = function (props) {
+            CoreObject.extend = function (props) {
     
-    			var C,
-    				i,
-    				proto;
+                var C,
+                    i,
+                    proto;
     
-    			if (arguments.length > 1) {
+                if (arguments.length > 1) {
     
-    				i = 0;
-    				C = this;
+                    i = 0;
+                    C = this;
     
-    				while (i < arguments.length - 1) {
-    					C = C.extend(arguments[i]);
-    					i ++;
-    				}
+                    while (i < arguments.length - 1) {
+                        C = C.extend(arguments[i]);
+                        i ++;
+                    }
     
-    				return C;
-    			}
+                    return C;
+                }
     
-    			proto = this.buildPrototype.call(this, props);
+                proto = this.buildPrototype.call(this, props);
     
-    			function BrinkObject (callInit) {
+                function BrinkObject (callInit) {
     
-    				var fn;
+                    var fn;
     
-    				if (callInit === true || callInit === false) {
+                    if (callInit === true || callInit === false) {
     
-    					if (callInit) {
-    						fn = this.__init || this.init || this.constructor;
-    						fn.call(this);
-    					}
+                        if (callInit) {
+                            fn = this.__init || this.init || this.constructor;
+                            fn.call(this);
+                        }
     
-    					return this;
-    				}
+                        return this;
+                    }
     
-    				return BrinkObject.extend.apply(BrinkObject, arguments);
-    			}
+                    return BrinkObject.extend.apply(BrinkObject, arguments);
+                }
     
-    			BrinkObject.prototype = proto;
-    			extend(BrinkObject, this, proto.statics || {});
+                BrinkObject.prototype = proto;
+                extend(BrinkObject, this, proto.statics || {});
     
-    			BrinkObject.prototype.constructor = BrinkObject;
+                BrinkObject.prototype.constructor = BrinkObject;
     
-    			return BrinkObject;
-    		};
+                return BrinkObject;
+            };
     
-    		CoreObject.buildPrototype = function (props) {
-    			var BrinkPrototype = function () {};
-    			BrinkPrototype.prototype = this.prototype;
-    			return extend(new BrinkPrototype(), props);
-    		};
+            CoreObject.buildPrototype = function (props) {
+                var BrinkPrototype = function () {};
+                BrinkPrototype.prototype = this.prototype;
+                return extend(new BrinkPrototype(), props);
+            };
     
-    		CoreObject.inject = function (p, v) {
+            CoreObject.inject = function (p, v) {
     
-    			if (typeof p === 'object') {
-    				extend(this.prototype, p);
-    			}
+                if (typeof p === 'object') {
+                    extend(this.prototype, p);
+                }
     
-    			else {
-    				this.prototype[p] = v;
-    			}
+                else {
+                    this.prototype[p] = v;
+                }
     
-    			return this;
-    		};
+                return this;
+            };
     
-    		CoreObject.create = function (o) {
+            CoreObject.create = function () {
     
-    			var p,
-    				init,
-    				instance;
+                var init,
+                    instance;
     
-    			instance = new this(false);
+                instance = new this(false);
     
-    			init = instance.__init || instance.init;
+                init = instance.__init || instance.init;
     
-    			if (init) {
-    				instance = init.apply(instance, arguments) || instance;
-    			}
+                if (init) {
+                    instance = init.apply(instance, arguments) || instance;
+                }
     
-    			return instance;
-    		};
+                return instance;
+            };
     
             return CoreObject;
         }
@@ -4189,8 +4203,7 @@
     
             return function (obj, key, val, quiet, skipCompare) {
     
-                var i,
-                    k;
+                var i;
     
                 if (typeof key === 'string') {
     
@@ -4256,7 +4269,7 @@
             return function (fn, scope) {
                 return function () {
                     return fn.apply(scope, arguments);
-                }
+                };
             };
         }
     
@@ -4313,9 +4326,7 @@
     
                 __init : function (o) {
     
-                    var i,
-                        p,
-                        d,
+                    var p,
                         meta;
     
                     if (!this.__meta) {
@@ -4424,7 +4435,7 @@
                         // Old FF
                         else if (this.__defineGetter__) {
                             this.__defineGetter__(p, d.get);
-                            this.__defineSetter__(p, d.set);
+                            this.__defineSetter__(p, d.set);
                         }
     
                         else {
@@ -4459,14 +4470,14 @@
     
                     if (this.__meta.pojoStyle) {
                         return $b.error('Tried to write to a read-only property `' + p + '` on ' + this);
-                    };
+                    }
                 },
     
                 __writeOnly : function (p) {
     
                     if (this.__meta.pojoStyle) {
                         return $b.error('Tried to read a write-only property `' + p + '` on ' + this);
-                    };
+                    }
                 },
     
                 __defineGetter : function (p, fn) {
@@ -4477,7 +4488,7 @@
     
                     return function () {
                         return this.get(p);
-                    }
+                    };
                 },
     
                 __defineSetter : function (p, fn) {
@@ -4488,7 +4499,7 @@
     
                     return function (val) {
                         return this.set(p, val);
-                    }
+                    };
                 },
     
                 /* @doc Object.propertyDidChange */
@@ -4522,7 +4533,6 @@
     
                         return o;
                     }
-    
     
                     for (p in this.__meta.properties) {
                         o[p] = this.get(p);
@@ -4596,9 +4606,6 @@
                 /* @doc Object.watch */
                 watch : function (fn, props) {
     
-                    var fn,
-                        props;
-    
                     fn = arguments[1];
                     props = arguments[0];
     
@@ -4630,7 +4637,7 @@
                 },
     
                 /* @doc Object.unwatch */
-                unwatch : function (fns) {
+                unwatch : function () {
     
                     if ($b.instanceManager) {
                         $b.instanceManager.unwatch(this, flatten(arguments));
@@ -4682,8 +4689,7 @@
     
             Obj.extend = function () {
     
-                var meta,
-                    proto,
+                var proto,
                     SubObj;
     
                 SubObj = CoreObject.extend.apply(this, arguments);
@@ -4741,7 +4747,7 @@
     $b('brink/core/NotificationManager', 
     
         [
-        	'../utils/isFunction'
+            '../utils/isFunction'
         ],
     
         function (isFunction) {
@@ -4749,158 +4755,155 @@
             'use strict';
     
             var _interests,
-            	_pendingNotifications,
+                _pendingNotifications,
     
-            	Notification,
-            	NotificationManager;
+                Notification,
+                NotificationManager;
     
-    		_pendingNotifications = [];
-    		_interests = {};
+            _pendingNotifications = [];
+            _interests = {};
     
+            Notification = function (name, args, callback) {
+                this.name = name;
+                this.args = args;
+                this.data = args && args.length === 1 ? args[0] : null;
+                this.callback = callback;
+                return this;
+            };
     
-    		Notification = function (name, args, callback) {
-    			this.name = name;
-    			this.args = args;
-    			this.data = args && args.length === 1 ? args[0] : null;
-    			this.callback = callback;
-    			return this;
-    		};
+            Notification.prototype.data = {};
+            Notification.prototype.name = '';
+            Notification.prototype.dispatcher = null;
+            Notification.prototype.status = 0;
+            Notification.prototype.pointer = 0;
+            Notification.prototype.callback = null;
     
-    		Notification.prototype.data = {};
-    		Notification.prototype.name = "";
-    		Notification.prototype.dispatcher = null;
-    		Notification.prototype.status = 0;
-    		Notification.prototype.pointer = 0;
-    		Notification.prototype.callback = null;
+            Notification.prototype.hold = function () {
+                this.status = 2;
+            };
     
-    		Notification.prototype.hold = function () {
-    			this.status = 2;
-    		};
+            Notification.prototype.release = function () {
+                this.status = 1;
+                NotificationManager.releaseNotification(this);
+            };
     
-    		Notification.prototype.release = function () {
-    			this.status = 1;
-    			NotificationManager.releaseNotification(this);
-    		};
+            Notification.prototype.cancel = function () {
+                this.data = {};
+                this.name = '';
+                this.status = 0;
+                this.pointer = 0;
+                this.dispatcher = null;
+                this.callback = null;
     
-    		Notification.prototype.cancel = function () {
-    			this.data = {};
-    			this.name = "";
-    			this.status = 0;
-    			this.pointer = 0;
-    			this.dispatcher = null;
-    			this.callback = null;
+                NotificationManager.cancelNotification(this);
+            };
     
-    			NotificationManager.cancelNotification(this);
-    		};
+            Notification.prototype.dispatch = function (obj) {
+                this.status = 1;
+                this.pointer = 0;
+                this.dispatcher = obj;
+                NotificationManager.publishNotification(this);
+            };
     
-    		Notification.prototype.dispatch = function (obj) {
-    			this.status = 1;
-    			this.pointer = 0;
-    			this.dispatcher = obj;
-    			NotificationManager.publishNotification(this);
-    		};
+            Notification.prototype.respond = function () {
+                if (this.callback) {
+                    this.callback.apply(this.dispatcher, arguments);
+                    this.cancel();
+                }
+            };
     
+            function _publishNotification(notification) {
+                _pendingNotifications.push(notification);
+                _notifyObjects(notification);
+            }
     
-    		Notification.prototype.respond = function () {
-    			if (this.callback) {
-    				this.callback.apply(this.dispatcher, arguments);
-    				this.cancel();
-    			}
-    		};
+            function _notifyObjects(notification) {
     
+                var name,
+                    subs,
+                    len;
     
-    		function _publishNotification(notification) {
-    			_pendingNotifications.push(notification);
-    			_notifyObjects(notification);
-    		}
+                name = notification.name;
     
-    		function _notifyObjects(notification) {
+                if (_interests[name]) {
     
-    			var name,
-    				subs,
-    				len;
+                    subs = _interests[name].slice(0);
+                    len = subs.length;
     
-    			name = notification.name;
+                    while (notification.pointer < len) {
+                        if (notification.status === 1) {
+                            subs[notification.pointer].apply(null, [].concat(notification, notification.args));
+                            notification.pointer ++;
+                        } else {
+                            return;
+                        }
+                    }
     
-    			if (_interests[name]) {
+                    subs = null;
     
-    				subs = _interests[name].slice(0);
-    				len = subs.length;
+                    /**
+                    * Notified all subscribers, notification is no longer needed,
+                    * unless it has a callback to be called later via notification.respond()
+                    */
+                    if (notification.status === 1 && !notification.callback) {
+                        notification.cancel();
+                    }
+                }
+            }
     
-    				while (notification.pointer < len) {
-    					if (notification.status === 1) {
-    						subs[notification.pointer].apply(null, [].concat(notification, notification.args));
-    						notification.pointer ++;
-    					} else {
-    						return;
-    					}
-    				}
+            NotificationManager = {};
     
-    				subs = null;
+            NotificationManager.subscribe = function (name, fn, priority) {
     
-    				/**
-    				* Notified all subscribers, notification is no longer needed,
-    				* unless it has a callback to be called later via notification.respond()
-    				*/
-    				if (notification.status === 1 && !notification.callback) {
-    					notification.cancel();
-    				}
-    			}
-    		}
+                priority = isNaN(priority) ? -1 : priority;
+                _interests[name] = _interests[name] || [];
     
-    		NotificationManager = {};
+                if (priority <= -1 || priority >= _interests[name].length) {
+                    _interests[name].push(fn);
+                } else {
+                    _interests[name].splice(priority, 0, fn);
+                }
+            };
     
-    		NotificationManager.subscribe = function (name, fn, priority) {
+            NotificationManager.unsubscribe = function (name, fn) {
+                var fnIndex = _interests[name].indexOf(fn);
+                if (fnIndex > -1) {
+                    _interests[name].splice(fnIndex, 1);
+                }
+            };
     
-    			priority = isNaN(priority) ? -1 : priority;
-    			_interests[name] = _interests[name] || [];
+            NotificationManager.publish = function () {
     
-    			if (priority <= -1 || priority >= _interests[name].length) {
-    				_interests[name].push(fn);
-    			} else {
-    				_interests[name].splice(priority, 0, fn);
-    			}
-    		};
+                var notification,
+                    args = Array.prototype.slice.call(arguments),
+                    name = args[0],
+                    dispatcher = args[args.length - 1],
+                    callback = args[args.length - 2];
     
-    		NotificationManager.unsubscribe = function (name, fn) {
-    			var fnIndex = _interests[name].indexOf(fn);
-    			if (fnIndex > -1) {
-    				_interests[name].splice(fnIndex, 1);
-    			}
-    		};
+                callback = isFunction(callback) ? callback : null;
     
-    		NotificationManager.publish = function () {
+                args = args.slice(1, (callback ? args.length - 2 : args.length - 1));
     
-    			var notification,
-    				args = Array.prototype.slice.call(arguments),
-    				name = args[0],
-    				dispatcher = args[args.length - 1],
-    				callback = args[args.length - 2];
+                notification = new Notification(name, args, callback);
+                notification.status = 1;
+                notification.pointer = 0;
+                notification.dispatcher = dispatcher;
+                _publishNotification(notification);
+            };
     
-    			callback = isFunction(callback) ? callback : null;
+            NotificationManager.releaseNotification = function (notification) {
+                notification.status = 1;
+                if (_pendingNotifications.indexOf(notification) > -1) {
+                    _notifyObjects(notification);
+                }
+            };
     
-    			args = args.slice(1, (callback ? args.length - 2 : args.length - 1));
+            NotificationManager.cancelNotification = function (notification) {
+                _pendingNotifications.splice(_pendingNotifications.indexOf(notification), 1);
+                notification = null;
+            };
     
-    			notification = new Notification(name, args, callback);
-    			notification.status = 1;
-    			notification.pointer = 0;
-    			notification.dispatcher = dispatcher;
-    			_publishNotification(notification);
-    		};
-    
-    		NotificationManager.releaseNotification = function (notification) {
-    			notification.status = 1;
-    			if (_pendingNotifications.indexOf(notification) > -1) {
-    				_notifyObjects(notification);
-    			}
-    		};
-    
-    		NotificationManager.cancelNotification = function (notification) {
-    			_pendingNotifications.splice(_pendingNotifications.indexOf(notification), 1);
-    			notification = null;
-    		};
-    
-    		 $b.define('notificationManager', NotificationManager).attach('$b');
+             $b.define('notificationManager', NotificationManager).attach('$b');
     
             return NotificationManager;
         }
@@ -4910,55 +4913,54 @@
     $b('brink/core/Class', 
     
         [
-        	'../config',
-        	'./Object',
-        	'./NotificationManager',
-        	'../utils/bindFunction',
-        	'../utils/clone'
+            '../config',
+            './Object',
+            './NotificationManager',
+            '../utils/bindFunction',
+            '../utils/merge'
         ],
     
-        function (config, Obj, NotificationManager, bindFunction, clone) {
+        function (config, Obj, NotificationManager, bindFunction, merge) {
     
             'use strict';
     
             var Class,
-            	superfy,
-            	doesCallSuper;
+                doesCallSuper;
     
-    		function superfy (fn, superFn) {
+            function superfy (fn, superFn) {
     
-    			return function () {
+                return function () {
     
-    				var r, tmp = this._super || null;
+                    var r, tmp = this._super || null;
     
-    				// Reference the prototypes method, as super temporarily
-    				this._super = superFn;
+                    // Reference the prototypes method, as super temporarily
+                    this._super = superFn;
     
-    				r = fn.apply(this, arguments);
+                    r = fn.apply(this, arguments);
     
-    				// Reset _super
-    				this._super = tmp;
-    				return r;
-    			};
-    		};
+                    // Reset _super
+                    this._super = tmp;
+                    return r;
+                };
+            }
     
-    		/*
-    		If Function.toString() works as expected, return a regex that checks for `this._super`
-    		otherwise return a regex that passes everything.
-    		*/
+            /*
+            If Function.toString() works as expected, return a regex that checks for `this._super`
+            otherwise return a regex that passes everything.
+            */
     
-    		doesCallSuper = (/xyz/).test(function () {
-    			var xyz;
-    			xyz = true;
-    		}) ? (/\bthis\._super\b/) : (/.*/);
+            doesCallSuper = (/xyz/).test(function () {
+                var xyz;
+                xyz = true;
+            }) ? (/\bthis\._super\b/) : (/.*/);
     
-    		Class = Obj({
+            Class = Obj({
     
-    			__init : superfy(function () {
+                __init : superfy(function () {
     
-    				var i,
-    					p,
-    					meta;
+                    var i,
+                        p,
+                        meta;
     
                     this._super.apply(this, arguments);
     
@@ -4980,100 +4982,98 @@
                     if (config.AUTO_BIND_METHODS || 1) {
                         for (i = 0; i < meta.methods.length; i ++) {
                             p = meta.methods[i];
-                        	if (!~p.indexOf('__')) {
-    	                        this[p] = bindFunction(this[p], this);
-    	                    }
-    	                }
+                            if (!~p.indexOf('__')) {
+                                this[p] = bindFunction(this[p], this);
+                            }
+                        }
                     }
     
                     return this;
     
-    			}, Obj.prototype.__init),
+                }, Obj.prototype.__init),
     
-    			subscribe : function (name, handler, priority) {
+                subscribe : function (name, handler, priority) {
     
-    				this._interestHandlers = this._interestHandlers || {};
+                    this._interestHandlers = this._interestHandlers || {};
     
-    				if (handler && !this._interestHandlers[name]) {
-    					handler = handler;
-    					NotificationManager.subscribe(name, handler, priority);
-    					this._interestHandlers[name] = handler;
-    				}
-    			},
+                    if (handler && !this._interestHandlers[name]) {
+                        handler = handler;
+                        NotificationManager.subscribe(name, handler, priority);
+                        this._interestHandlers[name] = handler;
+                    }
+                },
     
-    			unsubscribe : function (name) {
+                unsubscribe : function (name) {
     
-    				if (this._interestHandlers && this._interestHandlers[name]) {
-    					NotificationManager.unsubscribe(name, this._interestHandlers[name]);
-    					delete this._interestHandlers[name];
-    				}
-    			},
+                    if (this._interestHandlers && this._interestHandlers[name]) {
+                        NotificationManager.unsubscribe(name, this._interestHandlers[name]);
+                        delete this._interestHandlers[name];
+                    }
+                },
     
-    			unsubscribeAll : function () {
+                unsubscribeAll : function () {
     
-    				var interest;
+                    var interest;
     
-    				for (interest in this._interestHandlers) {
-    					if (this._interestHandlers.hasOwnProperty(interest)) {
-    						this.unsubscribe(interest);
-    					}
-    				}
+                    for (interest in this._interestHandlers) {
+                        if (this._interestHandlers.hasOwnProperty(interest)) {
+                            this.unsubscribe(interest);
+                        }
+                    }
     
-    				this._interestHandlers = [];
-    			},
+                    this._interestHandlers = [];
+                },
     
-    			publish : function (/*name, arg1, arg2, arg3..., callback*/) {
-    				var args = Array.prototype.slice.call(arguments);
-    				NotificationManager.publish.apply(NotificationManager, [].concat(args, this));
-    			},
+                publish : function (/*name, arg1, arg2, arg3..., callback*/) {
+                    var args = Array.prototype.slice.call(arguments);
+                    NotificationManager.publish.apply(NotificationManager, [].concat(args, this));
+                },
     
-    			setTimeout : function (func, delay) {
-    				return setTimeout(func.bind(this), delay);
-    			},
+                setTimeout : function (func, delay) {
+                    return setTimeout(func.bind(this), delay);
+                },
     
-    			setInterval : function (func, delay) {
-    				return setInterval(func.bind(this), delay);
-    			},
+                setInterval : function (func, delay) {
+                    return setInterval(func.bind(this), delay);
+                },
     
-    			destroy : superfy(function () {
-    				this.unsubscribeAll();
-    				return this._super.apply(this, arguments);
-    			}, Obj.prototype.destroy)
-    		});
+                destroy : superfy(function () {
+                    this.unsubscribeAll();
+                    return this._super.apply(this, arguments);
+                }, Obj.prototype.destroy)
+            });
     
-    		Class.buildPrototype = function (props) {
+            Class.buildPrototype = function (props) {
     
-    			var p,
-    				props,
-    				proto;
+                var p,
+                    proto;
     
-    			proto = Obj.buildPrototype.call(this, props);
+                proto = Obj.buildPrototype.call(this, props);
     
-    			for (p in props) {
+                for (p in props) {
     
-    				if (
-    					typeof props[p] === 'function' &&
-    					typeof this.prototype[p] === 'function' &&
-    					doesCallSuper.test(props[p])
-    				) {
-    					// this._super() magic, as-needed
-    					proto[p] = superfy(props[p], this.prototype[p]);
-    				}
+                    if (
+                        typeof props[p] === 'function' &&
+                        typeof this.prototype[p] === 'function' &&
+                        doesCallSuper.test(props[p])
+                    ) {
+                        // this._super() magic, as-needed
+                        proto[p] = superfy(props[p], this.prototype[p]);
+                    }
     
+                    else if (
+                        typeof props[p] === 'object' && (
+                            p === 'concatProps' ||
+                            ~(props.concatProps || []).indexOf(p) ||
+                            ~(this.prototype.concatProps || []).indexOf(p)
+                        )
+                    ) {
+                        proto[p] = merge(this.prototype[p], props[p]);
+                    }
+                }
     
-    				else if (
-    					typeof props[p] === 'object' && (
-    						p === 'concatProps' ||
-    						~(props.concatProps || []).indexOf(p) ||
-    						~(this.prototype.concatProps || []).indexOf(p)
-    					)
-    				) {
-    					proto[p] = merge(this.prototype[p], props[p]);
-    				}
-    			}
-    
-    			return proto;
-    		};
+                return proto;
+            };
     
             return Class;
         }
@@ -5083,17 +5083,19 @@
     $b('brink/core/Array', 
     
         [
-        	'./Object'
+            './Object'
         ],
     
         function (Obj) {
     
-        	var Arr,
-        		AP;
+            'use strict';
     
-        	AP = Array.prototype;
+            var Arr,
+                AP;
     
-    		Arr = Obj({
+            AP = Array.prototype;
+    
+            Arr = Obj({
     
                 content : null,
                 length : 0,
@@ -5101,33 +5103,33 @@
                 oldContent : null,
                 pristineContent : null,
     
-    			init : function (content) {
+                init : function (content) {
     
-    				this.set('content', content);
+                    this.set('content', content);
                     this.set('oldContent', content.concat());
-    				this.set('length', this.content.length);
+                    this.set('length', this.content.length);
     
                     this.watch('content', this.contentDidChange);
-    			},
+                },
     
-    			get : function (i) {
+                get : function (i) {
     
-    				if (isNaN(i)) {
-    					return Obj.prototype.get.apply(this, arguments);
-    				}
+                    if (isNaN(i)) {
+                        return Obj.prototype.get.apply(this, arguments);
+                    }
     
-    				return this.content[i];
-    			},
+                    return this.content[i];
+                },
     
-    			set : function (i, val) {
+                set : function (i, val) {
     
-    				if (isNaN(i)) {
-    					return Obj.prototype.set.apply(this, arguments);
-    				}
+                    if (isNaN(i)) {
+                        return Obj.prototype.set.apply(this, arguments);
+                    }
     
-    				this.replaceAt(i, val);
-    				return val;
-    			},
+                    this.replaceAt(i, val);
+                    return val;
+                },
     
                 findBy : function (q, v) {
     
@@ -5169,118 +5171,119 @@
     
                 },
     
-    			concat : function () {
-    				var r = AP.concat.apply(this.content, arguments);
-    				return this.prototype.constructor.create(r);
-    			},
+                concat : function () {
+                    var r = AP.concat.apply(this.content, arguments);
+                    return this.prototype.constructor.create(r);
+                },
     
-    			insert : function () {
-    				return this.push.apply(this, arguments);
-    			},
+                insert : function () {
+                    return this.push.apply(this, arguments);
+                },
     
-    			insertAt : function (i, o) {
-    				this.splice(i, 0, o);
-    				return this.get('length');
-    			},
+                insertAt : function (i, o) {
+                    this.splice(i, 0, o);
+                    return this.get('length');
+                },
     
-    			push : function () {
+                push : function () {
     
-    				var i;
+                    var i;
     
-    				for (i = 0; i < arguments.length; i ++) {
-    					this.insertAt(this.length, arguments[i]);
-    				}
+                    for (i = 0; i < arguments.length; i ++) {
+                        this.insertAt(this.length, arguments[i]);
+                    }
     
-    				return this.length;
-    			},
+                    return this.length;
+                },
     
-    			pop : function (i) {
-    				i = this.length - 1;
-    				return this.removeAt(i);
-    			},
+                pop : function (i) {
+                    i = this.length - 1;
+                    return this.removeAt(i);
+                },
     
-    			remove : function (o, i) {
+                remove : function (o, i) {
     
-    				i = this.content.indexOf(o);
+                    i = this.content.indexOf(o);
     
-    				if (~i) {
-    					return this.removeAt(i);
-    				}
+                    if (~i) {
+                        return this.removeAt(i);
+                    }
     
-    				return false;
-    			},
+                    return false;
+                },
     
-    			removeAt : function (i, r) {
-    				r = AP.splice.call(this.content, i, 1);
-    				this.contentDidChange();
-    				return r[0];
-    			},
+                removeAt : function (i, r) {
+                    r = AP.splice.call(this.content, i, 1);
+                    this.contentDidChange();
+                    return r[0];
+                },
     
-    			replace : function (a, b, i) {
+                replace : function (a, b, i) {
     
-    				i = this.content.indexOf(a);
+                    i = this.content.indexOf(a);
     
-    				if (~i) {
-    					return this.replaceAt(i, b);
-    				}
-    			},
+                    if (~i) {
+                        return this.replaceAt(i, b);
+                    }
+                },
     
-    			replaceAt : function (i, o) {
-    				this.removeAt(i);
-    				return this.insertAt(i, o);
-    			},
+                replaceAt : function (i, o) {
+                    this.removeAt(i);
+                    return this.insertAt(i, o);
+                },
     
-    			splice : function (i, l) {
+                splice : function (i, l) {
     
-    				var j,
+                    var j,
                         rest,
-    					removed;
+                        removed;
     
-    				removed = [];
-    				rest = AP.splice.call(arguments, 2, arguments.length);
+                    removed = [];
+                    rest = AP.splice.call(arguments, 2, arguments.length);
     
-    				if (l > 0) {
+                    if (l > 0) {
     
-    					j = i;
-    					l = i + l;
+                        j = i;
+                        l = i + l;
     
-    					while (j < l) {
-    						removed.push(this.removeAt(i));
+                        while (j < l) {
+                            removed.push(this.removeAt(i));
     
-    						j ++;
-    					}
-    				}
+                            j ++;
+                        }
+                    }
     
-    				for (j = 0; j < rest.length; j ++) {
-    					this.content.splice(i + j, 0, rest[j]);
-    					this.contentDidChange();
-    				}
+                    for (j = 0; j < rest.length; j ++) {
+                        this.content.splice(i + j, 0, rest[j]);
+                        this.contentDidChange();
+                    }
     
-    				return removed;
-    			},
+                    return removed;
+                },
     
-    			shift : function () {
-    				return this.removeAt(0);
-    			},
+                shift : function () {
+                    return this.removeAt(0);
+                },
     
-    			unshift : function () {
-    				for (i = 0; i < arguments.length; i ++) {
-    					this.insertAt(0, this.arguments[i]);
-    				}
+                unshift : function () {
+                    var i;
+                    for (i = 0; i < arguments.length; i ++) {
+                        this.insertAt(0, this.arguments[i]);
+                    }
     
-    				return this.length;
-    			},
+                    return this.length;
+                },
     
-    			reverse : function () {
-    
+                reverse : function () {
+                    var r;
                     if (!this.pristineContent) {
                         this.pristineContent = this.content;
                     }
     
-    				r = AP.reverse.apply(this.content, arguments)
-    				this.contentDidChange();
-    				return this;
-    			},
+                    r = AP.reverse.apply(this.content, arguments);
+                    this.contentDidChange();
+                    return this;
+                },
     
                 filter : function () {
     
@@ -5288,22 +5291,22 @@
                         this.pristineContent = this.content;
                     }
     
-                    this.content = AP.filter.apply(this.content, arguments)
+                    this.content = AP.filter.apply(this.content, arguments);
                     this.contentDidChange();
                     return this.content;
                 },
     
-    			sort : function () {
+                sort : function () {
     
                     if (!this.pristineContent) {
                         this.pristineContent = this.content;
                         this.content = this.content.concat();
                     }
     
-    				AP.sort.apply(this.content, arguments)
-    				this.contentDidChange();
-    				return this.content;
-    			},
+                    AP.sort.apply(this.content, arguments);
+                    this.contentDidChange();
+                    return this.content;
+                },
     
                 reset : function () {
                     this.content = this.pristineContent;
@@ -5406,38 +5409,36 @@
     
                 },
     
-    			contentDidChange : function () {
-    				this.set('length', this.content.length);
+                contentDidChange : function () {
+                    this.set('length', this.content.length);
                     this.propertyDidChange('@each');
-    			}
+                }
     
-    		});
+            });
     
-    
-    		return Arr;
-    	}
+            return Arr;
+        }
     
     ).attach('$b');
 
     $b('brink/core/Dictionary', 
     
         [
-        	'./Object'
+            './Object'
         ],
     
         function (Obj) {
     
-    		return Obj({
+            'use strict';
+    
+            return Obj({
     
                 keys : null,
                 values : null,
     
                 init : function () {
     
-                    var i,
-                        a,
-                        keys,
-                        vals;
+                    var i;
     
                     this.keys = [];
                     this.values = [];
@@ -5506,7 +5507,7 @@
                     return !~this.keys.indexOf(o);
                 },
     
-                indexOf : function () {
+                indexOf : function (o) {
                     return this.keys.indexOf(o);
                 },
     
@@ -5521,15 +5522,15 @@
                     return this;
                 }
     
-    		});
-    	}
+            });
+        }
     
     ).attach('$b');
 
     $b('brink/core/RunLoop', 
     
         [
-            "./CoreObject"
+            './CoreObject'
         ],
     
         function (CoreObject) {
@@ -5558,7 +5559,7 @@
                     val = isNaN(val) ? val.toLowerCase() : val;
                     this.__interval = (val === 'raf' || val === 'requestanimationframe') ? 'raf' : val;
     
-                    if(this.stopTimer()) {
+                    if (this.stopTimer()) {
                         this.start();
                     }
                 },
@@ -5597,6 +5598,7 @@
                     this.__started = true;
                     if (!this.__timerID || restart) {
                         this.stopTimer();
+                        /* jshint boss : true */
                         return this.__timerID = this.startTimer(function () {
                             this.start(true);
                             this.run();
@@ -5619,6 +5621,7 @@
     
                 deferOnce : function () {
                     this.stopTimer();
+                    /* jshint boss : true */
                     return this.__timerID = this.startTimer(function () {
                         this.stopTimer();
                         this.run();
@@ -5794,7 +5797,7 @@
                         instance.willNotifyWatchers.call(instance);
                     }
     
-                    while(this.watchLoop.run()) {
+                    while (this.watchLoop.run()) {
     
                     }
     
@@ -5805,8 +5808,13 @@
     
                     this.instances.forEach(function (meta, instance) {
     
-                        config.DIRTY_CHECK && this.dirtyCheck(meta, instance);
-                        meta.changedProps.length && this.notifyWatchers(meta, instance);
+                        if (config.DIRTY_CHECK) {
+                            this.dirtyCheck(meta, instance);
+                        }
+    
+                        if (meta.changedProps.length) {
+                            this.notifyWatchers(meta, instance);
+                        }
     
                     }, this);
     
@@ -5832,7 +5840,7 @@
     $b('brink/core/InstanceManager', 
     
         [
-        	'./CoreObject',
+            './CoreObject',
             './Dictionary',
             './InstanceWatcher',
             '../config',
@@ -5842,10 +5850,12 @@
     
         function (CoreObject, Dictionary, InstanceWatcher, config, merge, flatten) {
     
+            'use strict';
+    
             var InstanceManager,
                 IID = 1;
     
-    		InstanceManager = CoreObject.extend({
+            InstanceManager = CoreObject.extend({
     
                 instances : null,
     
@@ -5872,7 +5882,7 @@
                     return meta;
                 },
     
-                remove : function (instance) {
+                remove : function () {
                     this.instances.remove.apply(this.instances, arguments);
                 },
     
@@ -5917,11 +5927,7 @@
     
                 watch : function (obj, props, fn) {
     
-                    var i,
-                        p,
-                        t,
-                        k,
-                        idx,
+                    var idx,
                         meta;
     
                     meta = obj.__meta;
@@ -5975,441 +5981,13 @@
                     meta.watchedProps = [];
                 }
     
-    		});
+            });
     
             $b.define('instanceManager', InstanceManager.create({})).attach('$b');
     
             return $b('instanceManager');
-    	}
+        }
     );
-
-    $b('brink/utils/trim', 
-    
-        function () {
-    
-            'use strict';
-    
-            return function (s) {
-                return typeof s === 'string' ? s.replace(/^\s+|\s+$/gm,'') : s;
-            };
-        }
-    
-    ).attach('$b');
-
-    $b('brink/dom/Node', 
-    
-        [
-            '../core/Class',
-            '../utils/trim',
-            '../utils/merge',
-            '../utils/computed',
-            '../utils/intersect'
-        ],
-    
-        function (Class, trim, merge, computed, intersect) {
-    
-            var Node = Class({
-    
-                childNodes : null,
-                watchedProperties : null,
-                isDynamic : false,
-                tokens : null,
-    
-                context : $b.bindTo('parent.context'),
-    
-                isElement : computed({
-    
-                    watch : 'node',
-    
-                    get : function () {
-                        var node = this.get('node');
-                        return node && node.nodeType === 1;
-    
-                    }
-                }),
-    
-                isAttr : computed({
-    
-                    watch : 'node',
-    
-                    get : function () {
-                        var node = this.get('node');
-                        return node && node.nodeType === 2;
-    
-                    }
-                }),
-    
-                isText : computed({
-    
-                    watch : 'node',
-    
-                    get : function () {
-                        var node = this.get('node');
-                        return node && node.nodeType === 3;
-    
-                    }
-                }),
-    
-                node : computed({
-    
-                    get : function () {
-                        return this._node;
-                    },
-    
-                    set : function (node) {
-    
-                        var i,
-                            child,
-                            childNodes;
-    
-                        this._node = node;
-    
-                        childNodes = this.set('childNodes', []);
-    
-                        if (!this.set('isDynamic', !node.childNodes.length)) {
-    
-                            this.set('watchedProperties', []);
-    
-                            for (i = 0; i < node.childNodes.length; i ++) {
-    
-                                child = Node.create({
-                                    node : node.childNodes[i],
-                                    parent : this
-                                });
-                                //console.log(child);
-                                childNodes.push(child);
-    
-                                this.set('watchedProperties', merge(this.get('watchedProperties'), child.get('watchedProperties')));
-                            }
-    
-                            this.set('childNodes', childNodes);
-                        }
-    
-                        else {
-                            this.set('templateString', this.get('value'));
-                        }
-    
-                        if (this.get('context')) {
-                            this.update(null, true);
-                        }
-    
-                        return this._node;
-                    }
-                }),
-    
-                valueProp : $b.computed({
-    
-                    watch : 'node',
-    
-                    get : function () {
-                        return this.get('isElement') ? 'innerHTML' : this.get('isAttr') ? 'value' : this.get('isText') ? 'nodeValue' : null;
-                    }
-                }),
-    
-                value : $b.computed({
-    
-                    get : function () {
-                        var node = this.get('node');
-                        return node && node[this.get('valueProp')];
-    
-                    },
-    
-                    set : function (val) {
-    
-                        var node = this.get('node');
-    
-                        if (node && val) {
-                            //console.log('fdsfdasf', val);
-                            node[this.get('valueProp')] = val;
-                        }
-    
-                        return val;
-                    }
-                }),
-    
-                templateString : $b.computed({
-    
-                    get : function () {
-                        return this._templateString;
-                    },
-    
-                    set : function (val) {
-    
-                        var re,
-                            match,
-                            tokens;
-    
-                        tokens = [];
-    
-                        if (val) {
-    
-                            re = /(?:\{\{\s*)([^\||}]+)(?:\|?)([\s\S]*?)(?:\s*\}\})/gi;
-    
-                            val = val.replace(re, function (token, name, filter) {
-    
-                                tokens.push({
-                                    string : token,
-                                    name : name,
-                                    filter : filter || null
-                                });
-    
-                                return '{{$' + (tokens.length - 1) + '}}';
-                            });
-    
-                            val = trim(val);
-                        }
-    
-                        this.set('tokens', tokens);
-                        this._templateString =  val || '';
-                    }
-                }),
-    
-                init : function () {
-    
-                    if (this.parent) {
-    
-                        this.watch('parent', function () {
-                            console.log('aaa', this.context);
-                        }.bind(this));
-    
-                        this.watch('context', function () {
-                            console.log('bbb', this.context);
-                            this.update(null, true);
-                        }.bind(this));
-                    }
-    
-                    //console.log('fdfa');
-                    //this.watch(['context', 'watchedProperties'], this.contextWatcher.bind(this));
-                },
-    
-                contextWatcher : function () {
-    
-                    var context,
-                        props;
-    
-                    context = this.get('context');
-                    props = this.get('watchedProperties');
-    
-                    if (this.updateWatcher) {
-                        context.unwatch(this.update);
-                    }
-    
-                    if (context && props && props.length) {
-                        context.watch(props, this.update);
-                    }
-    
-                },
-    
-                appendTo : function (el) {
-                    el.appendChild(this.node);
-                },
-    
-                prependTo : function (el) {
-                    el.insertBefore(this.node, el.firstChild);
-                },
-    
-                parseTemplateString : function () {
-    
-                    var str,
-                        tokens;
-    
-                    this.set('templateString', this.get('value'));
-                    str = this.get('templateString');
-                    tokens = this.get('tokens');
-    
-                    for (i = 0; i < tokens.length; i ++) {
-                        str = str.replace('{{$' + i + '}}', this.get('context')[tokens[i].name]);
-                    }
-    
-                    return str;
-                },
-    
-                update : function (properties, forceUpdate) {
-    
-                    var i,
-                        childNodes;
-    
-                    //console.log('zzz', properties, this.get('watchedProperties'));
-    
-                    if (forceUpdate || intersect(this.get('watchedProperties'), properties).length) {
-                        //console.log('zzz', this.get('node'), this.get('isDynamic'));
-                        if (this.get('node') && this.get('isDynamic')) {
-                            this.set('value', this.parseTemplateString());
-                        }
-                    }
-                }
-            });
-    
-            return Node;
-        }
-    
-    ).attach('$b.dom');
-    
-
-    $b('brink/core/Template', 
-    
-        [
-            './Class',
-            '../dom/Node'
-        ],
-    
-        function (Class, Node) {
-    
-            var HTMLNode;
-    
-            if (typeof window !== 'undefined') {
-    
-                HTMLNode = window.Node;
-            }
-    
-            function replaceTags (s) {
-    
-                var s2,
-                    re;
-    
-                re = /\{\s*\%\s*(\S*)\s([^%}]*?)\s*\%\s*\}([\s\S]*)\{\s*\%\s*(end\1)\s*\%\s*\}/gi;
-    
-                while (s2 !== s) {
-    
-                    if (s2) {
-                        s = s2;
-                    }
-    
-                    s2 = s.replace(re, '<br-tag $1="$2">$3</br-tag>');
-                }
-    
-                return s;
-            }
-    
-            function fixWhitespace (s) {
-                str.replace(/\s{2,}/g,' ');
-            }
-    
-            return Class({
-    
-                el : null,
-                _context : null,
-                node : null,
-                isEmpty : false,
-    
-                context : $b.computed({
-    
-                    get : function () {
-                        return this._context;
-                    },
-    
-                    set : function (val) {
-    
-                        this._context = val;
-    
-                        return val;
-                    }
-                }),
-    
-                dom : $b.computed({
-    
-                    watch : 'node',
-    
-                    get : function () {
-    
-                        var node = this.get('node');
-                        return node && node.get('node');
-                    }
-    
-                }),
-    
-                init : function (el) {
-    
-                    $b.assert(!!el, 'Must pass a string or HTMLElement when constructing a Template');
-    
-                    this.el = el;
-                    this.compile();
-                },
-    
-                parseHTML : function (s) {
-    
-                    var $ = this.parseHTML = window.$ || window.jQuery || function (s, el) {
-                        el = document.createElement('div');
-                        el.innerHTML = s;
-                        return el.childNodes;
-                    }
-    
-                    return $(s);
-                },
-    
-                compile : function () {
-    
-                    var el;
-    
-                    el = this.el;
-    
-                    if (!(el instanceof HTMLNode)) {
-                        el = replaceTags(el);
-                        el = this.parseHTML(el);
-                        $b.assert('Templates must specify a root node.', el.length === 1);
-                        el = el[0];
-                    }
-    
-                    this.set('node', Node.create({
-                        node : el,
-                        parent : this
-                    }));
-    
-                    return this.render;
-                },
-    
-                precompile : function () {
-                    return this.compile();
-                },
-    
-                render : function (context) {
-                    this.set('context', context);
-    
-                    //this.node.propertyDidChange('context');
-                    //this.get('node').set('context', context);
-                    return this;
-                },
-    
-                destroy : function () {
-                    this.node.destroy();
-                    this.set('context', null);
-                    return this._super();
-                }
-    
-            });
-        }
-    
-    ).attach('$b');
-
-    $b('brink/dom/HelperNode', 
-        [
-            './Node',
-            '../utils/intersect'
-        ],
-    
-        function (Node, intersect) {
-    
-            var HelperNode = Node({
-    
-                isHelperNode : true,
-    
-                update : function (context, properties) {
-    
-                    var domNodes,
-                        origDomNodes;
-    
-                    if (intersect(this.watchedProperties(), properties).length) {
-                        //this.nodes(this._helper(context, this.helperOptions(), this.childNodes));
-                    }
-    
-                }
-    
-            });
-    
-            return HelperNode;
-        }
-    
-    ).attach('$b.dom');
 
     $b('brink/browser/ajax', 
     
@@ -6505,16 +6083,22 @@
     
                 console.log('');
     
+                /* jscs : disable validateQuoteMarks */
+    
                 function replaceAnonymousDefine (id, src) {
     
                     // Replace the first instance of '$b(' or '$b.define('
                     src = src.replace(/(\$b|\.define)(\s)?(\()/, "$1$2$3'" + id + "', ");
                     return src;
                 }
+                /* jscs : enable */
     
                 function replaceModules (modules, src) {
     
-                    return src.replace(/([t| ]+)(\/\*{{modules}}\*\/)([\s\S]+?)(\/\*{{\/modules}}\*\/)/, '$1' + JSON.stringify(modules, null, '    ').split('\n').join('\n$1'));
+                    return src.replace(
+                        /([t| ]+)(\/\*{{modules}}\*\/)([\s\S]+?)(\/\*{{\/modules}}\*\/)/,
+                        '$1' + JSON.stringify(modules, null, '    ').split('\n').join('\n$1')
+                    );
                 }
     
                 function wrap (src) {
@@ -6580,7 +6164,9 @@
     
                             metas = $b.require.metas();
     
-                            metas.forEach(function (item){console.log(item.id);});
+                            metas.forEach(function (item) {
+                                console.log(item.id);
+                            });
     
                             for (p in metas) {
     

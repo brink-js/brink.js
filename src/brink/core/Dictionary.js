@@ -1,22 +1,21 @@
 $b(
 
     [
-    	'./Object'
+        './Object'
     ],
 
     function (Obj) {
 
-		return Obj({
+        'use strict';
+
+        return Obj({
 
             keys : null,
             values : null,
 
             init : function () {
 
-                var i,
-                    a,
-                    keys,
-                    vals;
+                var i;
 
                 this.keys = [];
                 this.values = [];
@@ -85,7 +84,7 @@ $b(
                 return !~this.keys.indexOf(o);
             },
 
-            indexOf : function () {
+            indexOf : function (o) {
                 return this.keys.indexOf(o);
             },
 
@@ -100,7 +99,7 @@ $b(
                 return this;
             }
 
-		});
-	}
+        });
+    }
 
 ).attach('$b');

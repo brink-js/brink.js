@@ -1,7 +1,7 @@
 $b(
 
     [
-    	'../utils/isFunction'
+        '../utils/isFunction'
     ],
 
     function (isFunction) {
@@ -9,158 +9,155 @@ $b(
         'use strict';
 
         var _interests,
-        	_pendingNotifications,
+            _pendingNotifications,
 
-        	Notification,
-        	NotificationManager;
+            Notification,
+            NotificationManager;
 
-		_pendingNotifications = [];
-		_interests = {};
+        _pendingNotifications = [];
+        _interests = {};
 
+        Notification = function (name, args, callback) {
+            this.name = name;
+            this.args = args;
+            this.data = args && args.length === 1 ? args[0] : null;
+            this.callback = callback;
+            return this;
+        };
 
-		Notification = function (name, args, callback) {
-			this.name = name;
-			this.args = args;
-			this.data = args && args.length === 1 ? args[0] : null;
-			this.callback = callback;
-			return this;
-		};
+        Notification.prototype.data = {};
+        Notification.prototype.name = '';
+        Notification.prototype.dispatcher = null;
+        Notification.prototype.status = 0;
+        Notification.prototype.pointer = 0;
+        Notification.prototype.callback = null;
 
-		Notification.prototype.data = {};
-		Notification.prototype.name = "";
-		Notification.prototype.dispatcher = null;
-		Notification.prototype.status = 0;
-		Notification.prototype.pointer = 0;
-		Notification.prototype.callback = null;
+        Notification.prototype.hold = function () {
+            this.status = 2;
+        };
 
-		Notification.prototype.hold = function () {
-			this.status = 2;
-		};
+        Notification.prototype.release = function () {
+            this.status = 1;
+            NotificationManager.releaseNotification(this);
+        };
 
-		Notification.prototype.release = function () {
-			this.status = 1;
-			NotificationManager.releaseNotification(this);
-		};
+        Notification.prototype.cancel = function () {
+            this.data = {};
+            this.name = '';
+            this.status = 0;
+            this.pointer = 0;
+            this.dispatcher = null;
+            this.callback = null;
 
-		Notification.prototype.cancel = function () {
-			this.data = {};
-			this.name = "";
-			this.status = 0;
-			this.pointer = 0;
-			this.dispatcher = null;
-			this.callback = null;
+            NotificationManager.cancelNotification(this);
+        };
 
-			NotificationManager.cancelNotification(this);
-		};
+        Notification.prototype.dispatch = function (obj) {
+            this.status = 1;
+            this.pointer = 0;
+            this.dispatcher = obj;
+            NotificationManager.publishNotification(this);
+        };
 
-		Notification.prototype.dispatch = function (obj) {
-			this.status = 1;
-			this.pointer = 0;
-			this.dispatcher = obj;
-			NotificationManager.publishNotification(this);
-		};
+        Notification.prototype.respond = function () {
+            if (this.callback) {
+                this.callback.apply(this.dispatcher, arguments);
+                this.cancel();
+            }
+        };
 
+        function _publishNotification(notification) {
+            _pendingNotifications.push(notification);
+            _notifyObjects(notification);
+        }
 
-		Notification.prototype.respond = function () {
-			if (this.callback) {
-				this.callback.apply(this.dispatcher, arguments);
-				this.cancel();
-			}
-		};
+        function _notifyObjects(notification) {
 
+            var name,
+                subs,
+                len;
 
-		function _publishNotification(notification) {
-			_pendingNotifications.push(notification);
-			_notifyObjects(notification);
-		}
+            name = notification.name;
 
-		function _notifyObjects(notification) {
+            if (_interests[name]) {
 
-			var name,
-				subs,
-				len;
+                subs = _interests[name].slice(0);
+                len = subs.length;
 
-			name = notification.name;
+                while (notification.pointer < len) {
+                    if (notification.status === 1) {
+                        subs[notification.pointer].apply(null, [].concat(notification, notification.args));
+                        notification.pointer ++;
+                    } else {
+                        return;
+                    }
+                }
 
-			if (_interests[name]) {
+                subs = null;
 
-				subs = _interests[name].slice(0);
-				len = subs.length;
+                /**
+                * Notified all subscribers, notification is no longer needed,
+                * unless it has a callback to be called later via notification.respond()
+                */
+                if (notification.status === 1 && !notification.callback) {
+                    notification.cancel();
+                }
+            }
+        }
 
-				while (notification.pointer < len) {
-					if (notification.status === 1) {
-						subs[notification.pointer].apply(null, [].concat(notification, notification.args));
-						notification.pointer ++;
-					} else {
-						return;
-					}
-				}
+        NotificationManager = {};
 
-				subs = null;
+        NotificationManager.subscribe = function (name, fn, priority) {
 
-				/**
-				* Notified all subscribers, notification is no longer needed,
-				* unless it has a callback to be called later via notification.respond()
-				*/
-				if (notification.status === 1 && !notification.callback) {
-					notification.cancel();
-				}
-			}
-		}
+            priority = isNaN(priority) ? -1 : priority;
+            _interests[name] = _interests[name] || [];
 
-		NotificationManager = {};
+            if (priority <= -1 || priority >= _interests[name].length) {
+                _interests[name].push(fn);
+            } else {
+                _interests[name].splice(priority, 0, fn);
+            }
+        };
 
-		NotificationManager.subscribe = function (name, fn, priority) {
+        NotificationManager.unsubscribe = function (name, fn) {
+            var fnIndex = _interests[name].indexOf(fn);
+            if (fnIndex > -1) {
+                _interests[name].splice(fnIndex, 1);
+            }
+        };
 
-			priority = isNaN(priority) ? -1 : priority;
-			_interests[name] = _interests[name] || [];
+        NotificationManager.publish = function () {
 
-			if (priority <= -1 || priority >= _interests[name].length) {
-				_interests[name].push(fn);
-			} else {
-				_interests[name].splice(priority, 0, fn);
-			}
-		};
+            var notification,
+                args = Array.prototype.slice.call(arguments),
+                name = args[0],
+                dispatcher = args[args.length - 1],
+                callback = args[args.length - 2];
 
-		NotificationManager.unsubscribe = function (name, fn) {
-			var fnIndex = _interests[name].indexOf(fn);
-			if (fnIndex > -1) {
-				_interests[name].splice(fnIndex, 1);
-			}
-		};
+            callback = isFunction(callback) ? callback : null;
 
-		NotificationManager.publish = function () {
+            args = args.slice(1, (callback ? args.length - 2 : args.length - 1));
 
-			var notification,
-				args = Array.prototype.slice.call(arguments),
-				name = args[0],
-				dispatcher = args[args.length - 1],
-				callback = args[args.length - 2];
+            notification = new Notification(name, args, callback);
+            notification.status = 1;
+            notification.pointer = 0;
+            notification.dispatcher = dispatcher;
+            _publishNotification(notification);
+        };
 
-			callback = isFunction(callback) ? callback : null;
+        NotificationManager.releaseNotification = function (notification) {
+            notification.status = 1;
+            if (_pendingNotifications.indexOf(notification) > -1) {
+                _notifyObjects(notification);
+            }
+        };
 
-			args = args.slice(1, (callback ? args.length - 2 : args.length - 1));
+        NotificationManager.cancelNotification = function (notification) {
+            _pendingNotifications.splice(_pendingNotifications.indexOf(notification), 1);
+            notification = null;
+        };
 
-			notification = new Notification(name, args, callback);
-			notification.status = 1;
-			notification.pointer = 0;
-			notification.dispatcher = dispatcher;
-			_publishNotification(notification);
-		};
-
-		NotificationManager.releaseNotification = function (notification) {
-			notification.status = 1;
-			if (_pendingNotifications.indexOf(notification) > -1) {
-				_notifyObjects(notification);
-			}
-		};
-
-		NotificationManager.cancelNotification = function (notification) {
-			_pendingNotifications.splice(_pendingNotifications.indexOf(notification), 1);
-			notification = null;
-		};
-
-		 $b.define('notificationManager', NotificationManager).attach('$b');
+         $b.define('notificationManager', NotificationManager).attach('$b');
 
         return NotificationManager;
     }

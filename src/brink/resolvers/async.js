@@ -26,12 +26,12 @@
             // Used for checking circular dependencies.
             _dependencies = {},
             // Used in various places, defined here for smaller file size
-            _rem = ["require", "exports", "module"],
+            _rem = ['require', 'exports', 'module'],
 
             // Configurable properties...
             _config = {},
-            _baseUrl = "",
-            _urlArgs = "",
+            _baseUrl = '',
+            _urlArgs = '',
             _waitSeconds = 10,
             _paths = {};
 
@@ -40,17 +40,17 @@
         * takes care of `../` and `./` parts
         */
         function _normalize (path, prevPath) {
-            // Replace any matches of "./"  with "/"
-            path = path.replace(/(^|[^\.])(\.\/)/g, "$1");
+            // Replace any matches of './'  with '/'
+            path = path.replace(/(^|[^\.])(\.\/)/g, '$1');
 
-            // Replace any matches of "some/path/../" with "some/"
+            // Replace any matches of 'some/path/../' with 'some/'
             while (prevPath !== path) {
                 prevPath = path;
-                path = path.replace(/([\w,\-]*[\/]{1,})([\.]{2,}\/)/g, "");
+                path = path.replace(/([\w,\-]*[\/]{1,})([\.]{2,}\/)/g, '');
             }
 
-            // Replace any matches of multiple "/" with a single "/"
-            return path.replace(/(\/{2,})/g, "/");
+            // Replace any matches of multiple '/' with a single '/'
+            return path.replace(/(\/{2,})/g, '/');
         }
 
         function _meta () {
@@ -113,7 +113,7 @@
                             if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
                                 module.toString = function () {
                                     return 'Brink.' + idPart;
-                                }
+                                };
                             }
                         }
 
@@ -126,18 +126,18 @@
 
                             module.toString = function () {
                                 return id;
-                            }
+                            };
                         }
                     }
                 }
-            }
+            };
         }
 
         /**
         * Similar to UNIX dirname, returns the parent path of another path.
         */
         function _getContext (path) {
-            return path.substr(0, path.lastIndexOf("/"));
+            return path.substr(0, path.lastIndexOf('/'));
         }
 
         /**
@@ -147,22 +147,22 @@
         function _resolve (path, context) {
 
             /**
-            * If the path does not start with a ".", it's relative
+            * If the path does not start with a '.', it's relative
             * to the base URL.
             */
-            context = (path.indexOf(".") < 0) ? "" : context;
+            context = (path.indexOf('.') < 0) ? '' : context;
 
             /**
-            * Never resolve "require", "module" and "exports" to absolute paths
-            * For plugins, only resolve the plugin path, not anything after the first "!"
+            * Never resolve 'require', 'module' and 'exports' to absolute paths
+            * For plugins, only resolve the plugin path, not anything after the first '!'
             */
-            if (~_rem.indexOf(path) || ~path.indexOf("!")) {
+            if (~_rem.indexOf(path) || ~path.indexOf('!')) {
                 return path.replace(/([\d,\w,\s,\.\/]*)(?=\!)/, function ($0, $1) {
                     return _resolve($1, context);
                 });
             }
 
-            return _normalize((context ? context + "/" : "") + path);
+            return _normalize((context ? context + '/' : '') + path);
         }
 
         /**
@@ -226,7 +226,7 @@
 
             _head = _head || document.getElementsByTagName('head')[0];
 
-            script = document.createElement("script");
+            script = document.createElement('script');
             script.src = f;
 
             /**
@@ -235,7 +235,7 @@
             */
             script.onreadystatechange = script.onload = function () {
 
-                if (!script.readyState || script.readyState === "complete" || script.readyState === "loaded") {
+                if (!script.readyState || script.readyState === 'complete' || script.readyState === 'loaded') {
 
                     clearTimeout(timeoutID);
                     script.onload = script.onreadystatechange = script.onerror = null;
@@ -249,12 +249,12 @@
             * The first, if a script request actually errors (i.e. a 404)
             * The second, if a script takes more than X seconds to respond. Where X = _waitSeconds
             */
-            script.onerror = function (e) {
+            script.onerror = function () {
 
                 clearTimeout(timeoutID);
                 script.onload = script.onreadystatechange = script.onerror = null;
 
-                throw new Error(f + " failed to load.");
+                throw new Error(f + ' failed to load.');
             };
 
             timeoutID = setTimeout(script.onerror, _waitSeconds * 1000);
@@ -275,9 +275,9 @@
 
             for (i = 0; i < modules.length; i ++) {
                 m = modules[i];
-                if (~m.indexOf("!")) {
+                if (~m.indexOf('!')) {
                     /**
-                    * If the module id has a "!"" in it, it's a plugin...
+                    * If the module id has a '!' in it, it's a plugin...
                     */
                     _loadPluginModule(m, context, q, i);
                     continue;
@@ -299,10 +299,10 @@
 
             /**
             * Set the plugin path. Plugins are stored differently than normal modules
-            * Essentially they are stored along with the context in a special "plugins"
-            * subpath. This allows modules to lookup plugins with the sync require("index!./foo:./bar") method
+            * Essentially they are stored along with the context in a special 'plugins'
+            * subpath. This allows modules to lookup plugins with the sync require('index!./foo:./bar') method
             */
-            pluginPath = (context ? context + "/" : "") + "plugins/" + module.replace(/\//g, "_");
+            pluginPath = (context ? context + '/' : '') + 'plugins/' + module.replace(/\//g, '_');
 
             /*
             * Update the path to this plugin in the queue
@@ -311,9 +311,9 @@
                 q.m[moduleIndex] = pluginPath;
             }
 
-            module = module.split("!");
-            plugin = module.splice(0,1)[0];
-            module = module.join("!");
+            module = module.split('!');
+            plugin = module.splice(0, 1)[0];
+            module = module.join('!');
 
             /*
             * Let's check to see if the module is already defined.
@@ -364,7 +364,7 @@
                     * If you don't have any plugins using fromText(), feel free to comment
                     * the entire load.fromText() out and re-minify the source.
                     * I use Function vs eval() because nothing executing through fromText() should need access
-                    * to local vars, and Uglify does not mangle variables if it finds "eval()" in your code.
+                    * to local vars, and Uglify does not mangle variables if it finds 'eval()' in your code.
                     */
 
                     /*jslint evil: true */
@@ -391,7 +391,7 @@
         function _module (id, def, noExports, module) {
 
             /**
-            * Always return back the id for "require", "module" and "exports",
+            * Always return back the id for 'require', 'module' and 'exports',
             * these are replaced by calling _swapValues
             */
             if (~_rem.indexOf(id)) {
@@ -418,18 +418,17 @@
         function _getURL (id, prefix) {
 
             /**
-            * If the path starts with a "/", or "http", it's an absolute URL
+            * If the path starts with a '/', or 'http', it's an absolute URL
             * If it's not an absolute URL, prefix the request with baseUrl
             */
 
-            prefix = (!id.indexOf("/") || !id.indexOf("http")) ? "" : _baseUrl;
+            prefix = (!id.indexOf('/') || !id.indexOf('http')) ? '' : _baseUrl;
 
-
-            for(var p in _paths) {
-                id = id.replace(new RegExp("(^" + p + ")", "g"), _paths[p]);
+            for (var p in _paths) {
+                id = id.replace(new RegExp('(^' + p + ')', 'g'), _paths[p]);
             }
 
-            return prefix + id + (id.indexOf(".") < 0 ? ".js" : "") + _urlArgs;
+            return prefix + id + (id.indexOf('.') < 0 ? '.js' : '') + _urlArgs;
         }
 
         /**
@@ -450,7 +449,7 @@
         * Stores dependencies for this module id.
         * Also checks for any circular dependencies, if found, it defines those modules as empty objects temporarily
         */
-        function _resolveCircularReferences (id, dependencies, circulars, i, j, d, subDeps, sd, cid) {
+        function _resolveCircularReferences (id, dependencies, circulars, i, j, d, subDeps, sd) {
 
             _dependencies[id] = dependencies;
 
@@ -467,7 +466,7 @@
                             if (sd !== id) {
                                 dependencies.push(sd);
                             }
-                            else{
+                            else {
                                 /**
                                 * Circular reference detected, define circular
                                 * references as empty modules to be defined later
@@ -483,7 +482,19 @@
         /**
         * Define modules. AMD-spec compliant.
         */
-        function define (id, dependencies, factory, alreadyQed, depsLoaded, meta, module, facArgs, context, ri, localRequire) {
+        function define (
+            id,
+            dependencies,
+            factory,
+            alreadyQed,
+            depsLoaded,
+            meta,
+            module,
+            facArgs,
+            context,
+            ri,
+            localRequire
+        ) {
 
             if (!meta) {
                 meta = _meta();
@@ -515,7 +526,7 @@
                 * However, we still need to add an empty queue here to be cleaned up by onLoad
                 */
                 // TODO : REVISIT
-                //_defineQ.push(0);
+                // _defineQ.push(0);
             }
 
             context = _getContext(id);
@@ -526,14 +537,16 @@
             * This means that this is a CommonJS-type module...
             */
 
-            if (!dependencies.length && factory.length && typeof factory === "function" && !factory.__meta) {
+            if (!dependencies.length && factory.length && typeof factory === 'function' && !factory.__meta) {
 
                 /**
-                * Let's check for any references of sync-type require("moduleID")
+                * Let's check for any references of sync-type require('moduleID')
                 */
                 factory.toString()
-                    .replace(/(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, "") // Remove any comments first
-                    .replace(/(?:require)\(\s*["']([^'"\s]+)["']\s*\)/g, // Now let's check for any sync style require("module") calls
+                    // Remove any comments first
+                    .replace(/(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, '')
+                    // Now let's check for any sync style require('module') calls
+                    .replace(/(?:require)\(\s*['']([^''\s]+)['']\s*\)/g,
 
                         function ($0, $1) {
                             if (dependencies.indexOf($1) < 0) {
@@ -547,7 +560,7 @@
                         }
                     );
 
-                dependencies = (_rem.slice(0,factory.length)).concat(dependencies);
+                dependencies = (_rem.slice(0, factory.length)).concat(dependencies);
             }
 
             if (dependencies.length && !depsLoaded) {
@@ -574,18 +587,18 @@
             module = _module(id, 0, 1);
             module = module || {exports: {}};
 
-            if (typeof factory === "function" && !factory.__meta) {
+            if (typeof factory === 'function' && !factory.__meta) {
 
                 /**
                 * If the factory is a function, we need to invoke it.
-                * First let's swap "require", "module" and "exports" with actual objects
+                * First let's swap 'require', 'module' and 'exports' with actual objects
                 */
-                facArgs =_swapValues(
-                    dependencies.length ? dependencies : (_rem.slice(0,factory.length)),
+                facArgs = _swapValues(
+                    dependencies.length ? dependencies : (_rem.slice(0, factory.length)),
                     {
-                        "require" : localRequire,
-                        "module" : module,
-                        "exports" : module.exports
+                        'require' : localRequire,
+                        'module' : module,
+                        'exports' : module.exports
                     }
                 );
 
@@ -707,9 +720,9 @@
 
             /**
             * Otherwise, we know all modules are already defined.
-            * Invoke the callback immediately, swapping "require" with the actual require function
+            * Invoke the callback immediately, swapping 'require' with the actual require function
             */
-            return callback.apply($b, _swapValues(modules, {"require" : require}));
+            return callback.apply($b, _swapValues(modules, {'require' : require}));
         }
 
         /**
@@ -721,17 +734,15 @@
         */
         require.config = function (obj) {
 
-            var cwd;
-
             _config = obj || {};
 
             _baseUrl = _config.baseUrl ? _config.baseUrl : _baseUrl;
 
             // Add a trailing slash to baseUrl if needed.
-            _baseUrl += (_baseUrl && _baseUrl.charAt(_baseUrl.length-1) !== "/") ? "/" : "";
+            _baseUrl += (_baseUrl && _baseUrl.charAt(_baseUrl.length - 1) !== '/') ? '/' : '';
             _baseUrl = _normalize(_baseUrl);
 
-            _urlArgs = _config.urlArgs ? "?" + _config.urlArgs : _urlArgs;
+            _urlArgs = _config.urlArgs ? '?' + _config.urlArgs : _urlArgs;
 
             _waitSeconds = _config.waitSeconds || _waitSeconds;
 
@@ -794,8 +805,10 @@
     $b.define = resolver.define;
     $b.undefine = resolver.undefine;
 
-
+    /* jshint ignore : start */
     if (origRequire) {
         require = origRequire;
     }
+    /* jshint ignore : end */
+
 }).call(this);

@@ -10,7 +10,7 @@ $b(
         return function (fn, scope) {
             return function () {
                 return fn.apply(scope, arguments);
-            }
+            };
         };
     }
 
