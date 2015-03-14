@@ -2,3 +2,5 @@
 node_modules
 dist
 docs/api
+test.js
+thoughts.md
