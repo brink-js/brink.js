@@ -44,6 +44,22 @@ $b(
 
         Class = Obj({
 
+            /***********************************************************************
+
+            `Brink.Class` provides several useful inheritance helpers
+            and other utilities not found on `Brink.Object`:
+
+            - `super()` method support.
+
+            - Automatically bound methods.
+
+            - Publish/Subscribe system.
+
+            @class Class
+            @namespace Brink
+            @extends Brink.Object
+            @constructor
+            ************************************************************************/
             __init : superfy(function () {
 
                 var i,
@@ -80,6 +96,14 @@ $b(
 
             }, Obj.prototype.__init),
 
+            /***********************************************************************
+            Subscribe to notifications of type `name`.
+
+            @method subscribe
+            @param {String} name The name of the notifications to subscribe to.
+            @param {Function} handler A function to handle the notifications.
+            @param {Number} [priority] Lower is higher priority (priority of 0 will hear about the notifications before any other handler)
+            ************************************************************************/
             subscribe : function (name, handler, priority) {
 
                 this._interestHandlers = this._interestHandlers || {};
@@ -91,6 +115,12 @@ $b(
                 }
             },
 
+            /***********************************************************************
+            Unsubscribe from notifications of type `name`.
+
+            @method unsubscribe
+            @param {String} name The name of the notifications to unsubscrube from.
+            ************************************************************************/
             unsubscribe : function (name) {
 
                 if (this._interestHandlers && this._interestHandlers[name]) {
@@ -99,6 +129,14 @@ $b(
                 }
             },
 
+            /***********************************************************************
+            Unsubscribe from all notifications.
+
+            This gets called automatically during `destroy()`, it's not very common
+            you would want to call this directly.
+
+            @method unsubscribeAll
+            ************************************************************************/
             unsubscribeAll : function () {
 
                 var interest;
@@ -112,17 +150,17 @@ $b(
                 this._interestHandlers = [];
             },
 
+            /***********************************************************************
+            Publish a notification.
+
+            @method publish
+            @param {String} name The name of the notification to publish.
+            @param {Function} handler A function to handle the notifications.
+            @param {Any} [...args] The arguments you want to send to the notification handlers.
+            ************************************************************************/
             publish : function (/*name, arg1, arg2, arg3..., callback*/) {
                 var args = Array.prototype.slice.call(arguments);
                 NotificationManager.publish.apply(NotificationManager, [].concat(args, this));
-            },
-
-            setTimeout : function (func, delay) {
-                return setTimeout(func.bind(this), delay);
-            },
-
-            setInterval : function (func, delay) {
-                return setInterval(func.bind(this), delay);
             },
 
             destroy : superfy(function () {

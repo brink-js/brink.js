@@ -51,7 +51,6 @@ $b(
             @extends Brink.CoreObject
             @constructor
             ************************************************************************/
-
             __init : function (o) {
 
                 var p,
@@ -485,10 +484,12 @@ $b(
             /***********************************************************************
             Remove all watchers watching properties this object.
 
+            USE WITH CAUTION.
+
             This gets called automatically during `destroy()`, it's not very common
             you would want to call this directly.
 
-            USE WITH CAUTION. Any and all other objects that have bound properties,
+            Any and all other objects that have bound properties,
             watchers or computed properties dependent on this Object instance will
             stop working.
 
@@ -536,6 +537,81 @@ $b(
             }
         });
 
+        /***********************************************************************
+        Extends an object's prototype and creates a new subclass.
+
+        The new subclass will inherit all properties and methods of the Object being
+        extended.
+
+        ```javascript
+
+        var Animal = $b.Object.extend({
+
+            numLegs : 4,
+
+            walk : function () {
+                for (var i = 1; i <= this.numLegs; i ++) {
+                    console.log('moving leg #' + i);
+                }
+            }
+        });
+
+        var Dog = Animal.extend({
+
+            bark : function () {
+                console.log('woof!!');
+            },
+
+            walkAndBark : function () {
+                this.bark();
+                this.walk();
+            }
+        });
+
+        var doggy = Dog.create();
+        doggy.walkAndBark();
+
+        ```
+
+        If you want `super()` method support, use {{#crossLink "Brink.Class"}}{{/crossLink}}
+
+        ```javascript
+
+        var Animal = $b.Class.extend({
+
+            numLegs : 4,
+
+            walk : function () {
+                for (var i = 1; i <= this.numLegs; i ++) {
+                    console.log('moving leg #' + i);
+                }
+            }
+        });
+
+        var Dog = Animal.extend({
+
+            bark : function () {
+                console.log('woof!!');
+            },
+
+            walk : function () {
+                this._super();
+                console.log('all ' + this.numLegs + ' legs moved successfully.');
+            },
+
+            walkAndBark : function () {
+                this.bark();
+                this.walk();
+            }
+        });
+
+        var doggy = Dog.create();
+        doggy.walkAndBark();
+
+        ```
+
+        @method extend
+        ***********************************************************************/
         Obj.extend = function () {
 
             var proto,

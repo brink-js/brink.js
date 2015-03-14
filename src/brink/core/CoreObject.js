@@ -10,6 +10,15 @@ $b(
 
         var CoreObject;
 
+        /***********************************************************************
+
+        `Brink.CoreObject` is not meant to be used directly.
+        Instead, use $b.Object or Brink.Class.
+
+        @class CoreObject
+        @namespace Brink
+        @constructor
+        ************************************************************************/
         CoreObject = function () {};
 
         CoreObject.extend = function (props) {
