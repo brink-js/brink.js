@@ -2,9 +2,7 @@ $b(
 
     [
         '../config',
-
         './CoreObject',
-
         '../utils/get',
         '../utils/set',
         '../utils/clone',
@@ -21,11 +19,8 @@ $b(
     ],
 
     function (
-
         config,
-
         CoreObject,
-
         get,
         set,
         clone,
@@ -45,6 +40,17 @@ $b(
         var Obj;
 
         Obj = CoreObject.extend({
+
+            /***********************************************************************
+
+            `Brink.Object` is the primary base Class. Most of your Objects will
+            extend this Class, unless you need the added functionality of Brink.Class.
+
+            @class Object
+            @namespace Brink
+            @extends Brink.CoreObject
+            @constructor
+            ************************************************************************/
 
             __init : function (o) {
 
@@ -224,7 +230,15 @@ $b(
                 };
             },
 
-            /* @doc Object.propertyDidChange */
+            /***********************************************************************
+            Invalidate one or more properties. This will trigger any bound and computed properties
+            depending on these properties to also get updated.
+
+            This will also trigger any watchers of this property in the next Run Loop.
+
+            @method propertyDidChange
+            @param  {Array|String} props A single property or an array of properties.
+            ************************************************************************/
             propertyDidChange : function () {
 
                 var props;
@@ -236,7 +250,13 @@ $b(
                 }
             },
 
-            /* @doc Object.getProperties */
+            /***********************************************************************
+            Gets a subset of properties on this object.
+
+            @method getProperties
+            @param {Array} keys A listof keys you want to get
+            @return {Object} Object of key : value pairs for properties in `keys`.
+            ************************************************************************/
             getProperties : function () {
 
                 var i,
@@ -263,12 +283,24 @@ $b(
                 return o;
             },
 
-            /* @doc Object.getChangedProperties */
+            /***********************************************************************
+            Gets all properties that have changed since the last Run Loop.
+
+            @method getChangedProperties
+            @return {Object} Object of key : value pairs for all changed properties.
+            ************************************************************************/
             getChangedProperties : function () {
                 return this.getProperties.apply(this, this.__meta.changedProps);
             },
 
-            /* @doc Object.prop */
+            /***********************************************************************
+            Get or create a property descriptor.
+
+            @method prop
+            @param {String} key Poperty name.
+            @param [val] Default value to use for the property.
+            @return {PropertyDescriptor}
+            ************************************************************************/
             prop : function (key, val) {
 
                 var obj;
@@ -310,26 +342,100 @@ $b(
                 return val;
             },
 
-            /* @doc Object.bindProperty */
+            /***********************************************************************
+            Bind a property to a property on another object.
+
+            This can also be achieved with : `a.prop('name').bindTo(b, 'name');`
+
+            @method bindProperty
+            @param {String} key Poperty name on ObjectA.
+            @param {Brink.Object} obj ObjectB, whose property you want to bind to.
+            @param {String} key2 Property name on ObjectB.
+            ***********************************************************************/
             bindProperty : function (key, obj, key2) {
                 return this.prop(key).bindTo(obj, key2);
             },
 
-            /* @doc Object.get */
+            /***********************************************************************
+            Get the value of a property.
+
+            This is identical to doing `obj.key` or `obj[key]`,
+            unless you are supporting <= IE8.
+
+            @method get
+            @param {String} key The property to get.
+            @return The value of the property or `undefined`.
+            ***********************************************************************/
             get : function (key) {
                 return get(this, key);
             },
 
-            /* @doc Object.set */
+            /***********************************************************************
+            Set the value of a property.
+
+            This is identical to doing `obj.key = val` or `obj[key] = val`,
+            unless you are supporting <= IE8.
+
+            You can also use this to set nested properties.
+            I.e. `obj.set('some.nexted.key', val)`
+
+            @method set
+            @param {String} key The property to set.
+            @param val The value to set.
+            @return The value returned from the property's setter.
+            ***********************************************************************/
             set : function (key, val, quiet, skipCompare) {
                 return set(this, key, val, quiet, skipCompare);
             },
 
-            /* @doc Object.watch */
-            watch : function (fn, props) {
+            /***********************************************************************
+            Watch a property or properties for changes.
 
-                fn = arguments[1];
+            ```javascript
+
+            var obj = $b.Object.create({
+
+                color : 'green',
+                firstName : 'Joe',
+                lastName : 'Schmoe',
+
+                init : function () {
+                    this.watch('color', this.colorChanged.bind(this));
+                    this.watch(['firstName', 'lastName'], this.nameChanged.bind(this));
+                },
+
+                colorChanged : function () {
+                    console.log(this.color);
+                },
+
+                nameChanged : function () {
+                    console.log(this.firstName + ' ' + this.lastName);
+                }
+            });
+
+            obj.color = 'red';
+            obj.firstName = 'John';
+            obj.lastName = 'Doe';
+
+            ```
+
+            Watcher functions are only invoked once per Run Loop, this means that the `nameChanged`
+            method above will only be called once, even though we changed two properties that
+            `nameChanged` watches.
+
+            You can skip the `props` argument to watch all properties on the Object.
+
+            @method watch
+            @param {null|String|Array} props The property or properties to watch.
+            @param {Function} fn The function to call upon property changes.
+            ***********************************************************************/
+            watch : function () {
+
+                var fn,
+                    props;
+
                 props = arguments[0];
+                fn = arguments[1];
 
                 if ($b.instanceManager) {
 
@@ -358,7 +464,12 @@ $b(
                 }
             },
 
-            /* @doc Object.unwatch */
+            /***********************************************************************
+            Remove a watcher.
+
+            @method unwatch
+            @param {Function|Array} fns The function(s) you no longer want to trigger on property changes.
+            ***********************************************************************/
             unwatch : function () {
 
                 if ($b.instanceManager) {
@@ -371,7 +482,18 @@ $b(
 
             },
 
-            /* @doc Object.unwatchAll */
+            /***********************************************************************
+            Remove all watchers watching properties this object.
+
+            This gets called automatically during `destroy()`, it's not very common
+            you would want to call this directly.
+
+            USE WITH CAUTION. Any and all other objects that have bound properties,
+            watchers or computed properties dependent on this Object instance will
+            stop working.
+
+            @method unwatchAll
+            ***********************************************************************/
             unwatchAll : function () {
 
                 if ($b.instanceManager) {
@@ -383,19 +505,24 @@ $b(
                 }
             },
 
-            /* @doc Object.willNotifyWatchers */
             willNotifyWatchers : function () {
 
             },
 
-            /* @doc Object.didNotifyWatchers */
             didNotifyWatchers : function () {
                 if (this.__meta) {
                     this.__meta.changedProps = [];
                 }
             },
 
-            /* @doc Object.destroy */
+            /***********************************************************************
+            Destroys an object, removes all bindings and watchers and clears all metadata.
+
+            In addition to calling `destroy()` be sure to remove all
+            references to the object so that it gets Garbage Collected.
+
+            @method destroy
+            ***********************************************************************/
             destroy : function () {
 
                 this.unwatchAll();

@@ -36,6 +36,7 @@
     "string-length": "^1.0.0",
     "text-table": "^0.2.0",
     "uglify-js": "~2.4.12",
-    "wrench": "~1.5.7"
+    "wrench": "~1.5.7",
+    "yuidocjs": "^0.6.0"
   }
 }

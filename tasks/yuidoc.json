@@ -1,0 +1,13 @@
+{
+  "name": "brink.js",
+  "description": "MVC.next",
+  "version": "0.0.8",
+  "url": "https://github.com/gigafied/brink.js",
+  "options": {
+    "paths": [
+      "src/brink/core"
+    ],
+    "outdir": "./docs/api",
+    "lint" : false
+  }
+}
