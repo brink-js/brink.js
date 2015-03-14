@@ -115,7 +115,6 @@ $b.init = function (deps, cb) {
             'brink/utils/flatten',
             'brink/utils/inject',
             'brink/utils/intersect',
-            'brink/utils/promise',
 
             'brink/utils/isBrinkInstance',
             'brink/utils/isBrinkObject',

@@ -15,8 +15,7 @@ $b(
         `Brink.CoreObject` is not meant to be used directly.
         Instead, use $b.Object or Brink.Class.
 
-        @class CoreObject
-        @namespace Brink
+        @class Brink.CoreObject
         @constructor
         ************************************************************************/
         CoreObject = function () {};

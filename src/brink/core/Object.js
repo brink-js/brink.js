@@ -46,8 +46,7 @@ $b(
             `Brink.Object` is the primary base Class. Most of your Objects will
             extend this Class, unless you need the added functionality of Brink.Class.
 
-            @class Object
-            @namespace Brink
+            @class Brink.Object
             @extends Brink.CoreObject
             @constructor
             ************************************************************************/

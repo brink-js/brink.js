@@ -5,7 +5,8 @@
   "url": "https://github.com/gigafied/brink.js",
   "options": {
     "paths": [
-      "src/brink/core"
+      "src/brink/core",
+      "src/brink/utils"
     ],
     "outdir": "./docs/api",
     "lint" : false

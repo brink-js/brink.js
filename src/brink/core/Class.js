@@ -55,8 +55,7 @@ $b(
 
             - Publish/Subscribe system.
 
-            @class Class
-            @namespace Brink
+            @class Brink.Class
             @extends Brink.Object
             @constructor
             ************************************************************************/
