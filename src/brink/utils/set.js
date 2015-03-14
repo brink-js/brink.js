@@ -9,7 +9,7 @@ $b(
 
         'use strict';
 
-        return function (obj, key, val, quiet, skipCompare) {
+        var set = function (obj, key, val, quiet, skipCompare) {
 
             var i;
 
@@ -52,7 +52,7 @@ $b(
             else if (arguments.length === 1) {
 
                 for (i in key) {
-                    obj.set(i, key[i], val, quiet);
+                    set(obj, i, key[i], val, quiet);
                 }
 
                 return obj;
@@ -60,6 +60,8 @@ $b(
 
             $b.error('Tried to call `set` with unsupported arguments', arguments);
         };
+
+        return set;
     }
 
 ).attach('$b');
