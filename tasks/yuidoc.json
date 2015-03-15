@@ -1,7 +1,8 @@
 {
   "name": "brink.js",
   "description": "MVC.next",
-  "url": "https://github.com/gigafied/brink.js",
+  "url": "http://brinkjs.com",
+  "logo" : "../../img/brink-logo.png",
   "options": {
     "paths": [
       "src/brink/core",
