@@ -1,6 +1,6 @@
 .DS_Store
 node_modules
 dist
-docs/api
+docs
 test.js
 thoughts.md
