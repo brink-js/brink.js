@@ -1,10 +1,13 @@
 # brink.js
-#####The modular MVC framework. [API Docs](http://brinkjs.com/ "Brink.js API Docs")
+####The modular MVC framework
+
+---------------------
+#####[API Docs](http://brinkjs.com/ "Brink.js API Docs")
 
 - Works in the browser and node.js.
 - No external dependencies.
 - Stays out of your way.
-- SMALL. < 10kb (minified and gzipped)
+- < 10kb (minified and gzipped)
 - Solves low-level problems with as little magic and opinion as possible.
 - Use as much or as little of it as you want.
 - Easily use side-by-side with <a href="http://jsfiddle.net/gigafied/VkebS/233/" target="_blank">ReactJS</a> or Angular.
