@@ -13,7 +13,7 @@ $b(
         /***********************************************************************
 
         `Brink.CoreObject` is not meant to be used directly.
-        Instead, use $b.Object or Brink.Class.
+        Instead, use {{#crossLink "Brink.Object"}}{{/crossLink}} or {{#crossLink "Brink.Class"}}{{/crossLink}}.
 
         @class Brink.CoreObject
         @constructor

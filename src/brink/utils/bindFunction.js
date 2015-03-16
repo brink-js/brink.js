@@ -9,7 +9,7 @@ $b(
 
         'use strict';
         /***********************************************************************
-        Bind a function to a specific scope. Like `Function.prototype.bind()`, but does
+        Bind a function to a specific scope. Like `Function.prototype.bind()`. Does
         not modify the original function.
 
         ```javascript

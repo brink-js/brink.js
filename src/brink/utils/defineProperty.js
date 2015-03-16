@@ -4,10 +4,19 @@ $b(
         './isBrinkInstance'
     ],
 
+    /***********************************************************************
+    @class Brink
+    ************************************************************************/
     function (isBrinkInstance) {
 
         'use strict';
 
+        /***********************************************************************
+        Used by `Brink.Object.prototype.prop()` for property descriptors.
+
+        @method defineProperty
+        @private
+        ************************************************************************/
         return function (obj, prop, descriptor) {
 
             $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));

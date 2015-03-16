@@ -375,7 +375,7 @@ $b(
             unless you are supporting <= IE8.
 
             You can also use this to set nested properties.
-            I.e. `obj.set('some.nexted.key', val)`
+            I.e. `obj.set('some.nested.key', val)`
 
             @method set
             @param {String} key The property to set.

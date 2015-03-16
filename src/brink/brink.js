@@ -122,7 +122,8 @@ $b.init = function (deps, cb) {
             'brink/utils/isObject',
 
             'brink/utils/merge',
-            'brink/utils/next',
+            'brink/utils/set',
+            'brink/utils/trim',
 
             'brink/core/Object',
             'brink/core/Class',
