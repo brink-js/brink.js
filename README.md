@@ -1,11 +1,15 @@
 # brink.js
-#####A highly-modular and extendable MVC framework.
+#####The modular MVC framework.
 
+- Works in the browser and node.js.
+- No external dependencies.
+- Stays out of your way.
+- SMALL. < 10kb (minified and gzipped)
 - Solves low-level problems with as little magic and opinion as possible.
-- Focuses on extensibiity and granularity. Use as much or as little of it as you want.
-- No external dependencies on other libraries or frameworks.
-- Plays nice with other libraries/frameworks. Easily use side-by-side with <a href="http://jsfiddle.net/gigafied/VkebS/233/" target="_blank">ReactJS</a> or Angular.
-- < 20kb (minified and gzipped)
+- Use as much or as little of it as you want.
+- Easily use side-by-side with <a href="http://jsfiddle.net/gigafied/VkebS/233/" target="_blank">ReactJS</a> or Angular.
+
+##### [API Docs](http://brinkjs.com/ "Brink.js API Docs")
 
 ---------------------
 
@@ -14,12 +18,11 @@
 - Inheritance
 - Two-way data binding
 - Computed properties
-- Works in the browser and node.js
 
-#### Pluggable Features
+#### Opt-In Features
 
-- Dependency management & injection (with build tool)
-
+- Dependency management & injection
+- Build tool
 
 - ###### Not yet implemented and/or documented:
     - Models & Collections
@@ -40,15 +43,15 @@ var a,
 
 a = $b.Object.create({
     color : 'green'
-};
+});
 
 b = $b.Object.create({
     color : $b.bindTo(a, 'color')
 });
 
-b.color; // 'green'
+console.log(b.color); // 'green'
 b.color = 'red';
-a.color; // 'red'
+console.log(a.color); // 'red'
 
 ```
 You can bind any property of a `$b.Object` instance to any other property of a `$b.Object` instance.
@@ -66,9 +69,9 @@ a.prop('color').bindTo(b, 'color');
 
 a.color = 'green';
 
-b.color; // 'green'
+console.log(b.color); // 'green'
 b.color = 'red';
-a.color; // 'red'
+console.log(a.color); // 'red'
 
 ````
 
@@ -82,15 +85,15 @@ a = $b.Object.create({
     color : 'green',
 
     init : function () {
-        this.watch('color', this.colorChanged);
+        this.watch('color', this.colorChanged.bind(this));
     },
 
     colorChanged : function () {
-        this.color; // red
+        console.log(this.color); // red
     }
-};
+});
 
-this.color = 'red';
+a.color = 'red';
 
 ````
 
@@ -118,7 +121,7 @@ the dependent property, using computed properties is far less cumbersome:
 var A,
     b;
 
-A = $b.Object({
+A = $b.Object.extend({
 
     prop1 : 1,
     prop2 : 2,
@@ -132,14 +135,14 @@ A = $b.Object({
         }
 
     })
-};
+});
 
 b = A.create();
 
 b.prop1 = 5;
 b.prop2 = 10;
 
-b.sum; // 15
+console.log(b.sum); // 15
 
 ````
 
@@ -147,14 +150,10 @@ Computed properties can have getters and setters:
 
 ```javascript
 
-var A,
-    b;
-
-A = $b.Object({
+var Person = $b.Object.extend({
 
     firstName : '',
     lastName : '',
-
     fullName : $b.computed({
 
         watch : ['firstName', 'lastName'],
@@ -170,19 +169,13 @@ A = $b.Object({
             return val.join(' ');
         }
     })
-};
-
-b = A.create({
-    firstName : 'Joe',
-    lastName : 'Schmoe'
 });
 
-b.fullName; // Joe Schmoe
+var person = Person.create({firstName : 'Jane', lastName : 'Smith'});
 
-b.fullName = 'John Doe';
-
-b.firstName; // John
-b.lastName; // Doe
+console.log(person.fullName); // 'Jane Smith';
+person.fullName = 'John Doe';
+console.log(person.firstName, person.lastName); // 'John', 'Doe';
 
 ````
 
