@@ -19,6 +19,7 @@ describe("$b.Object", function () {
 	require("./construction");
 	require("./destruction");
 	require("./bindings");
+    require("./watchers");
     require("./computed");
 
     after (function () {
