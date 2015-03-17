@@ -2,7 +2,10 @@ var p,
     fs,
     path,
     chai,
-    mocha;
+    mocha,
+    timeout;
+
+require('require-main')();
 
 fs = require('fs');
 path = require('path');
@@ -14,9 +17,11 @@ mocha = new mocha({
     reporter : 'spec'
 });
 
-require('../src/brink/brink.js');
-
 global.expect = chai.expect;
+
+var done = function (failures) {
+    process.exit(failures);
+};
 
 function addTests(folder, p) {
 
@@ -35,14 +40,18 @@ function addTests(folder, p) {
 	});
 }
 
+module.exports = function (cb) {
+
+    if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+    }
+
+    mocha.run(cb);
+};
+
 addTests(path.join(__dirname, 'brink'));
 
-$b.configure({
-    baseUrl : __dirname + '/../src'
-});
-
-$b.init(function () {
-    mocha.run(function(failures) {
-        process.exit(failures);
-    });
-});
+timeout = setTimeout(function () {
+    mocha.run(done);
+}, 0);

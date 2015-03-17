@@ -7,7 +7,14 @@ $b(
 
         'use strict';
 
-        return function (a, b, i, j, p, n, s) {
+        return function (a, skipRoot) {
+
+            var b,
+                i,
+                j,
+                p,
+                n,
+                s;
 
             a = [].concat(a);
 
@@ -17,7 +24,7 @@ $b(
 
                 p = a[i];
 
-                if (~p.indexOf('.')) {
+                if (!skipRoot && ~p.indexOf('.')) {
 
                     b = p.split('.');
                     b.splice(b.length - 1, 1);

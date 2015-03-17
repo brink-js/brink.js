@@ -25,10 +25,10 @@
 - Dependency management & injection
 - Build tool
 
-- ###### Not yet implemented and/or documented:
-    - Models & Collections
-    - Promise based publish/subscribe
-    - DOM-aware client-side templating
+###### Not yet implemented and/or documented:
+- Models & Collections
+- Promise based publish/subscribe
+- DOM-aware client-side templating
 
 -----------------------------
 

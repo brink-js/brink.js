@@ -84,7 +84,8 @@
 
                 resolve : function (id, module) {
 
-                    var idPart;
+                    var meta,
+                        idPart;
 
                     if (id) {
                         this.id = id;
@@ -94,13 +95,13 @@
                         this.module = module;
                     }
 
-                    _metas[id] = {
-                        module : this.module,
-                        id : this.id,
-                        url : this.url,
-                        attachPath : this.attachPath,
-                        order : moduleIndex ++
-                    };
+                    meta = _metas[id] || {id : this.id};
+                    meta.module = this.module;
+                    meta.url = this.url || meta.url;
+                    meta.attachPath = this.attachPath || meta.attachPath;
+                    meta.order = meta.order || moduleIndex ++;
+
+                    _metas[id] = meta;
 
                     module = this.module.exports || this.module;
 
@@ -150,13 +151,13 @@
             * If the path does not start with a '.', it's relative
             * to the base URL.
             */
-            context = (path.indexOf('.') < 0) ? '' : context;
+            context = (path && path.indexOf('.') < 0) ? '' : context;
 
             /**
             * Never resolve 'require', 'module' and 'exports' to absolute paths
             * For plugins, only resolve the plugin path, not anything after the first '!'
             */
-            if (~_rem.indexOf(path) || ~path.indexOf('!')) {
+            if (path && (~_rem.indexOf(path) || ~path.indexOf('!'))) {
                 return path.replace(/([\d,\w,\s,\.\/]*)(?=\!)/, function ($0, $1) {
                     return _resolve($1, context);
                 });

@@ -1,8 +1,8 @@
 {
   "name": "brink",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "",
-  "main": "./brink.js",
+  "main": "./src/brink/brink.js",
   "directories": {
     "lib": "./brink"
   },
@@ -33,6 +33,7 @@
     "log-symbols": "^1.0.0",
     "minimatch": "~0.2.14",
     "mocha": "~1.16.2",
+    "require-main": "^0.1.1",
     "string-length": "^1.0.0",
     "text-table": "^0.2.0",
     "uglify-js": "~2.4.12",
