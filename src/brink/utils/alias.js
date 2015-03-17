@@ -24,7 +24,6 @@ $b(
         this.b = 'test2';
         console.log(obj.a, obj.b); // test2, test2
 
-
         ```
 
         ```javascript

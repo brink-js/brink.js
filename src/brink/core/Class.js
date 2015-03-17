@@ -101,7 +101,8 @@ $b(
             @method subscribe
             @param {String} name The name of the notifications to subscribe to.
             @param {Function} handler A function to handle the notifications.
-            @param {Number} [priority] Lower is higher priority (priority of 0 will hear about the notifications before any other handler)
+            @param {Number} [priority] Lower is higher priority
+            (priority of 0 will hear about the notifications before any other handler)
             ************************************************************************/
             subscribe : function (name, handler, priority) {
 

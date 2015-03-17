@@ -41,7 +41,8 @@ $b(
 
         @method set
         @param {Object} obj The object containing the property/properties to set.
-        @param {String|Object} key The name of the property to set. If setting multiple properties, an `Object` containing key : value pairs.
+        @param {String|Object} key The name of the property to set.
+        If setting multiple properties, an `Object` containing key : value pairs.
         @param {Any} [val] The value of the property.
         @return {Object} The Object passed in as the first argument.
         ************************************************************************/

@@ -18,7 +18,8 @@ $b(
         @method merge
         @param {Object|Array} obj1 The `Object` or `Array` to merge into.
         @param {Object|Array} obj2 The `Object` or `Array` containing values to merge.
-        @param {Boolean} [deep=false] Whether or not to deep copy objects when merging (`true`) or shallow copy (`false`)
+        @param {Boolean} [deep=false] Whether or not to deep copy objects when merging
+        (`true`) or shallow copy (`false`)
         @return {Object|Array} The merged `Object` or `Array`.
         ************************************************************************/
         return function merge (a, b, deep) {
