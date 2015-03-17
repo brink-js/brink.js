@@ -52,7 +52,8 @@ $b(
             ************************************************************************/
             __init : function (o) {
 
-                var p,
+                var i,
+                    p,
                     meta;
 
                 if (!this.__meta) {
@@ -68,13 +69,33 @@ $b(
 
                     o = clone(o);
 
-                    for (p in o) {
-                        this.prop(p, o[p]);
-                    }
+                    this.__appendToMeta(o, meta);
                 }
 
                 for (p in meta.properties) {
                     this.__defineProperty.call(this, p, meta.properties[p]);
+                }
+
+                /*
+                    Auto-binding methods is very expensive as we have to do
+                    it every time an instance is created. It roughly doubles
+                    the time it takes to instantiate
+
+                    Still, it's not really an issue unless you are creating thousands
+                    of instances at once. Creating 10,000 instances with auto-bound
+                    methods should still take < 500ms.
+
+                    We auto-bind by default on $b.Class and not on $b.Object because it's
+                    far more likely you'd be creating a lot of Object instances at once
+                    and shouldn't need the overhead of this.
+                */
+                if (this.__autoBindMethods) {
+                    for (i = 0; i < meta.methods.length; i ++) {
+                        p = meta.methods[i];
+                        if (!~p.indexOf('__')) {
+                            this[p] = bindFunction(this[p], this);
+                        }
+                    }
                 }
 
                 if (this.init) {
@@ -88,6 +109,10 @@ $b(
                 }
 
                 return this;
+            },
+
+            init : function () {
+
             },
 
             __buildMeta : function () {
@@ -113,24 +138,28 @@ $b(
             },
 
             __parsePrototype : function () {
+                this.__appendToMeta(this, this.__buildMeta(), true);
+            },
+
+            __appendToMeta : function (o, meta, isThis) {
 
                 var p,
-                    v,
-                    meta;
+                    v;
 
-                meta = this.__buildMeta();
+                for (p in o) {
 
-                for (p in this) {
-
-                    v = this[p];
+                    v = o[p];
 
                     if (isFunction(v)) {
                         if (p !== 'constructor' && !~meta.methods.indexOf(p)) {
-                           meta.methods.push(p);
+                            meta.methods.push(p);
+                            if (!isThis) {
+                                this[p] = o[p];
+                            }
                         }
                     }
 
-                    else if (this.hasOwnProperty(p)) {
+                    else if (o.hasOwnProperty(p)) {
 
                         if (p !== '__meta') {
 
@@ -144,7 +173,6 @@ $b(
                         }
                     }
                 }
-
             },
 
             __defineProperty : function (p, d) {
