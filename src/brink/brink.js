@@ -175,5 +175,9 @@ if (IS_NODE) {
         });
     };
 
+    $b.configure({paths : {brink : __dirname}});
+    $b.init();
+    $b.configure({paths : null});
+
     module.exports = $b;
 }

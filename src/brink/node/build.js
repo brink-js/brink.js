@@ -101,7 +101,7 @@ $b(
                         metas = $b.require.metas();
 
                         metas.forEach(function (item) {
-                            console.log(item.id);
+                            console.log('\t' + item.id);
                         });
 
                         for (p in metas) {
@@ -112,9 +112,7 @@ $b(
 
                                 if (matches(meta.id)) {
 
-                                    modules.push(meta.id);
-
-                                    moduleSrc = fs.readFileSync(meta.url, {encoding : 'utf8'});
+                                    moduleSrc = fs.readFileSync(require.resolve(meta.url), {encoding : 'utf8'});
                                     moduleSrc = replaceAnonymousDefine(meta.id, moduleSrc);
 
                                     src += wrap(moduleSrc);

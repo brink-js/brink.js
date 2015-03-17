@@ -4,6 +4,8 @@ var p,
     chai,
     mocha;
 
+require('require-main')();
+
 fs = require('fs');
 path = require('path');
 chai = require("chai"),
@@ -13,8 +15,6 @@ mocha = new mocha({
     ui : 'bdd',
     reporter : 'spec'
 });
-
-require('../src/brink/brink.js');
 
 global.expect = chai.expect;
 
@@ -37,12 +37,6 @@ function addTests(folder, p) {
 
 addTests(path.join(__dirname, 'brink'));
 
-$b.configure({
-    baseUrl : __dirname + '/../src'
-});
-
-$b.init(function () {
-    mocha.run(function(failures) {
-        process.exit(failures);
-    });
+mocha.run(function(failures) {
+    process.exit(failures);
 });

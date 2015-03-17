@@ -1,21 +1,4 @@
-var fs = require('fs'),
-    includer = require('includer'),
-    wrench = require('wrench'),
-    uglify = require('uglify-js');
-
-
-$b = require('../src/brink/brink.js');
-
-$b.configure({
-    baseUrl : __dirname + '/../src'
-});
-
-$b.build({
-    cwd : __dirname,
-    file : '../brink.js',
-    exclude : [],
-    minify : false
-});
+require('require-main')();
 
 $b.build({
     cwd : __dirname,
