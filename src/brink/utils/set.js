@@ -48,20 +48,30 @@ $b(
         ************************************************************************/
         var set = function (obj, key, val, quiet, skipCompare) {
 
-            var i;
+            var i,
+                old;
 
             if (typeof key === 'string') {
 
                 obj = getObjKeyPair(obj, key, true);
                 key = obj[1];
                 obj = obj[0];
+                old = get(obj, key);
 
-                if (skipCompare || get(obj, key) !== val) {
+                if (skipCompare || old !== val) {
 
                     if (obj instanceof $b.Object) {
 
+                        if (old instanceof $b.Object) {
+                            old.__removeReference(obj);
+                        }
+
+                        if (val instanceof $b.Object) {
+                            val.__addReference(obj, key);
+                        }
+
                         if (obj.__meta.setters[key]) {
-                            val = obj.__meta.setters[key].call(obj, val, key);
+                            obj.__meta.setters[key].call(obj, val, key);
                         }
 
                         else {

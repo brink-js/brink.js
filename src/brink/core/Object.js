@@ -256,6 +256,16 @@ $b(
                 };
             },
 
+            __addReference : function (obj, key) {
+                this.__meta.references = this.__meta.references || $b.Dictionary.create();
+                this.__meta.references.add(obj, key);
+            },
+
+            __removeReference : function (obj) {
+                this.__meta.references = this.__meta.references || $b.Dictionary.create();
+                this.__meta.references.remove(obj);
+            },
+
             /***********************************************************************
             Invalidate one or more properties. This will trigger any bound and computed properties
             depending on these properties to also get updated.
@@ -273,6 +283,15 @@ $b(
 
                 if ($b.instanceManager) {
                     $b.instanceManager.propertyDidChange(this, props);
+
+                    if (this.__meta.references) {
+
+                        this.__meta.references.forEach(function (key, instance) {
+                            instance.propertyDidChange(
+                                expandProps(key + '.' + props.join(','), true)
+                            );
+                        }, this);
+                    }
                 }
             },
 
