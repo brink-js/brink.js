@@ -41,7 +41,7 @@ $b(
 
             for (i = 0; i < key.length - 1; i ++) {
                 val = get(obj, key[i]);
-                if (val == null) {
+                if (val == null && createIfNull) {
                     val = obj[key[i]] = {};
                 }
                 obj = val;
