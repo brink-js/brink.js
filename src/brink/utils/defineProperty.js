@@ -34,8 +34,7 @@ $b(
 
             descriptor.defaultValue = (
                 typeof descriptor.defaultValue !== 'undefined' ?
-                descriptor.defaultValue :
-                descriptor.value
+                    descriptor.defaultValue : descriptor.value
             );
 
             delete descriptor.value;

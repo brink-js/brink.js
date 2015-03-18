@@ -49,23 +49,16 @@ $b(
 
                 b = computed({
 
+                    boundTo : [a, prop],
+
                     get : function () {
                         return a.get(prop);
                     },
 
                     set : function (val) {
-                        val = val;
                         return a.set(prop, val);
-                    },
-
-                    __didChange : function () {
-                        return b.didChange();
-                    },
-
-                    value : a.get(prop)
+                    }
                 });
-
-                a.watch(prop, b.__didChange);
             }
 
             else {
