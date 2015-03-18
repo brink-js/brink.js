@@ -277,20 +277,53 @@ $b(
             ************************************************************************/
             propertyDidChange : function () {
 
-                var props;
+                var i,
+                    j,
+                    p,
+                    meta,
+                    props,
+                    changedProps;
 
                 props = flatten([].slice.call(arguments, 0, arguments.length));
 
-                if ($b.instanceManager) {
-                    $b.instanceManager.propertyDidChange(this, props);
+                if ($b.instanceManager && props.length) {
 
-                    if (this.__meta.references) {
+                    meta = this.__meta;
+                    changedProps = meta.changedProps || [];
 
-                        this.__meta.references.forEach(function (key, instance) {
-                            instance.propertyDidChange(
-                                expandProps(key + '.' + props.join(','), true)
-                            );
-                        }, this);
+                    if (props.length && changedProps.length) {
+
+                        for (i = 0; i < props.length; i ++) {
+                            for (j = 0; j < changedProps.length; j ++) {
+                                if (new RegExp(changedProps[j] + '\.').test(props[i])) {
+                                    props.splice(i, 1);
+                                }
+                            }
+                        }
+                    }
+
+                    if (props.length) {
+
+                        $b.instanceManager.propertyDidChange(this, props);
+
+                        if (meta.references) {
+                            meta.references.forEach(function (key, instance) {
+
+                                var subProps;
+
+                                subProps = expandProps(key + '.' + props.join(','), true);
+
+                                for (i = 0; i < subProps.length; i ++) {
+                                    p = subProps[i];
+                                    if (instance.get(p) === this) {
+                                        subProps.splice(i, 1);
+                                    }
+                                }
+
+                                instance.propertyDidChange(subProps);
+
+                            }, this);
+                        }
                     }
                 }
             },
