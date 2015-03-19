@@ -473,7 +473,7 @@ $b(
                 }
 
                 val.bindTo = bindFunction(function (o, p) {
-                    o.prop(p, bindTo(obj, key, true));
+                    this.prop(p, bindTo(o, p));
                 }, obj);
 
                 val.didChange = bindFunction(function () {
