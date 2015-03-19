@@ -115,7 +115,6 @@ $b(
                 if (val !== this.get('cachedValue')) {
                     this.set('cachedValue', val);
                     this.get('dom')[this.get('updateProp')] = val;
-                    console.log('updating dom...', val);
                 }
             },
 
