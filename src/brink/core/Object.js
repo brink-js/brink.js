@@ -292,7 +292,6 @@ $b(
                     p,
                     tmp,
                     meta,
-                    props,
                     bindings,
                     changedProps;
 
@@ -344,7 +343,6 @@ $b(
                                 }
                             }
                         }
-
 
                         $b.instanceManager.propertyDidChange(this, props);
 
