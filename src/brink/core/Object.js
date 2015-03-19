@@ -302,23 +302,22 @@ $b(
                     changedProps = meta.changedProps || [];
                     bindings = meta.bindings;
 
-                    if (props.length && changedProps.length) {
+                    if (props.length) {
 
                         for (i = 0; i < props.length; i ++) {
 
                             p = props[i];
-
-                            if (bindings[p] && bindings[p].length) {
-                                //props = props.concat(bindings[p]);
-                                //console.log('...', bindings[p]);
-                            }
 
                             if (changedProps.indexOf(p) > -1) {
                                 props.splice(i, 1);
                                 i --;
                             }
 
-                            else {
+                            else if (bindings[p] && bindings[p].length) {
+                                props = props.concat(bindings[p]);
+                            }
+
+                            else if (changedProps.length) {
                                 for (j = 0; j < changedProps.length; j ++) {
                                     if (new RegExp(changedProps[j] + '\.').test(p)) {
                                         props.splice(i, 1);
@@ -330,6 +329,22 @@ $b(
                     }
 
                     if (props.length) {
+
+                        for (i = 0; i < props.length; i ++) {
+                            p = props[i].split('.');
+                            tmp = p[p.length - 1];
+
+                            if (p.length > 2) {
+                                p = p.splice(0, p.length - 1).join('.');
+
+                                if (bindings[p] && bindings[p].length) {
+                                    for (j = 0; j < bindings[p].length; j ++) {
+                                        props.push(bindings[p][j] + '.' + tmp);
+                                    }
+                                }
+                            }
+                        }
+
 
                         $b.instanceManager.propertyDidChange(this, props);
 
@@ -456,6 +471,7 @@ $b(
                     for (i = 0; i < val.watch.length; i ++) {
                         a = meta.bindings[val.watch[i]] = meta.bindings[val.watch[i]] || [];
                         a.push(key);
+                        console.log(val.watch[i], key);
                     }
                 }
 
