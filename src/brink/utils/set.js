@@ -49,7 +49,8 @@ $b(
         var set = function (obj, key, val, quiet, skipCompare) {
 
             var i,
-                old;
+                old,
+                isDiff;
 
             if (typeof key === 'string') {
 
@@ -58,16 +59,20 @@ $b(
                 obj = obj[0];
                 old = get(obj, key);
 
-                if (skipCompare || old !== val) {
+                isDiff = old !== val;
+
+                if (skipCompare || isDiff) {
 
                     if (obj instanceof $b.Object) {
 
-                        if (old instanceof $b.Object) {
-                            old.__removeReference(obj);
-                        }
+                        if (isDiff) {
+                            if (old instanceof $b.Object) {
+                                old.__removeReference(obj);
+                            }
 
-                        if (val instanceof $b.Object) {
-                            val.__addReference(obj, key);
+                            if (val instanceof $b.Object) {
+                                val.__addReference(obj, key);
+                            }
                         }
 
                         if (obj.__meta.setters[key]) {
