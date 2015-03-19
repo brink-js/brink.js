@@ -81,7 +81,7 @@ $b(
             },
 
             has : function (o) {
-                return !~this.keys.indexOf(o);
+                return !!~this.keys.indexOf(o);
             },
 
             indexOf : function (o) {
