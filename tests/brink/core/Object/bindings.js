@@ -41,8 +41,8 @@ describe('bindings', function () {
 
         a.bindProperty('test', b, 'test');
 
-        expect(a.test).to.equal(1);
-        expect(b.test).to.equal(1);
+        expect(a.test).to.equal(2);
+        expect(b.test).to.equal(2);
 
         a.test = 5;
 
