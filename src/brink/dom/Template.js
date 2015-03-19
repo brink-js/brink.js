@@ -1,17 +1,19 @@
 $b(
 
     [
-        './Class',
-        '../dom/Node'
+        '../core/Class',
+        './Element'
     ],
 
-    function (Class, Node) {
+    function (Class, BrinkElement) {
 
-        var HTMLNode;
+        'use strict';
+
+        var Element;
 
         if (typeof window !== 'undefined') {
 
-            HTMLNode = window.Node;
+            Element = window.Element;
         }
 
         function replaceTags (s) {
@@ -33,42 +35,14 @@ $b(
             return s;
         }
 
-        function fixWhitespace (s) {
-            str.replace(/\s{2,}/g,' ');
-        }
-
         return Class({
 
             el : null,
-            _context : null,
-            node : null,
+            domObj : null,
             isEmpty : false,
+            context : null,
 
-            context : $b.computed({
-
-                get : function () {
-                    return this._context;
-                },
-
-                set : function (val) {
-
-                    this._context = val;
-
-                    return val;
-                }
-            }),
-
-            dom : $b.computed({
-
-                watch : 'node',
-
-                get : function () {
-
-                    var node = this.get('node');
-                    return node && node.get('node');
-                }
-
-            }),
+            dom : $b.bindTo('domObj.dom'),
 
             init : function (el) {
 
@@ -84,7 +58,7 @@ $b(
                     el = document.createElement('div');
                     el.innerHTML = s;
                     return el.childNodes;
-                }
+                };
 
                 return $(s);
             },
@@ -95,19 +69,19 @@ $b(
 
                 el = this.el;
 
-                if (!(el instanceof HTMLNode)) {
+                if (!(el instanceof Element)) {
                     el = replaceTags(el);
                     el = this.parseHTML(el);
                     $b.assert('Templates must specify a root node.', el.length === 1);
                     el = el[0];
                 }
 
-                this.set('node', Node.create({
-                    node : el,
+                this.set('domObj', BrinkElement.create({
+                    dom : el,
                     parent : this
                 }));
 
-                return this.render;
+                return this;
             },
 
             precompile : function () {
@@ -116,14 +90,18 @@ $b(
 
             render : function (context) {
                 this.set('context', context);
-
-                //this.node.propertyDidChange('context');
-                //this.get('node').set('context', context);
+                this.get('domObj').render(true);
                 return this;
             },
 
             destroy : function () {
-                this.node.destroy();
+
+                var domObj = this.get('domObj');
+
+                if (domObj) {
+                    domObj.destroy();
+                }
+
                 this.set('context', null);
                 return this._super();
             }

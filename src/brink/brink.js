@@ -130,7 +130,12 @@ $b.init = function (deps, cb) {
             'brink/core/Array',
             'brink/core/Dictionary',
             'brink/core/InstanceManager',
-            'brink/core/Template',
+
+            'brink/dom/Attr',
+            'brink/dom/DOMObject',
+            'brink/dom/Element',
+            'brink/dom/Template',
+            'brink/dom/Text',
 
             'brink/browser/ajax',
             'brink/browser/ReactMixin',
