@@ -471,7 +471,6 @@ $b(
                     for (i = 0; i < val.watch.length; i ++) {
                         a = meta.bindings[val.watch[i]] = meta.bindings[val.watch[i]] || [];
                         a.push(key);
-                        console.log(val.watch[i], key);
                     }
                 }
 
