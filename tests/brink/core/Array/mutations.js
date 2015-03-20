@@ -30,7 +30,7 @@ describe('mutations', function () {
 
         a = $b.Array.create([1,2,3]);
 
-        a.watch(function () {
+        a.watch('@each', function () {
             expect(a.getChanges().added.length).to.equal(3);
             done();
         });
