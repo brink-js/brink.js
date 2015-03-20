@@ -132,7 +132,8 @@ $b(
                 if (
                     !this.get('dom') ||
                     !this.get('isDynamic') ||
-                    !this.get('context')
+                    !this.get('context') ||
+                    !this.get('dom').parentNode
                 ) {return;}
 
                 this.rerender();
