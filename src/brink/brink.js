@@ -129,6 +129,7 @@ $b.init = function (deps, cb) {
             'brink/core/Class',
             'brink/core/Array',
             'brink/core/Dictionary',
+            'brink/core/ObjectProxy',
             'brink/core/InstanceManager',
 
             'brink/dom/Attr',

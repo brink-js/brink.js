@@ -357,7 +357,7 @@ $b(
                                 }
 
                                 for (i = 0; i < props.length; i ++) {
-                                    p = key + '.' + props[i];
+                                    p = (key ? key + '.' : '') + props[i];
 
                                     if (skipReference !== instance && get(instance, p) !== this) {
                                         subProps.push(p);

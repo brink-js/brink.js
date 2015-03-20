@@ -71,7 +71,15 @@ $b(
                             }
 
                             if (val instanceof $b.Object) {
-                                val.__addReference(obj, key);
+                                val.__addReference(
+                                    obj,
+                                    (
+                                        key === 'proxy' &&
+                                        val instanceof $b.ObjectProxy ?
+                                        '' :
+                                        key
+                                    )
+                                );
                             }
                         }
 
