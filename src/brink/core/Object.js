@@ -351,10 +351,15 @@ $b(
 
                                 var subProps = [];
 
+                                if (instance.isDestroyed) {
+                                    this.__removeReference(instance);
+                                    return;
+                                }
+
                                 for (i = 0; i < props.length; i ++) {
                                     p = key + '.' + props[i];
 
-                                    if (skipReference !== instance && instance.get(p) !== this) {
+                                    if (skipReference !== instance && get(instance, p) !== this) {
                                         subProps.push(p);
                                     }
                                 }
