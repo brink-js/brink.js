@@ -1,35 +1,44 @@
 $b(
 
     [
+        './Element',
         '../core/Class',
-        './Element'
+        '../utils/get'
     ],
 
-    function (Class, BrinkElement) {
+    function (BrinkElement, Class, get) {
 
         'use strict';
 
         var Element;
 
         if (typeof window !== 'undefined') {
-
             Element = window.Element;
         }
 
         function replaceTags (s) {
 
-            var s2,
-                re;
+            var m,
+                re,
+                domTag;
 
             re = /\{\s*\%\s*(\S*)\s([^%}]*?)\s*\%\s*\}([\s\S]*)\{\s*\%\s*(end\1)\s*\%\s*\}/gi;
 
-            while (s2 !== s) {
+            while ((m = re.exec(s))) {
 
-                if (s2) {
-                    s = s2;
-                }
+                domTag = get($b, 'dom.tags.' + m[1] + '.domTag');
 
-                s2 = s.replace(re, '<br-tag $1="$2">$3</br-tag>');
+                $b.assert(
+                    'No "' + m[1] + '" tag found. ' + m[0],
+                    !!domTag
+                );
+
+                s = s.replace(
+                    re,
+                    '<' + domTag +
+                    (domTag === 'brink-tag' ? ' tag="$1"' : '') +
+                    ' options="$2">$3</' + domTag + '>'
+                );
             }
 
             return s;
@@ -37,18 +46,18 @@ $b(
 
         return Class({
 
-            el : null,
             domObj : null,
             isEmpty : false,
             context : null,
+            template : null,
 
             dom : $b.bindTo('domObj.dom'),
 
-            init : function (el) {
+            init : function (tmpl) {
 
-                $b.assert(!!el, 'Must pass a string or HTMLElement when constructing a Template');
+                $b.assert('Must pass a string or HTMLElement when constructing a Template', !!tmpl);
 
-                this.el = el;
+                this.template = tmpl;
                 this.compile();
             },
 
@@ -65,19 +74,25 @@ $b(
 
             compile : function () {
 
-                var el;
+                var tmpl,
+                    children,
+                    fragment;
 
-                el = this.el;
+                tmpl = this.template;
 
-                if (!(el instanceof Element)) {
-                    el = replaceTags(el);
-                    el = this.parseHTML(el);
-                    $b.assert('Templates must specify a root node.', el.length === 1);
-                    el = el[0];
+                if (!(tmpl instanceof Element)) {
+                    tmpl = replaceTags(tmpl);
+                    children = this.parseHTML(tmpl);
+                }
+
+                fragment = document.createDocumentFragment();
+
+                while (children.length) {
+                    fragment.appendChild(children[0]);
                 }
 
                 this.set('domObj', BrinkElement.create({
-                    dom : el,
+                    dom : fragment,
                     parent : this
                 }));
 
@@ -91,7 +106,8 @@ $b(
             render : function (context) {
                 this.set('context', context);
                 this.get('domObj').render(true);
-                return this;
+
+                return this.get('dom');
             },
 
             destroy : function () {

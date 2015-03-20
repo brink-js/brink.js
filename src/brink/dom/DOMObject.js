@@ -2,16 +2,17 @@ $b(
 
     [
         '../core/Class',
+        '../utils/get',
         '../utils/trim',
         '../utils/merge',
         '../utils/computed'
     ],
 
-    function (Class, trim, merge, computed) {
+    function (Class, get, trim, merge, computed) {
 
         'use strict';
 
-        return Class({
+        var DOMObject = Class({
 
             dom : null,
 
@@ -99,7 +100,7 @@ $b(
                 var i;
 
                 for (i = 0; i < tokens.length; i ++) {
-                    str = str.replace('{{$' + i + '}}', this.get('context.' + tokens[i].name));
+                    str = str.replace('{{$' + i + '}}', this.get('context.' + tokens[i].name) || '');
                 }
 
                 return str;
@@ -137,6 +138,8 @@ $b(
                 this.rerender();
             }
         });
+
+        return DOMObject;
     }
 
 ).attach('$b.dom');

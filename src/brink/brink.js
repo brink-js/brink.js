@@ -135,7 +135,11 @@ $b.init = function (deps, cb) {
             'brink/dom/DOMObject',
             'brink/dom/Element',
             'brink/dom/Template',
+            'brink/dom/Tag',
             'brink/dom/Text',
+
+            'brink/dom/tags/if',
+            'brink/dom/tags/for',
 
             'brink/browser/ajax',
             'brink/browser/ReactMixin',

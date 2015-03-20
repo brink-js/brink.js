@@ -3,10 +3,12 @@ $b(
     [
         './Attr',
         './Text',
-        './DOMObject'
+        './DOMObject',
+        '../utils/get',
+        '../utils/trim'
     ],
 
-    function (BrinkAttr, BrinkText, DOMObject) {
+    function (BrinkAttr, BrinkText, DOMObject, get, trim) {
 
         'use strict';
 
@@ -14,6 +16,7 @@ $b(
 
             isElement : true,
             isDynamic : false,
+            isTag : false,
 
             tokens : null,
             watchedProperties : null,
@@ -22,16 +25,30 @@ $b(
                 this.compile();
             },
 
+            getElementClass : function (tagName) {
+                return (
+                    get($b, 'dom.elements.' + tagName.toLowerCase()) ||
+                    BrinkElement
+                );
+            },
+
             compile : function () {
 
                 var i,
+                    m,
+                    re,
                     dom,
+                    tmp,
                     attr,
                     child,
+                    tagEl,
+                    domTag,
+                    subTags,
                     children,
                     attributes;
 
-                dom = this.dom;
+                dom = this.get('dom');
+                subTags = this.get('subTags');
 
                 children = [];
                 attributes = [];
@@ -42,30 +59,100 @@ $b(
 
                         child = dom.childNodes[i];
 
-                        children.push(
-                            (child.nodeType === 3 ? BrinkText : BrinkElement).create({
-                                dom : child,
-                                parent : this
-                            })
-                        );
-                    }
-                }
+                        // Text Node
+                        if (child.nodeType === 3) {
 
-                if (dom.attributes && dom.attributes.length) {
+                            if (subTags) {
 
-                    for (i = 0; i < dom.attributes.length; i ++) {
+                                re = /\{\s*\%\s*(\S*)\s([^%}]*?)\s*\%\s*\}([\s\S]*)/gi;
 
-                        attr = dom.attributes[i];
+                                if ((m = re.exec(child.nodeValue))) {
 
-                        attributes.push(BrinkAttr.create({
-                            dom : attr,
-                            parent : this
-                        }));
+                                    if (subTags[m[1]]) {
+
+                                        domTag = get($b, 'dom.tags.' + m[1] + '.domTag');
+                                        tagEl = document.createElement(domTag);
+
+                                        if (domTag === 'brink-tag') {
+                                            tagEl.setAttribute('tag', m[1]);
+                                        }
+
+                                        if (m[2]) {
+                                            tagEl.setAttribute('options', m[2]);
+                                        }
+
+                                        tmp = child.nodeValue.replace(re, trim('$3'));
+
+                                        dom.insertBefore(
+                                            tagEl,
+                                            child
+                                        );
+
+                                        i --;
+
+                                        if (!tmp) {
+                                            dom.removeChild(child);
+                                        }
+
+                                        else {
+                                            child.nodeValue = tmp;
+                                        }
+
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            children.push(
+                                BrinkText.create({
+                                    dom : child,
+                                    parent : this
+                                })
+                            );
+                        }
+
+                        // Element Node
+                        else {
+
+                            var ElementClass;
+
+                            if (child.tagName.toLowerCase() === 'brink-tag') {
+                                ElementClass = get($b, 'dom.tags.' + child.getAttribute('tag'));
+                            }
+
+                            else {
+                                ElementClass = this.getElementClass(child.tagName);
+                            }
+
+                            children.push(
+                                ElementClass.create({
+                                    dom : child,
+                                    parent : this
+                                })
+                            );
+                        }
                     }
                 }
 
                 this.set('children', children);
-                this.set('attributes', attributes);
+
+                if (!this.get('isTag')) {
+
+                    if (dom.attributes && dom.attributes.length) {
+
+                        for (i = 0; i < dom.attributes.length; i ++) {
+
+                            attr = dom.attributes[i];
+
+                            attributes.push(BrinkAttr.create({
+                                dom : attr,
+                                parent : this
+                            }));
+                        }
+                    }
+
+                    this.set('attributes', attributes);
+                }
             },
 
             updateDOM : function () {
@@ -74,17 +161,34 @@ $b(
 
             render : function () {
 
-                this.get('children').forEach(function (child) {
+                var children,
+                    attributes;
+
+                children = this.get('children') || [];
+                attributes = this.get('attributes') || [];
+
+                children.forEach(function (child) {
                     child.rerender();
                 });
 
-                this.get('attributes').forEach(function (attr) {
+                attributes.forEach(function (attr) {
                     attr.rerender();
                 });
             },
 
             rerender : function () {
                 this.render();
+            },
+
+            destroy : function () {
+
+                var dom = this.get('dom');
+
+                if (dom && dom.parentNode) {
+                    dom.parentNode.removeChild(dom);
+                }
+
+                return this._super.apply(this, arguments);
             }
         });
 
