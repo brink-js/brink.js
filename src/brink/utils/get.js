@@ -48,6 +48,10 @@ $b(
 
                 if (obj instanceof $b.Object) {
 
+                    if (obj.isDestroyed) {
+                        return null;
+                    }
+
                     if (obj.__meta.getters[k]) {
                         obj = obj.__meta.getters[k].call(obj, k);
                     }
