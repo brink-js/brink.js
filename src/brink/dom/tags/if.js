@@ -12,9 +12,6 @@ $b(
 
         return Tag.extend({
 
-            domTag : 'if-tag',
-            domNext : null,
-
             ifChildren : null,
             elseChildren : null,
 
@@ -33,17 +30,19 @@ $b(
             compile : function () {
 
                 var dom,
-                    domNext;
+                    domNew;
 
                 this._super.apply(this, arguments);
-                this.parseOptions(this.get('dom').getAttribute('options'));
                 this.separateChildren();
 
+                // Replace the dom element with an empty text node.
                 dom = this.get('dom');
-                this.set('domNext', (domNext = document.createTextNode('')));
+                domNew = document.createTextNode('');
 
-                dom.parentNode.insertBefore(domNext, dom);
+                dom.parentNode.insertBefore(domNew, dom);
                 dom.parentNode.removeChild(dom);
+
+                this.set('dom', domNew);
             },
 
             separateChildren : function () {
@@ -94,12 +93,12 @@ $b(
 
             addChildrenToDOM : function (children) {
 
-                var domNext,
+                var dom,
                     fragment,
                     domParent;
 
-                domNext = this.get('domNext');
-                domParent = domNext.parentNode;
+                dom = this.get('dom');
+                domParent = dom.parentNode;
 
                 if (domParent && children && children.length) {
 
@@ -109,17 +108,17 @@ $b(
                         fragment.appendChild(child.get('dom'));
                     });
 
-                    domParent.insertBefore(fragment, domNext);
+                    domParent.insertBefore(fragment, dom);
                 }
             },
 
             removeChildrenFromDOM : function (children) {
 
-                var domNext,
+                var dom,
                     domParent;
 
-                domNext = this.get('domNext');
-                domParent = domNext.parentNode;
+                dom = this.get('dom');
+                domParent = dom.parentNode;
 
                 if (domParent && children && children.length) {
 
@@ -159,17 +158,6 @@ $b(
 
             render : function () {
                 this.updateDOM();
-            },
-
-            contextUpdated : function () {
-
-                if (
-                    !this.get('dom') ||
-                    !this.get('isDynamic') ||
-                    !this.get('context')
-                ) {return;}
-
-                this.rerender();
             }
         });
     }
