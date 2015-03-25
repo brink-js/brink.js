@@ -21,7 +21,17 @@ $b(
             oldContent : null,
             pristineContent : null,
 
+            getChanges : function () {
+                return {
+                    added : [],
+                    removed : [],
+                    moved : []
+                };
+            },
+
             init : function (content) {
+
+                content = content || [];
 
                 this.set('content', content);
                 this.set('oldContent', content.concat());
