@@ -3,10 +3,11 @@ $b(
     [
         './Element',
         '../core/Class',
-        '../utils/get'
+        '../utils/get',
+        '../browser/ready'
     ],
 
-    function (BrinkElement, Class, get) {
+    function (BrinkElement, Class, get, ready) {
 
         'use strict';
 
@@ -137,6 +138,44 @@ $b(
             }
 
         });
+
+        if (typeof document !== 'undefined') {
+
+            var style;
+
+            style = document.createElement('style');
+            style.appendChild(document.createTextNode(''));
+            document.head.appendChild(style);
+            style.sheet.insertRule('brink-template {display : none;}', 0);
+
+            if (document.registerElement) {
+                document.registerElement('brink-template');
+            }
+
+            // IE...
+            else {
+                document.createElement('brink-template');
+            }
+
+            // Load any templates in the DOM...
+            ready(function () {
+
+                var i,
+                    tmpl,
+                    name,
+                    templates;
+
+                templates = document.getElementsByTagName('brink-template');
+
+                for (i = 0; i < templates.length; i ++) {
+                    tmpl = templates[i];
+                    name = tmpl.getAttribute('name');
+                    $b.assert('Embedded templates must specify a name... ' + tmpl.innerHTML, !!name);
+
+                    $b('templates/' + name, Template.create(tmpl));
+                }
+            });
+        }
 
         return Template;
     }

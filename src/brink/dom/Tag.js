@@ -57,13 +57,16 @@ $b(
 
                 REGISTERED_TAGS.push(domTag);
 
-                if (typeof document !== 'undefined' && document.registerElement) {
-                    document.registerElement(domTag);
-                }
+                if (typeof document !== 'undefined') {
 
-                // IE...
-                else if (typeof document !== 'undefined' && document.createElement) {
-                    document.createElement(domTag);
+                    if (document.registerElement) {
+                        document.registerElement(domTag);
+                    }
+
+                    // IE...
+                    else {
+                        document.createElement(domTag);
+                    }
                 }
             }
 

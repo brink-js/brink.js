@@ -4,14 +4,19 @@ var $b,
     _global,
     CONFIG,
     IS_NODE,
+    IS_BROWSER,
     EMPTY_FN;
 
 /*jshint ignore : start */
 IS_NODE = typeof exports !== 'undefined' && this.exports !== exports;
+IS_BROWSER = !IS_NODE;
 /*jshint ignore : end */
 
 _global = IS_NODE ? global : window;
 CONFIG = _global.Brink || _global.$b || {};
+
+CONFIG.IS_NODE = IS_NODE;
+CONFIG.IS_BROWSER = IS_BROWSER;
 
 EMPTY_FN = function () {};
 
@@ -143,6 +148,7 @@ $b.init = function (deps, cb) {
             'brink/dom/tags/for',
 
             'brink/browser/ajax',
+            'brink/browser/ready',
             'brink/browser/ReactMixin',
 
             'brink/node/build'
