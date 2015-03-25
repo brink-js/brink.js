@@ -20,7 +20,7 @@
         var  _loadQ = [],
             _defineQ = [],
             _loadedFiles = {},
-            _modules = {},
+            _modules = $b.__registry = {},
             _metas = {},
             _head,
             // Used for checking circular dependencies.
