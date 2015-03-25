@@ -20,6 +20,7 @@ $b(
             isText : false,
             isElement : false,
             isDynamic : false,
+            isLocked : false,
 
             tokens : null,
             parent : null,
@@ -88,7 +89,7 @@ $b(
                 this.unwatch(this.contextUpdated);
 
                 if (props && props.length) {
-                    this.watch(props, this.contextUpdated);
+                    this.watch(props.concat('isLocked'), this.contextUpdated);
                     setTimeout(function () {
                         this.propertyDidChange(props);
                     }.bind(this), 0);
@@ -130,10 +131,11 @@ $b(
             contextUpdated : function () {
 
                 if (
+                    this.get('isLocked') ||
                     !this.get('dom') ||
                     !this.get('isDynamic') ||
                     !this.get('context') ||
-                    !this.get('dom').parentNode
+                    (!this.get('isAttr') && !this.get('dom').parentNode)
                 ) {return;}
 
                 this.rerender();

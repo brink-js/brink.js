@@ -16,10 +16,7 @@ $b(
 
             isElement : true,
             isDynamic : false,
-            isTag : false,
-
             tokens : null,
-            watchedProperties : null,
 
             init : function () {
                 this.compile();

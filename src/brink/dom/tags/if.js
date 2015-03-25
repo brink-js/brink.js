@@ -62,6 +62,10 @@ $b(
 
                 children.forEach(function (child) {
 
+                    if (child.get('isTag')) {
+                        //child.set('isLocked', true);
+                    }
+
                     if (child instanceof ElseTag) {
                         elseTag = child;
                         active = elseChildren;
@@ -106,9 +110,13 @@ $b(
 
                     children.forEach(function (child) {
                         fragment.appendChild(child.get('dom'));
+                        if (child.get('isTag')) {
+                            child.set('isLocked', false);
+                            child.contextUpdated();
+                        }
                     });
 
-                    domParent.insertBefore(fragment, dom);
+                    domParent.insertBefore(fragment, dom.nextSibling);
                 }
             },
 
@@ -126,9 +134,14 @@ $b(
 
                         var dom = child.get('dom');
 
+                        if (child.get('isTag')) {
+                            child.set('isLocked', true);
+                        }
+
                         if (this.parentHasChild(domParent, dom)) {
                             domParent.removeChild(dom);
                         }
+
                     }.bind(this));
                 }
             },

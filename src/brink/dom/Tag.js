@@ -32,7 +32,7 @@ $b(
             },
 
             parseOptions : function (s) {
-                console.log('options....', s);
+                //console.log('options....', s);
             }
         });
 

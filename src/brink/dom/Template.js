@@ -10,10 +10,10 @@ $b(
 
         'use strict';
 
-        var Element;
+        var Node;
 
         if (typeof window !== 'undefined') {
-            Element = window.Element;
+            Node = window.Node;
         }
 
         function replaceTags (s) {
@@ -22,7 +22,7 @@ $b(
                 re,
                 domTag;
 
-            re = /\{\s*\%\s*(\S*)\s([^%}]*?)\s*\%\s*\}([\s\S]*)\{\s*\%\s*(end\1)\s*\%\s*\}/gi;
+            re = /\{\s*\%\s*(\S*)\s([^%}]*?)\s*\%\s*\}([\s\S]*?)\{\s*\%\s*(end\1)\s*\%\s*\}/gi;
 
             while ((m = re.exec(s))) {
 
@@ -44,7 +44,7 @@ $b(
             return s;
         }
 
-        return Class({
+        var Template = Class({
 
             domObj : null,
             isEmpty : false,
@@ -53,12 +53,14 @@ $b(
 
             dom : $b.bindTo('domObj.dom'),
 
-            init : function (tmpl) {
+            init : function (tmpl, isClone) {
 
-                $b.assert('Must pass a string or HTMLElement when constructing a Template', !!tmpl);
+                if (!isClone) {
+                    $b.assert('Must pass a string or Node when constructing a Template', !!tmpl);
 
-                this.template = tmpl;
-                this.compile();
+                    this.template = tmpl;
+                    this.compile();
+                }
             },
 
             parseHTML : function (s) {
@@ -66,7 +68,7 @@ $b(
                 var $ = this.parseHTML = window.$ || window.jQuery || function (s, el) {
                     el = document.createElement('div');
                     el.innerHTML = s;
-                    return el.childNodes;
+                    return el;
                 };
 
                 return $(s);
@@ -80,10 +82,11 @@ $b(
 
                 tmpl = this.template;
 
-                if (!(tmpl instanceof Element)) {
-                    tmpl = replaceTags(tmpl);
-                    children = this.parseHTML(tmpl);
+                if (!(tmpl instanceof Node)) {
+                    tmpl = this.parseHTML(replaceTags(tmpl));
                 }
+
+                children = tmpl.childNodes;
 
                 fragment = document.createDocumentFragment();
 
@@ -96,7 +99,19 @@ $b(
                     parent : this
                 }));
 
-                return this;
+                return this.clone();
+            },
+
+            clone : function () {
+
+                var tmpl = Template.create(null, true);
+
+                tmpl.set('domObj', BrinkElement.create({
+                    dom : this.get('dom').cloneNode(true),
+                    parent : tmpl
+                }));
+
+                return tmpl;
             },
 
             precompile : function () {
@@ -106,7 +121,6 @@ $b(
             render : function (context) {
                 this.set('context', context);
                 this.get('domObj').render(true);
-
                 return this.get('dom');
             },
 
@@ -123,6 +137,8 @@ $b(
             }
 
         });
+
+        return Template;
     }
 
 ).attach('$b');
