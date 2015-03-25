@@ -63,7 +63,7 @@ $b(
                 children.forEach(function (child) {
 
                     if (child.get('isTag')) {
-                        //child.set('isLocked', true);
+                        child.set('isLocked', true);
                     }
 
                     if (child instanceof ElseTag) {

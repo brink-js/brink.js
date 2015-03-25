@@ -31,8 +31,8 @@ $b(
                 this.parseOptions(this.get('dom').getAttribute('options'));
             },
 
-            parseOptions : function (s) {
-                //console.log('options....', s);
+            parseOptions : function () {
+
             }
         });
 

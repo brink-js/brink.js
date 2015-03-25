@@ -145,8 +145,11 @@ $b(
 
             moveItem : function (item, newIndex) {
 
-                $b.assert('Item does not exist in list...', lDict.has(item));
+                var lDict;
 
+                lDict = this.get('loopDict');
+
+                $b.assert('Item does not exist in list...', lDict.has(item));
             },
 
             updateDOM : function () {
@@ -156,6 +159,7 @@ $b(
                     lEnum,
                     changes;
 
+                tmpl = this.get('template');
                 lDict = this.get('loopDict');
                 lEnum = this.get('context.' + this.get('loopEnum'));
 
