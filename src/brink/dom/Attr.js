@@ -10,7 +10,7 @@ $b(
 
         return DOMObject({
 
-            isText : true,
+            isAttr : true,
             isDynamic : true,
             updateProp : 'value'
 
