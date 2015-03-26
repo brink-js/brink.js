@@ -1,9 +1,11 @@
+var packageJSON = require('../package.json');
+
 require('require-main')();
 
 $b.build({
     cwd : __dirname,
     file : '../dist/brink-prod.js',
-    minifiedFile : '../dist/brink-prod.min.js',
+    minifiedFile : '../dist/' + packageJSON.version + '/brink-prod.min.js',
     exclude : ['brink/node/**', 'brink/dev/**'],
     minify : false
 });
@@ -11,7 +13,7 @@ $b.build({
 
 $b.build({
     cwd : __dirname,
-    file : '../dist/brink-dev.js',
+    file : '../dist/' + packageJSON.version + '/brink-dev.js',
     exclude : ['brink/node/**'],
     minify : false
 });
