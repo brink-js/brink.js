@@ -10,7 +10,7 @@ $b(
 
         return CoreObject.extend({
 
-            __interval : 25,
+            __interval : 'raf',
             __timerID : null,
             __started : false,
 

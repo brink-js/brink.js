@@ -90,9 +90,7 @@ $b(
 
                 if (props && props.length) {
                     this.watch(props.concat('isLocked'), this.contextUpdated);
-                    setTimeout(function () {
-                        this.propertyDidChange(props);
-                    }.bind(this), 0);
+                    this.contextUpdated();
                 }
             },
 

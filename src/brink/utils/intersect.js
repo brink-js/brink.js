@@ -1,13 +1,12 @@
 $b(
 
     [
-        './flatten'
     ],
 
     /***********************************************************************
     @class Brink
     ************************************************************************/
-    function (flatten) {
+    function () {
 
         'use strict';
 
@@ -23,14 +22,20 @@ $b(
         return function (a, b) {
 
             var i,
-                c;
+                c,
+                d;
 
-            b = flatten([].slice.call(arguments, 1));
             c = [];
+            i = b.length;
 
-            for (i = 0; i < b.length; i ++) {
-                if (~a.indexOf(b[i])) {
-                    c.push(b[i]);
+            if (!a.length || !i) {
+                return c;
+            }
+
+            while (i--) {
+                d = b[i];
+                if (~a.indexOf(d)) {
+                    c.push(d);
                 }
             }
 

@@ -54,9 +54,12 @@ $b(
 
             if (typeof key === 'string') {
 
-                obj = getObjKeyPair(obj, key, true);
-                key = obj[1];
-                obj = obj[0];
+                if (key.indexOf('.') > -1) {
+                    obj = getObjKeyPair(obj, key, true);
+                    key = obj[1];
+                    obj = obj[0];
+                }
+
                 old = get(obj, key);
 
                 isDiff = old !== val;

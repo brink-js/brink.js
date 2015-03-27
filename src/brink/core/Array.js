@@ -331,7 +331,6 @@ $b(
                 this.oldContent = this.content.concat();
 
                 if (this.__meta) {
-                    this.__meta.changedProps = [];
                     this.__meta.contentChanges = {};
                 }
 

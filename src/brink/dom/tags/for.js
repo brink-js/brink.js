@@ -143,7 +143,7 @@ $b(
                 this.removeTemplateFromDOM(lDict.remove(item)[0]);
             },
 
-            moveItem : function (item, newIndex) {
+            moveItem : function (item/*,newIndex*/) {
 
                 var lDict;
 

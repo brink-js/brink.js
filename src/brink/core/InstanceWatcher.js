@@ -13,88 +13,194 @@ $b(
 
         return CoreObject.extend({
 
-            init : function (instances) {
+            instanceManager : null,
 
-                this.instances = instances;
+            init : function (instanceManager) {
+
+                var self;
+
+                self = this;
+
+                this.instanceManager = instanceManager;
 
                 this.runLoop = RunLoop.create();
-                this.runLoop.loop(this.run.bind(this));
-
-                this.watchLoop = RunLoop.create();
-                this.watchLoop.name = 'watchLoop';
-
-                if (config.DIRTY_CHECK) {
-                    this.start();
-                }
+                this.runLoop.loop(function () {
+                    self.run();
+                });
 
                 return this;
             },
 
-            dirtyCheck : function (meta, instance) {
+            processBindings : function (obj, props, meta, prefix, recursionLimit) {
 
                 var i,
-                    p;
+                    j,
+                    l,
+                    p,
+                    p2,
+                    arr,
+                    key,
+                    tmp,
+                    changed,
+                    bindings,
+                    memoized,
+                    prefixReset,
+                    memoizedBindings;
 
-                for (i = 0; i < meta.watchedProps.length; i ++) {
+                bindings = meta.bindings;
+                memoizedBindings = meta.memoizedBindings = meta.memoizedBindings || {};
 
-                    p = meta.watchedProps[i];
+                prefix = prefix ? prefix.concat('.') : '';
+                changed = [];
+                recursionLimit = recursionLimit || 20;
 
-                    if (meta.values[p] !== instance[p]) {
-                        instance.set(p, instance[p], false, true);
-                    }
-                }
-            },
+                for (i = 0, l = prefixReset = props.length; i < l; i ++) {
 
-            notifyWatchers : function (meta, instance) {
-
-                var i,
-                    fn,
-                    props,
-                    willNotify,
-                    intersected;
-
-                for (i = 0; i < meta.watchers.fns.length; i ++) {
-
-                    fn = meta.watchers.fns[i];
-                    props = meta.watchers.props[i];
-                    intersected = props.length ? intersect(props, meta.changedProps) : meta.changedProps.concat();
-
-                    if (!intersected.length) {
-                        continue;
+                    if (i < prefixReset) {
+                        p = prefix.concat(props[i]);
+                        props[i] = p;
                     }
 
-                    willNotify = true;
-                    this.watchLoop.once(fn, intersected);
+                    else {
+                        p = props[i];
+                    }
+
+                    memoized = memoizedBindings[p];
+
+                    if (memoized == null) {
+                        memoized = [];
+
+                        if (bindings[p]) {
+                            memoized = bindings[p].concat();
+                        }
+
+                        tmp = p.split('.');
+
+                        if (tmp.length > 1) {
+                            key = '.'.concat(tmp.pop());
+                            p2 = tmp.join('.');
+                            arr = bindings[p2];
+
+                            if (arr && (j = arr.length)) {
+                                while (j--) {
+                                    memoized.push(arr[j].concat(key));
+                                }
+                            }
+                        }
+                        memoizedBindings[p] = memoized;
+                    }
+
+                    if (recursionLimit) {
+                        j = memoized.length;
+                        while (j--) {
+                            tmp = memoized[j];
+                            if (props.indexOf(tmp) === -1) {
+                                props[l++] = tmp;
+                            }
+                        }
+                        recursionLimit--;
+                    }
                 }
-
-                if (willNotify) {
-                    instance.willNotifyWatchers.call(instance);
-                }
-
-                while (this.watchLoop.run()) {
-
-                }
-
-                instance.didNotifyWatchers.call(instance);
+                return props;
             },
 
             run : function () {
 
-                this.instances.forEach(function (meta, instance) {
+                var i,
+                    k,
+                    fn,
+                    iid,
+                    key,
+                    meta,
+                    meta2,
+                    looped,
+                    watched,
+                    changed,
+                    chProps,
+                    manager,
+                    instance,
+                    instances,
+                    reference,
+                    references,
+                    chInstances,
+                    intersected,
+                    referenceKeys;
 
-                    if (config.DIRTY_CHECK) {
-                        this.dirtyCheck(meta, instance);
+                manager = this.instanceManager;
+                instances = manager.instances;
+                chProps = manager.changedProps;
+                chInstances = manager.changedInstances;
+                looped = [];
+
+                k = 0;
+
+                while (chInstances.length) {
+                    iid = chInstances[k];
+                    instance = instances[iid];
+
+                    if (!instance) {
+                        chProps.splice(k, 1);
+                        chInstances.splice(k, 1);
+                        continue;
                     }
 
-                    if (meta.changedProps.length) {
-                        this.notifyWatchers(meta, instance);
+                    looped.push(instance);
+
+                    meta = instance.__meta;
+                    references = meta.references;
+                    referenceKeys = meta.referenceKeys;
+
+                    changed = chProps[k];
+                    this.processBindings(instance, changed, meta);
+
+                    // Loop through all references and notify them too...
+                    if (changed.length && references.length) {
+
+                        i = meta.references.length;
+
+                        while (i --) {
+
+                            reference = references[i];
+
+                            if (~looped.indexOf(reference)) {
+                                continue;
+                            }
+                            looped.push(reference);
+
+                            key = referenceKeys[i];
+                            meta2 = reference.__meta;
+
+                            /* TODO : Move this....
+                            if (reference.isDestroyed) {
+                                instance.__removeReference(reference);
+                                continue;
+                            }*/
+                            watched = this.processBindings(reference, changed.concat(), meta2, key);
+                            manager.propertiesDidChange(reference, watched);
+                        }
                     }
 
-                }, this);
+                    i = meta.watchers.fns.length;
+                    instance.willNotifyWatchers.call(instance);
+                    while (i--) {
+                        fn = meta.watchers.fns[i];
+                        watched = meta.watchers.props[i];
+                        intersected = watched.length ? intersect(watched, changed) : changed.concat();
 
-                if (!config.DIRTY_CHECK) {
-                    this.stop();
+                        if (!intersected.length) {
+                            continue;
+                        }
+                        fn.call(null, intersected);
+                    }
+                    instance.didNotifyWatchers.call(instance);
+                    chProps.splice(k, 1);
+                    chInstances.splice(k, 1);
                 }
+
+                manager.changedProps = [];
+                manager.changedInstances = [];
+
+                this.stop();
             },
 
             start : function () {

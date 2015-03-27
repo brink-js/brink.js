@@ -172,7 +172,7 @@ $b(
                     name = tmpl.getAttribute('name');
                     $b.assert('Embedded templates must specify a name... ' + tmpl.innerHTML, !!name);
 
-                    $b('templates/' + name, Template.create(tmpl));
+                    $b('templates/' + name, Template.create(tmpl.innerHTML));
                 }
             });
         }

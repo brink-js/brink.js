@@ -1,15 +1,13 @@
 $b(
 
     [
-        './flatten',
-        './isFunction',
-        './expandProps'
+        './isFunction'
     ],
 
     /***********************************************************************
     @class Brink
     ************************************************************************/
-    function (flatten, isFunction, expandProps) {
+    function (isFunction) {
 
         'use strict';
 
@@ -84,7 +82,7 @@ $b(
 
             if (isFunction(o)) {
                 o = {
-                    watch : flatten([].slice.call(arguments, 1)),
+                    watch : arguments[1],
                     get : o
                 };
             }
@@ -93,7 +91,7 @@ $b(
                 o.value = o.defaultValue;
             }
 
-            o.watch = expandProps(o.watch ? [].concat(o.watch) : []);
+            o.watch = o.watch ? [].concat(o.watch) : [];
             o.__isComputed = true;
 
             return o;
