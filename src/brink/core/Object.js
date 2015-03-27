@@ -294,10 +294,13 @@ $b(
             Invalidate one or more properties. This will trigger any bound and computed properties
             depending on these properties to also get updated.
 
+            There is almost no need to ever call this manually, as Brink will call it for you
+            when setting a property.
+
             This will also trigger any watchers of this property in the next Run Loop.
 
             @method propertyDidChange
-            @param  {Array|String} props A single property or an array of properties.
+            @param  {String} prop The property that changed.
             ************************************************************************/
             propertyDidChange : function (prop) {
                 $b.instanceManager.propertyDidChange(this, prop);
