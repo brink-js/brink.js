@@ -137,6 +137,8 @@ $b(
                     props : []
                 };
 
+                meta.memoizedBindings = {};
+
                 return meta;
             },
 
@@ -375,7 +377,6 @@ $b(
 
                 meta.bindings = meta.bindings || {};
                 meta.externalBindings = meta.externalBindings || {};
-                meta.memoizedBindings = meta.memoizedBindings || {};
 
                 if (typeof meta.properties[key] !== 'undefined') {
                     if (typeof val === 'undefined') {

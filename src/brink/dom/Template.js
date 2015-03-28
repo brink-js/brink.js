@@ -4,10 +4,11 @@ $b(
         './Element',
         '../core/Class',
         '../utils/get',
-        '../browser/ready'
+        '../browser/ready',
+        '../utils/unbound'
     ],
 
-    function (BrinkElement, Class, get, ready) {
+    function (BrinkElement, Class, get, ready, unbound) {
 
         'use strict';
 
@@ -53,6 +54,7 @@ $b(
             template : null,
 
             dom : $b.bindTo('domObj.dom'),
+            dom2 : $b.bindTo('domObj.dom'),
 
             init : function (tmpl, isClone) {
 
@@ -97,7 +99,7 @@ $b(
 
                 this.set('domObj', BrinkElement.create({
                     dom : fragment,
-                    parent : this
+                    parent : unbound(this)
                 }));
 
                 return this.clone();
@@ -109,7 +111,7 @@ $b(
 
                 tmpl.set('domObj', BrinkElement.create({
                     dom : this.get('dom').cloneNode(true),
-                    parent : tmpl
+                    parent : unbound(tmpl)
                 }));
 
                 return tmpl;
@@ -121,7 +123,7 @@ $b(
 
             render : function (context) {
                 this.set('context', context);
-                this.get('domObj').render(true);
+                this.get('domObj').render(context);
                 return this.get('dom');
             },
 

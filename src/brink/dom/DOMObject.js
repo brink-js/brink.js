@@ -24,9 +24,10 @@ $b(
 
             tokens : null,
             parent : null,
-            context : $b.bindTo('parent.context'),
+            context : null,
+
             templateString : '',
-            processedTemplateString : '',
+            processedTemplate : '',
             cachedValue : null,
 
             watchedProperties : computed(function () {
@@ -66,7 +67,7 @@ $b(
                 });
 
                 this.set('tokens', tokens);
-                this.set('processedTemplateString', trim(str) || '');
+                this.set('processedTemplate', trim(str) || '');
             },
 
             init : function () {
@@ -85,7 +86,6 @@ $b(
 
                 var props;
                 props = this.get('watchedProperties');
-
                 this.unwatch(this.contextUpdated);
 
                 if (props && props.length) {
@@ -108,7 +108,7 @@ $b(
             updateDOM : function () {
 
                 var val = this.replaceTokens(
-                    this.get('processedTemplateString'),
+                    this.get('processedTemplate'),
                     this.get('tokens')
                 );
 
@@ -118,12 +118,12 @@ $b(
                 }
             },
 
-            render : function () {
-                this.updateDOM();
+            render : function (context) {
+                this.set('context', context);
             },
 
             rerender : function () {
-                this.render();
+                this.updateDOM();
             },
 
             contextUpdated : function () {

@@ -144,8 +144,6 @@ $b(
                         continue;
                     }
 
-                    looped.push(instance);
-
                     meta = instance.__meta;
                     references = meta.references;
                     referenceKeys = meta.referenceKeys;
@@ -162,7 +160,7 @@ $b(
 
                             reference = references[i];
 
-                            if (~looped.indexOf(reference)) {
+                            if (looped.indexOf(reference) > -1) {
                                 continue;
                             }
                             looped.push(reference);

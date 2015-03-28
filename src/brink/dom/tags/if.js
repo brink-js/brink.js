@@ -112,7 +112,6 @@ $b(
                         fragment.appendChild(child.get('dom'));
                         if (child.get('isTag')) {
                             child.set('isLocked', false);
-                            child.contextUpdated();
                         }
                     });
 

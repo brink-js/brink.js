@@ -5,10 +5,11 @@ $b(
         './Text',
         './DOMObject',
         '../utils/get',
-        '../utils/trim'
+        '../utils/trim',
+        '../utils/unbound'
     ],
 
-    function (BrinkAttr, BrinkText, DOMObject, get, trim) {
+    function (BrinkAttr, BrinkText, DOMObject, get, trim, unbound) {
 
         'use strict';
 
@@ -103,7 +104,7 @@ $b(
                             children.push(
                                 BrinkText.create({
                                     dom : child,
-                                    parent : this
+                                    parent : unbound(this)
                                 })
                             );
                         }
@@ -124,7 +125,7 @@ $b(
                             children.push(
                                 ElementClass.create({
                                     dom : child,
-                                    parent : this
+                                    parent : unbound(this)
                                 })
                             );
                         }
@@ -143,7 +144,7 @@ $b(
 
                             attributes.push(BrinkAttr.create({
                                 dom : attr,
-                                parent : this
+                                parent : unbound(this)
                             }));
                         }
                     }
@@ -156,8 +157,24 @@ $b(
                 return;
             },
 
-            render : function () {
+            render : function (context) {
 
+                var children,
+                    attributes;
+
+                children = this.get('children') || [];
+                attributes = this.get('attributes') || [];
+
+                children.forEach(function (child) {
+                    child.render(context);
+                });
+
+                attributes.forEach(function (attr) {
+                    attr.render(context);
+                });
+            },
+
+            rerender : function () {
                 var children,
                     attributes;
 
@@ -171,10 +188,6 @@ $b(
                 attributes.forEach(function (attr) {
                     attr.rerender();
                 });
-            },
-
-            rerender : function () {
-                this.render();
             },
 
             destroy : function () {
