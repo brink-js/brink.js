@@ -86,12 +86,15 @@ $b(
                             }
                         }
 
+                        if (val && val.__isUnbound) {
+                            val = val.value;
+                        }
+
                         if (obj.__meta.setters[key]) {
                             obj.__meta.setters[key].call(obj, val, key);
                         }
 
                         else {
-
                             if (obj.__meta.pojoStyle) {
                                 obj[key] = val;
                             }
