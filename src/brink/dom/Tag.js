@@ -33,6 +33,16 @@ $b(
 
             parseOptions : function () {
 
+            },
+
+            render : function (context) {
+                this.set('context', context);
+                this._super(context);
+                this.updateDOM();
+            },
+
+            rerender : function () {
+                this.updateDOM();
             }
         });
 

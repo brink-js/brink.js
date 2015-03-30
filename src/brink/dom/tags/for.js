@@ -116,7 +116,6 @@ $b(
                 $b.assert('Item already exists in list...', !lDict.has(item));
 
                 tmpl = this.get('template');
-
                 lKey = this.get('loopKey');
 
                 lDict.add(item, itemTmpl);
@@ -175,12 +174,7 @@ $b(
 
                     changes = lEnum.getChanges();
                 }
-            },
-
-            render : function () {
-                this.updateDOM();
             }
-
         });
     }
 

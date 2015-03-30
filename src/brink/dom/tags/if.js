@@ -98,21 +98,29 @@ $b(
             addChildrenToDOM : function (children) {
 
                 var dom,
+                    context,
                     fragment,
                     domParent;
 
                 dom = this.get('dom');
                 domParent = dom.parentNode;
 
+                context = this.get('context');
+
                 if (domParent && children && children.length) {
 
                     fragment = document.createDocumentFragment();
 
                     children.forEach(function (child) {
-                        fragment.appendChild(child.get('dom'));
+
+                        child.set('context', context);
+
                         if (child.get('isTag')) {
                             child.set('isLocked', false);
                         }
+
+                        fragment.appendChild(child.get('dom'));
+
                     });
 
                     domParent.insertBefore(fragment, dom.nextSibling);
@@ -133,13 +141,15 @@ $b(
 
                         var dom = child.get('dom');
 
+                        if (this.parentHasChild(domParent, dom)) {
+                            domParent.removeChild(dom);
+                        }
+
                         if (child.get('isTag')) {
                             child.set('isLocked', true);
                         }
 
-                        if (this.parentHasChild(domParent, dom)) {
-                            domParent.removeChild(dom);
-                        }
+                        child.set('context', null);
 
                     }.bind(this));
                 }
@@ -166,10 +176,6 @@ $b(
                         this.addChildrenToDOM(this.get('elseChildren'));
                     }
                 }
-            },
-
-            render : function () {
-                this.updateDOM();
             }
         });
     }

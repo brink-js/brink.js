@@ -83,7 +83,6 @@ $b(
             },
 
             contextWatcher : function () {
-
                 var props;
                 props = this.get('watchedProperties');
                 this.unwatch(this.contextUpdated);
