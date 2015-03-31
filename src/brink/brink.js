@@ -155,6 +155,8 @@ $b.init = function (deps, cb) {
 
             'brink/data/attr',
             'brink/data/Model',
+            'brink/data/Store',
+            'brink/data/Collection',
 
             'brink/node/build'
         ]
