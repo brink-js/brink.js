@@ -730,6 +730,9 @@ $b(
 
             proto = SubObj.prototype;
             proto.__parsePrototype.call(proto);
+            proto.constructor = SubObj;
+
+            SubObj.__meta = merge({}, SubObj.__meta);
 
             return SubObj;
         };
@@ -771,7 +774,7 @@ $b(
             return this;
         };
 
-        Obj.__meta = merge(Obj.__meta || {}, {isObject: true});
+        Obj.__meta = {isObject : true};
 
         return Obj;
     }
