@@ -63,7 +63,7 @@ $b(
             }
 
             else {
-                b = alias(a)
+                b = alias(a);
             }
 
             return b;
