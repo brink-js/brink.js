@@ -1,0 +1,1 @@
+require('../tests/coverage.js');

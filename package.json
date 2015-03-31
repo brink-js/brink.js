@@ -21,10 +21,12 @@
   "homepage": "https://github.com/gigafied/brink.js",
   "dependencies": {},
   "devDependencies": {
+    "blanket": "^1.1.6",
     "browserify": "~3.30.1",
     "chai": "~2.2.0",
     "chalk": "^1.0.0",
     "component-ajax": "0.0.2",
+    "html-file-cov": "^1.0.0",
     "includer": "0.0.2",
     "jquery": "^2.1.1",
     "jscs": "^1.11.3",
