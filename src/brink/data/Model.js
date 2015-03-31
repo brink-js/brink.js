@@ -169,20 +169,18 @@ $b(
 
                 props = attributes.concat(relationships);
 
-                json = {};
-
                 i = props.length;
                 while (i--) {
                     p = props[i];
                     desc = this.prop(p);
-                    pMeta = desc.meta;
+                    pMeta = desc.meta();
 
                     if (!override && ~dirty.indexOf(p)) {
                         continue;
                     }
 
                     key = pMeta.options.key || p;
-                    val = json[key];
+                    val = get(json, key);
 
                     if (typeof val !== 'undefined') {
                         val = pMeta.deserialize.call(this, val, override);

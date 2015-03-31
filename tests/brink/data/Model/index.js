@@ -10,7 +10,7 @@ describe("$b.Model", function () {
     require("./defaults");
     //require("./clone");
 	require("./serialize");
-    //require("./deserialize");
+    require("./deserialize");
 
     after (function () {
 
