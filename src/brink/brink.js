@@ -152,13 +152,16 @@ $b.init = function (deps, cb) {
             'brink/browser/ready',
             'brink/browser/ReactMixin',
 
+            'brink/data/attr',
+            'brink/data/Model',
+
             'brink/node/build'
         ]
         /*{{/modules}}*/
 
         , function () {
 
-        /* jscs : enable */
+            /* jscs : enable */
 
             /********* ALIASES *********/
 
