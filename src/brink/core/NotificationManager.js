@@ -157,7 +157,7 @@ $b(
             notification = null;
         };
 
-         $b.define('notificationManager', NotificationManager).attach('$b');
+        $b.define('notificationManager', NotificationManager).attach('$b');
 
         return NotificationManager;
     }

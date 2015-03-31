@@ -181,7 +181,7 @@ $b(
                         meta.watchers.fns.splice(idx, 1);
                         meta.watchers.props.splice(idx, 1);
                     }
-               }
+                }
 
                 meta.watchedProps = flatten(meta.watchers.props);
             },
