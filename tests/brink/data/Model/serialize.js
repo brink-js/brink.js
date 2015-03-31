@@ -22,4 +22,34 @@ describe('serialize', function () {
 
 		done();
 	});
+
+	it('should properly serialize nested keys.', function (done) {
+
+		var json,
+			Model,
+			expected,
+			instance;
+
+		Model = $b.Model({
+            a : $b.attr({key : 'a.b.c.d'})
+		});
+
+		instance = Model.create();
+		instance.a = 'test';
+
+		expected = {
+			a : {
+				b : {
+					c : {
+						d : 'test'
+					}
+				}
+			}
+		};
+
+		json = instance.serialize();
+		expect(json).to.deep.equal(expected);
+
+		done();
+	});
 });

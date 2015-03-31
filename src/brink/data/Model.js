@@ -102,13 +102,11 @@ $b(
 
             serialize : function () {
 
-                var a,
-                    i,
+                var i,
                     l,
                     p,
                     pk,
                     key,
-                    tmp,
                     val,
                     desc,
                     json,
@@ -133,21 +131,16 @@ $b(
                     pMeta = desc.meta();
                     key = pMeta.options.key || p;
 
-                    a = key.split('.');
-                    while (a.length) {
-                        tmp = a.shift();
-                        json[tmp] = json[tmp] || {};
-                    }
                     val = pMeta.serialize.call(this);
                     if (typeof val !== 'undefined') {
-                        json[key] = val;
+                        set(json, key, val);
                     }
                 }
 
                 if (this.primaryKey) {
                     pk = get(this, 'pk');
                     if (typeof pk !== 'undefined') {
-                        json[this.primaryKey] = get(this, 'pk');
+                        set(json, this.primaryKey, pk);
                     }
                 }
 
@@ -233,17 +226,6 @@ $b(
                 console.log('delete');
             }
         });
-
-        Model.extend = function () {
-
-            var proto,
-                SubClass;
-
-            SubClass = Class.extend.apply(this, arguments);
-            proto = SubClass.prototype;
-
-            return SubClass;
-        };
 
         return Model;
     }
