@@ -1,6 +1,7 @@
 $b(
 
     [
+        './alias',
         './computed',
         './getObjKeyPair',
         './isBrinkInstance'
@@ -9,7 +10,7 @@ $b(
     /***********************************************************************
     @class Brink
     ************************************************************************/
-    function (computed, getObjKeyPair, isBrinkInstance) {
+    function (alias, computed, getObjKeyPair, isBrinkInstance) {
 
         'use strict';
         /***********************************************************************
@@ -62,21 +63,7 @@ $b(
             }
 
             else {
-
-                prop = a;
-
-                b = computed({
-
-                    watch : prop,
-
-                    get : function () {
-                        return this.get(prop);
-                    },
-
-                    set : function (val) {
-                        return this.set(prop, val);
-                    }
-                });
+                b = alias(a)
             }
 
             return b;
