@@ -114,7 +114,6 @@ $b.init = function (deps, cb) {
             'brink/utils/computed',
             'brink/utils/configure',
             'brink/utils/defineProperty',
-            'brink/utils/unbound',
 
             'brink/utils/expandProps',
             'brink/utils/extend',
@@ -130,6 +129,8 @@ $b.init = function (deps, cb) {
             'brink/utils/merge',
             'brink/utils/set',
             'brink/utils/trim',
+            'brink/utils/unbound',
+            'brink/utils/registerModel',
 
             'brink/core/Object',
             'brink/core/Class',

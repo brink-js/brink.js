@@ -14,10 +14,10 @@ $b(
 
         var Model = Class({
 
-            primaryKey : 'id',
+            modelKey : null,
+            collectionKey : null,
 
-            name : null,
-            pluralName : null,
+            primaryKey : 'id',
 
             dirtyAttributes : null,
 
@@ -209,6 +209,25 @@ $b(
             }
 
         });
+
+        Model.extend = function () {
+
+            var proto,
+                SubClass;
+
+            SubClass = Class.extend.apply(this, arguments);
+            proto = SubClass.prototype;
+
+            if (proto.modelKey) {
+                if (!proto.collectionKey) {
+                    proto.collectionKey = proto.modelKey.concat('s');
+                }
+
+                $b.registerModel(proto.modelKey, proto.collectionKey, SubClass);
+            }
+
+            return SubClass;
+        };
 
         return Model;
     }
