@@ -184,7 +184,7 @@ $b(
 
                 d = clone(d);
 
-               // Modern browsers, IE9 +
+                // Modern browsers, IE9 +
                 if (Object.defineProperty) {
                     Object.defineProperty(this, p, d);
                 }
@@ -391,6 +391,10 @@ $b(
                         set : true,
                         value : val
                     };
+                }
+
+                else {
+                    val.__meta.key = key;
                 }
 
                 val = meta.properties[key] = defineProperty(obj, key, val);

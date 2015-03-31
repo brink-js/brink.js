@@ -92,7 +92,22 @@ $b(
             }
 
             o.watch = o.watch ? [].concat(o.watch) : [];
+            o.__meta = {};
             o.__isComputed = true;
+
+            o.meta = function (m) {
+
+                var p;
+
+                if (typeof m !== 'undefined') {
+                    for (p in m) {
+                        o.__meta[p] = m[p];
+                    }
+                }
+
+                return o.__meta;
+
+            }.bind(o);
 
             return o;
         };
