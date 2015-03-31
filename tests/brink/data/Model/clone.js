@@ -51,4 +51,40 @@ describe('clone', function () {
 		done();
 	});
 
+	it('should not clone primary keys.', function (done) {
+
+		var Model,
+			json,
+			deserialized,
+			instance1,
+			instance2,
+			instance3,
+			instance4;
+
+		Model = $b.Model({
+			primaryKey : 'uuid'
+		});
+
+		json = [
+			{uuid : 1},
+			{uuid : 2}
+		];
+
+		instance1 = Model.create();
+		instance2 = Model.create();
+
+		instance1.deserialize(json[0]);
+		instance2.deserialize(json[1]);
+
+		instance3 = instance1.clone();
+		instance4 = instance2.clone();
+
+		expect(instance1.pk).to.equal(1);
+		expect(instance2.pk).to.equal(2);
+
+		expect(instance3.pk).to.equal(undefined);
+		expect(instance4.pk).to.equal(undefined);
+
+		done();
+	});
 });

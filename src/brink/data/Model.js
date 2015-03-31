@@ -202,27 +202,12 @@ $b(
                 var json = this.serialize();
 
                 if (typeof json[this.primaryKey] !== 'undefined') {
-                    json[this.primaryKey] = null;
+                    delete json[this.primaryKey];
                 }
 
                 return this.constructor.create(json);
-            },
-
-            fetch : function () {
-                console.log('fetch');
-            },
-
-            save : function () {
-                console.log('save');
-            },
-
-            revert : function () {
-                console.log('revert');
-            },
-
-            del : function () {
-                console.log('delete');
             }
+
         });
 
         return Model;

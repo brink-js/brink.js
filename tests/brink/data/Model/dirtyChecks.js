@@ -68,6 +68,11 @@ describe('isDirty/isClean', function () {
         expect(instance.isDirty).to.equal(false);
         expect(instance.isClean).to.equal(true);
 
+        instance.a = 5;
+        expect(instance.dirtyAttributes.content).to.deep.equal(['a']);
+        expect(instance.isDirty).to.equal(true);
+        expect(instance.isClean).to.equal(false);
+
         done();
     });
 });
