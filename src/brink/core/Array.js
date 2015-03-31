@@ -113,6 +113,10 @@ $b(
                 return this.get('length');
             },
 
+            indexOf : function (o) {
+                return this.content.indexOf(o);
+            },
+
             push : function () {
 
                 var i;
