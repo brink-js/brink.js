@@ -51,7 +51,15 @@ $b(
                     if (dirty) {
 
                         if (typeof pristine[key] === 'undefined') {
-                            pristine[key] = data[key];
+
+                            if (typeof data[key] === 'undefined') {
+                                pristine[key] = options.defaultValue;
+                            }
+
+                            else {
+                                pristine[key] = data[key];
+                            }
+
                             dirty.push(key);
                         }
 

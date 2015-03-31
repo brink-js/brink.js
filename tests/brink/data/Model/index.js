@@ -11,6 +11,7 @@ describe('$b.Model', function () {
     require('./clone');
 	require('./serialize');
     require('./deserialize');
+    require('./dirtyChecks');
 
     after (function () {
 
