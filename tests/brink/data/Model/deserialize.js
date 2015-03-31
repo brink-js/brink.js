@@ -84,4 +84,87 @@ describe('deserialize', function () {
 
 		done();
 	});
+
+	it('should properly deserialize primary keys.', function (done) {
+
+		var Model,
+			instance;
+
+		Model = $b.Model({
+			primaryKey : 'uuid'
+		});
+
+		instance = Model.create();
+		instance.deserialize({uuid : 'xxx'});
+
+		expect(instance.pk).to.equal('xxx');
+
+		done();
+	});
+
+	it('should not override dirty properties by default.', function (done) {
+
+		var json,
+			Model,
+			instance;
+
+		Model = $b.Model({
+            a : $b.attr(),
+            b : $b.attr(),
+            c : $b.attr()
+		});
+
+		instance = Model.create({a : 0, b : 0, c : 0});
+		instance.a = 1;
+		instance.b = 2;
+		instance.c = 3;
+
+		json = {
+			a : 4,
+			b : 5,
+			c : 6
+		};
+
+		instance.deserialize(json);
+
+		expect(instance.a).to.equal(1);
+		expect(instance.b).to.equal(2);
+		expect(instance.c).to.equal(3);
+
+		done();
+	});
+
+
+	it('should override dirty properties if override === true.', function (done) {
+
+		var json,
+			Model,
+			instance;
+
+		Model = $b.Model({
+            a : $b.attr(),
+            b : $b.attr(),
+            c : $b.attr()
+		});
+
+		instance = Model.create({a : 0, b : 0, c : 0});
+		instance.a = 1;
+		instance.b = 2;
+		instance.c = 3;
+
+		json = {
+			a : 4,
+			b : 5,
+			c : 6
+		};
+
+		instance.deserialize(json, true);
+
+		expect(instance.a).to.equal(4);
+		expect(instance.b).to.equal(5);
+		expect(instance.c).to.equal(6);
+
+		done();
+	});
+
 });

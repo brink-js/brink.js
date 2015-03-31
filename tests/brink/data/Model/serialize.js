@@ -52,4 +52,28 @@ describe('serialize', function () {
 
 		done();
 	});
+
+	it('should properly serialize primary keys.', function (done) {
+
+		var json,
+			Model,
+			expected,
+			instance;
+
+		Model = $b.Model({
+			primaryKey : 'uuid'
+		});
+
+		instance = Model.create();
+		instance.pk = 'xxx';
+
+		expected = {
+			uuid : 'xxx'
+		};
+
+		json = instance.serialize();
+		expect(json).to.deep.equal(expected);
+
+		done();
+	});
 });

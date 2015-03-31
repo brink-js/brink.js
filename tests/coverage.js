@@ -13,7 +13,7 @@ require('blanket')({
         'src/brink/dom'
     ]
 });
-require('../src/brink/brink.js');
+require('require-main')();
 
 fs = require('fs');
 path = require('path');
