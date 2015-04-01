@@ -11,8 +11,12 @@ require('blanket')({
         'src/brink/polyfills',
         'src/brink/node',
         'src/brink/dom'
-    ]
+    ],
+    'data-cover-reporter-options' : {
+        'basepath' : process.cwd() + '/src/brink'
+    }
 });
+
 require('require-main')();
 
 fs = require('fs');
@@ -33,19 +37,19 @@ var done = function (failures) {
 
 function addTests(folder, p) {
 
-	fs.readdirSync(folder).filter(function (file) {
+    fs.readdirSync(folder).filter(function (file) {
 
-		p = path.join(folder, file);
+        p = path.join(folder, file);
 
-		if (fs.statSync(p).isDirectory()) {
-			addTests(p);
-			return;
-		}
+        if (fs.statSync(p).isDirectory()) {
+            addTests(p);
+            return;
+        }
 
-		if (file === 'index.js') {
-			mocha.addFile(p);
-		}
-	});
+        if (file === 'index.js') {
+            mocha.addFile(p);
+        }
+    });
 }
 
 module.exports = function (cb) {
