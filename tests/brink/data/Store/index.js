@@ -6,6 +6,7 @@ describe('Brink.Store', function () {
     });
 
     require('./add_remove');
+    require('./find_filter');
 
     after (function () {
 

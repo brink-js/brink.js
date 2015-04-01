@@ -1,4 +1,4 @@
-describe('sorting', function () {
+describe('find + filter', function () {
 
     it('should find an item in an array', function () {
 

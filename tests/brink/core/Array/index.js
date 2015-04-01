@@ -42,8 +42,8 @@ describe('Brink.Array', function () {
     });
 
 	require('./mutations');
-    require('./find_filter');
     require('./sorting');
+    require('./find_filter');
 
     after (function () {
 

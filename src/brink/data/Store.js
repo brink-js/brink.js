@@ -57,9 +57,74 @@ $b(
                 return collection;
             },
 
+            all : function (mKey) {
+                return this.getCollection(mKey);
+            },
+
+            find : function (mKey, q) {
+
+                var collection;
+
+                collection = this.getCollection(mKey);
+
+                if (typeof q === 'number' || typeof q === 'string') {
+                    return collection.findBy('pk', q);
+                }
+
+                if (typeof q === 'function') {
+                    return collection.find(q);
+                }
+
+                return collection.find(function (item) {
+
+                    var p,
+                        doesMatch;
+
+                    doesMatch = true;
+
+                    for (p in q) {
+                        if (get(item, p) !== q[p]) {
+                            doesMatch = false;
+                        }
+                    }
+
+                    return doesMatch;
+
+                }, this);
+            },
+
+            filter : function (mKey, q) {
+
+                var collection;
+
+                collection = this.getCollection(mKey);
+
+                if (typeof q === 'function') {
+                    return collection.filter(q);
+                }
+
+                return collection.filter(function (item) {
+
+                    var p,
+                        doesMatch;
+
+                    doesMatch = true;
+
+                    for (p in q) {
+                        if (get(item, p) !== q[p]) {
+                            doesMatch = false;
+                        }
+                    }
+
+                    return doesMatch;
+
+                }, this);
+            },
+
             getCollection : function (mKey) {
 
-                var Class,
+                var meta,
+                    Class,
                     collection;
 
                 Class = this.modelFor(mKey);
@@ -68,10 +133,11 @@ $b(
                     throw new Error('No model was found with a modelKey of "' + mKey + '"');
                 }
 
-                collection = this.__store[Class.collectionKey];
+                meta = Class.__meta;
+                collection = this.__store[meta.collectionKey];
 
                 if (!collection) {
-                    collection = this.__store[Class.collectionKey] = this.createCollection(Class);
+                    collection = this.__store[meta.collectionKey] = this.createCollection(Class);
                 }
 
                 return collection;
@@ -100,6 +166,22 @@ $b(
                 return (
                     typeof mKey !== 'string' ? mKey : this.__registry[mKey]
                 );
+            },
+
+            destroy : function (destroyRecords) {
+
+                var p;
+
+                if (destroyRecords) {
+                    for (p in this.__store) {
+                        this.__store[p].destroy(true);
+                    }
+                }
+
+                this.__registry = null;
+                this.__store = {};
+
+                this._super.apply(this, arguments);
             }
         });
 
