@@ -38,6 +38,7 @@ $b(
                 this.set('oldContent', content.concat());
                 this.set('length', this.content.length);
 
+                this.contentDidChange = this.contentDidChange.bind(this);
                 this.watch('content', this.contentDidChange);
             },
 
@@ -113,8 +114,7 @@ $b(
             },
 
             concat : function () {
-                var r = AP.concat.apply(this.content, arguments);
-                return Arr.create(r);
+                return Arr.create(this.content.concat());
             },
 
             insertAt : function (i, o) {
@@ -218,7 +218,7 @@ $b(
             reverse : function () {
                 var r;
                 if (!this.pristineContent) {
-                    this.pristineContent = this.content;
+                    this.pristineContent = this.content.concat();
                 }
 
                 r = AP.reverse.apply(this.content, arguments);
@@ -229,13 +229,12 @@ $b(
             sort : function () {
 
                 if (!this.pristineContent) {
-                    this.pristineContent = this.content;
-                    this.content = this.content.concat();
+                    this.pristineContent = this.content.concat();
                 }
 
                 AP.sort.apply(this.content, arguments);
                 this.contentDidChange();
-                return this.content;
+                return this;
             },
 
             reset : function () {
@@ -339,7 +338,7 @@ $b(
             },
 
             contentDidChange : function () {
-                this.set('length', this.content.length);
+                this.set('length', this.content ? this.content.length : 0);
                 this.propertyDidChange('@each');
             }
 
