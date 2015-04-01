@@ -1,6 +1,6 @@
 describe('clone', function () {
 
-	it('should properly clone records.', function (done) {
+	it('should properly clone records.', function () {
 
 		var Model,
 			json,
@@ -48,10 +48,13 @@ describe('clone', function () {
 
 		expect(deserialized).to.deep.equal(json);
 
-		done();
+		instance1.destroy();
+		instance2.destroy();
+		instance3.destroy();
+		instance4.destroy();
 	});
 
-	it('should not clone primary keys.', function (done) {
+	it('should not clone primary keys.', function () {
 
 		var Model,
 			json,
@@ -85,6 +88,9 @@ describe('clone', function () {
 		expect(instance3.pk).to.equal(undefined);
 		expect(instance4.pk).to.equal(undefined);
 
-		done();
+		instance1.destroy();
+		instance2.destroy();
+		instance3.destroy();
+		instance4.destroy();
 	});
 });

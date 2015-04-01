@@ -1,6 +1,6 @@
 describe('deserialize', function () {
 
-	it('should properly deserialize objects into records.', function (done) {
+	it('should properly deserialize objects into records.', function () {
 
 		var Model,
 			json,
@@ -53,10 +53,13 @@ describe('deserialize', function () {
 
 		expect(deserialized).to.deep.equal(json);
 
-		done();
+		instance1.destroy();
+		instance2.destroy();
+		instance3.destroy();
+		instance4.destroy();
 	});
 
-	it('should properly deserialize nested keys.', function (done) {
+	it('should properly deserialize nested keys.', function () {
 
 		var json,
 			Model,
@@ -82,10 +85,10 @@ describe('deserialize', function () {
 		expect(instance.a).to.equal('test');
 		expect(instance.serialize()).to.deep.equal(json);
 
-		done();
+		instance.destroy();
 	});
 
-	it('should properly deserialize primary keys.', function (done) {
+	it('should properly deserialize primary keys.', function () {
 
 		var Model,
 			instance;
@@ -99,10 +102,10 @@ describe('deserialize', function () {
 
 		expect(instance.pk).to.equal('xxx');
 
-		done();
+		instance.destroy();
 	});
 
-	it('should not override dirty properties by default.', function (done) {
+	it('should not override dirty properties by default.', function () {
 
 		var json,
 			Model,
@@ -131,11 +134,11 @@ describe('deserialize', function () {
 		expect(instance.b).to.equal(2);
 		expect(instance.c).to.equal(3);
 
-		done();
+		instance.destroy();
 	});
 
 
-	it('should override dirty properties if override === true.', function (done) {
+	it('should override dirty properties if override === true.', function () {
 
 		var json,
 			Model,
@@ -164,7 +167,7 @@ describe('deserialize', function () {
 		expect(instance.b).to.equal(5);
 		expect(instance.c).to.equal(6);
 
-		done();
+		instance.destroy();
 	});
 
 });

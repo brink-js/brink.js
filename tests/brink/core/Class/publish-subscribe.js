@@ -78,6 +78,8 @@ describe('pub/sub', function () {
 
             instance2.subscribe('hold-test-2', function (n) {
                 if (didHold) {
+                    instance.destroy();
+                    instance2.destroy();
                     done();
                 }
             });
@@ -95,11 +97,15 @@ describe('pub/sub', function () {
                 n.cancel();
 
                 setTimeout(function () {
+                    instance.destroy();
+                    instance2.destroy();
                     done();
                 }, 10);
             });
 
             instance2.subscribe('cancel-test-2', function (n) {
+                instance.destroy();
+                instance2.destroy();
                 done(false);
             });
 
@@ -125,6 +131,7 @@ describe('pub/sub', function () {
                     y : 2
                 });
 
+                instance.destroy();
                 done();
             });
         });

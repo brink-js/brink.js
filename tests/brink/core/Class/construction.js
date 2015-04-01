@@ -16,8 +16,8 @@ describe('construction', function () {
 
 		expect(instance.initialized).to.be.ok;
 
+		instance.destroy();
 		done();
-
 	});
 
 	it('should run the __init() method before init()', function (done) {
@@ -39,8 +39,7 @@ describe('construction', function () {
 			}
 		});
 
-		Class().create();
-
+		Class().create().destroy();
 	});
 
 	it('should be an instance of it\'s parent Classes', function (done) {
@@ -56,6 +55,7 @@ describe('construction', function () {
 		expect(instance).to.be.an.instanceof($b('TestClass'));
 		expect(instance).to.be.an.instanceof($b.Class);
 
+		instance.destroy();
 		done();
 	});
 

@@ -1,6 +1,6 @@
 describe('bindings', function () {
 
-    it('should two-way data bind between $b.Object instances when using $b.bindTo()', function (done) {
+    it('should two-way data bind between $b.Object instances when using $b.bindTo()', function () {
 
         var a,
             b;
@@ -23,10 +23,11 @@ describe('bindings', function () {
         expect(b.test).to.equal(10);
         expect(a.test).to.equal(10);
 
-        done();
+        a.destroy();
+        b.destroy();
     });
 
-    it('should two-way data bind between $b.Object instances when using bindProperty()', function (done) {
+    it('should two-way data bind between $b.Object instances when using bindProperty()', function () {
 
         var a,
             b;
@@ -53,10 +54,11 @@ describe('bindings', function () {
         expect(b.test).to.equal(10);
         expect(a.test).to.equal(10);
 
-        done();
+        a.destroy();
+        b.destroy();
     });
 
-    it('should be able to bind to nested properties', function (done) {
+    it('should be able to bind to nested properties', function () {
 
         var a,
             b,
@@ -81,7 +83,9 @@ describe('bindings', function () {
         expect(a.test1).to.equal(10);
         expect(c.test3).to.equal(a.test1);
 
-        done();
 
+        a.destroy();
+        b.destroy();
+        c.destroy();
     });
 });

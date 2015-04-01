@@ -1,6 +1,6 @@
 describe('defaults', function () {
 
-	it('should populate records with default values.', function (done) {
+	it('should populate records with default values.', function () {
 
 		var Model,
 			instance;
@@ -16,10 +16,11 @@ describe('defaults', function () {
 		expect(instance.a).to.equal('a');
 		expect(instance.b).to.equal('b');
 		expect(instance.c).to.equal('c');
-		done();
+
+        instance.destroy();
 	});
 
-	it('should override defaults if values are specified.', function (done) {
+	it('should override defaults if values are specified.', function () {
 
 		var Model,
 			instance;
@@ -35,10 +36,11 @@ describe('defaults', function () {
 		expect(instance.a).to.equal('a2');
 		expect(instance.b).to.equal('b2');
 		expect(instance.c).to.equal('c');
-		done();
+
+        instance.destroy();
 	});
 
-	it('should not dirty records when using default values.', function (done) {
+	it('should not dirty records when using default values.', function () {
 
 		var Model,
 			instance;
@@ -52,7 +54,7 @@ describe('defaults', function () {
 		instance = Model.create();
 
 		expect(instance.isDirty).to.equal(false);
-		done();
 
+        instance.destroy();
 	});
 });

@@ -23,10 +23,9 @@ describe('computed properties', function () {
 
         a.watch('sum', function () {
             expect(a.sum).to.equal(15);
+            a.destroy();
             done();
         });
 
     });
-
-
 });

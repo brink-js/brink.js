@@ -23,6 +23,8 @@ describe('destruction', function () {
 				expect(this.initialized).to.not.be.ok;
 
 				done();
+
+				$b('TestObj').prototype.destroy.call(this);
 			}
 		});
 
