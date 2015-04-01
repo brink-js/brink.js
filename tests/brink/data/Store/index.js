@@ -5,8 +5,7 @@ describe('Brink.Store', function () {
 
     });
 
-    require('./add');
-    require('./remove');
+    require('./add_remove');
 
     after (function () {
 
