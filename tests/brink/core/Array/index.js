@@ -2,8 +2,6 @@ describe('Brink.Array', function () {
 
     before (function () {
 
-
-
     });
 
     it('should populate the content property on init', function (done) {
@@ -20,6 +18,7 @@ describe('Brink.Array', function () {
     });
 
 	require('./mutations');
+    //require('./queries');
 
     after (function () {
 

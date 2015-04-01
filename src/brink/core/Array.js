@@ -72,21 +72,32 @@ $b(
                 for (i = 0, l = this.content.length; i < l; i ++) {
                     t = this.content[i];
                     if (fn.call(scope, t, i, this)) {
-                        r.push(t);
+                        return t;
                     }
                 }
 
-                return Arr.create(r);
+                return null;
             },
 
-            findBy : function (q, v) {
-
-                var i,
-                    l,
-                    item;
+            findBy : function (key, val) {
 
                 return this.find(function (item) {
-                    return get(item, q) === v;
+                    return get(item, key) === val;
+                });
+            },
+
+            filter : function () {
+
+                var filtered = [];
+
+                filtered = AP.filter.apply(this.content, arguments);
+                return Arr.create(filtered);
+            },
+
+            filterBy : function (key, val) {
+
+                return this.filter(function (item) {
+                    return get(item, key) === val;
                 });
             },
 
@@ -103,11 +114,7 @@ $b(
 
             concat : function () {
                 var r = AP.concat.apply(this.content, arguments);
-                return this.prototype.constructor.create(r);
-            },
-
-            insert : function () {
-                return this.push.apply(this, arguments);
+                return Arr.create(r);
             },
 
             insertAt : function (i, o) {
@@ -200,9 +207,9 @@ $b(
             },
 
             unshift : function () {
-                var i;
-                for (i = 0; i < arguments.length; i ++) {
-                    this.insertAt(0, this.arguments[i]);
+                var i = arguments.length;
+                while (i--) {
+                    this.insertAt(0, arguments[i]);
                 }
 
                 return this.length;
@@ -217,17 +224,6 @@ $b(
                 r = AP.reverse.apply(this.content, arguments);
                 this.contentDidChange();
                 return this;
-            },
-
-            filter : function () {
-
-                if (!this.pristineContent) {
-                    this.pristineContent = this.content;
-                }
-
-                this.content = AP.filter.apply(this.content, arguments);
-                this.contentDidChange();
-                return this.content;
             },
 
             sort : function () {
