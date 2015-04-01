@@ -131,6 +131,7 @@ $b.init = function (deps, cb) {
             'brink/utils/trim',
             'brink/utils/unbound',
             'brink/utils/registerModel',
+            'brink/utils/unregisterModel',
 
             'brink/core/Object',
             'brink/core/Class',
