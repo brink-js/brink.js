@@ -168,11 +168,11 @@ $b(
                             key = referenceKeys[i];
                             meta2 = reference.__meta;
 
-                            /* TODO : Move this....
+                            /* TODO : Move this.... */
                             if (reference.isDestroyed) {
                                 instance.__removeReference(reference);
                                 continue;
-                            }*/
+                            }
                             watched = this.processBindings(reference, changed.concat(), meta2, key);
                             manager.propertiesDidChange(reference, watched);
                         }
