@@ -152,7 +152,6 @@ $b.init = function (deps, cb) {
 
             'brink/browser/ajax',
             'brink/browser/ready',
-            'brink/browser/ReactMixin',
 
             'brink/data/attr',
             'brink/data/Model',
