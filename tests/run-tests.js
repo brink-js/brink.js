@@ -52,6 +52,4 @@ module.exports = function (cb) {
 
 addTests(path.join(__dirname, 'brink'));
 
-timeout = setTimeout(function () {
-    mocha.run(done);
-}, 0);
+mocha.run(done);
