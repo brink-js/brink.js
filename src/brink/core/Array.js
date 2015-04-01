@@ -1,11 +1,11 @@
 $b(
 
     [
-        './Class',
+        './Object',
         '../utils/get'
     ],
 
-    function (Class, get) {
+    function (Obj, get) {
 
         'use strict';
 
@@ -14,7 +14,7 @@ $b(
 
         AP = Array.prototype;
 
-        Arr = Class({
+        Arr = Obj({
 
             content : null,
             length : 0,
@@ -44,7 +44,7 @@ $b(
             get : function (i) {
 
                 if (isNaN(i)) {
-                    return Class.prototype.get.apply(this, arguments);
+                    return Obj.prototype.get.apply(this, arguments);
                 }
 
                 return this.content[i];
@@ -53,7 +53,7 @@ $b(
             set : function (i, val) {
 
                 if (isNaN(i)) {
-                    return Class.prototype.set.apply(this, arguments);
+                    return Obj.prototype.set.apply(this, arguments);
                 }
 
                 this.replaceAt(i, val);
