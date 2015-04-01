@@ -16,7 +16,7 @@ mocha = new mocha({
     ui : 'bdd',
     reporter : 'spec'
 });
-
+mocha.checkLeaks();
 global.expect = chai.expect;
 
 var done = function (failures) {
