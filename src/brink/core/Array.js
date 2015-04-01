@@ -1,10 +1,11 @@
 $b(
 
     [
-        './Object'
+        './Class',
+        '../utils/get'
     ],
 
-    function (Obj) {
+    function (Class, get) {
 
         'use strict';
 
@@ -13,7 +14,7 @@ $b(
 
         AP = Array.prototype;
 
-        Arr = Obj({
+        Arr = Class({
 
             content : null,
             length : 0,
@@ -43,7 +44,7 @@ $b(
             get : function (i) {
 
                 if (isNaN(i)) {
-                    return Obj.prototype.get.apply(this, arguments);
+                    return Class.prototype.get.apply(this, arguments);
                 }
 
                 return this.content[i];
@@ -52,48 +53,49 @@ $b(
             set : function (i, val) {
 
                 if (isNaN(i)) {
-                    return Obj.prototype.set.apply(this, arguments);
+                    return Class.prototype.set.apply(this, arguments);
                 }
 
                 this.replaceAt(i, val);
                 return val;
             },
 
+            find : function (fn, scope) {
+
+                var i,
+                    l,
+                    r,
+                    t;
+
+                r = [];
+
+                for (i = 0, l = this.content.length; i < l; i ++) {
+                    t = this.content[i];
+                    if (fn.call(scope, t, i, this)) {
+                        r.push(t);
+                    }
+                }
+
+                return Arr.create(r);
+            },
+
             findBy : function (q, v) {
 
                 var i,
+                    l,
                     item;
 
-                for (i = 0; i < this.content.length; i ++) {
-                    item = this.content[i];
-                    if (item[q] === v) {
-                        return item;
-                    }
-                }
-
-                return null;
-            },
-
-            findIndexBy : function (q, v) {
-
-                var i,
-                    item;
-
-                for (i = 0; i < this.content.length; i ++) {
-                    item = this.content[i];
-                    if (item[q] === v) {
-                        return i;
-                    }
-                }
-
-                return -1;
+                return this.find(function (item) {
+                    return get(item, q) === v;
+                });
             },
 
             forEach : function (fn, scope) {
 
-                var i;
+                var i,
+                    l;
 
-                for (i = 0; i < this.content.length; i ++) {
+                for (i = 0, l = this.content.length; i < l; i ++) {
                     fn.call(scope, this.content[i], i, this);
                 }
 
