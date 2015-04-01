@@ -71,7 +71,7 @@ include('./polyfills/requestAnimationFrame.js');
     we don't want code that uses them to Error.
 */
 
-$b.assert = $b.error = $b.required = EMPTY_FN;
+$b.assert = $b.error = EMPTY_FN;
 
 /********* RESOLVER *********/
 
@@ -106,7 +106,6 @@ $b.init = function (deps, cb) {
 
             'brink/dev/assert',
             'brink/dev/error',
-            'brink/dev/required',
 
             'brink/utils/alias',
             'brink/utils/bindTo',
@@ -115,14 +114,13 @@ $b.init = function (deps, cb) {
             'brink/utils/configure',
             'brink/utils/defineProperty',
 
-            'brink/utils/expandProps',
+
             'brink/utils/extend',
+            'brink/utils/expandProps',
             'brink/utils/flatten',
-            'brink/utils/inject',
             'brink/utils/intersect',
 
             'brink/utils/isBrinkInstance',
-            'brink/utils/isBrinkObject',
             'brink/utils/isFunction',
             'brink/utils/isObject',
 
