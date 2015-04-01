@@ -1,4 +1,4 @@
-describe('$b.Model', function () {
+describe('Brink.Model', function () {
 
     before (function () {
 

@@ -1,4 +1,4 @@
-describe("$b.Array", function () {
+describe('Brink.Array', function () {
 
     before (function () {
 
@@ -19,7 +19,7 @@ describe("$b.Array", function () {
         done();
     });
 
-	require("./mutations");
+	require('./mutations');
 
     after (function () {
 

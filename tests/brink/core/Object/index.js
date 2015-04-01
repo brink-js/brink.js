@@ -1,4 +1,4 @@
-describe("$b.Object", function () {
+describe('Brink.Object', function () {
 
     before (function () {
 
@@ -16,11 +16,11 @@ describe("$b.Object", function () {
 
     });
 
-	require("./construction");
-	require("./destruction");
-	require("./bindings");
-    require("./watchers");
-    require("./computed");
+	require('./construction');
+	require('./destruction');
+	require('./bindings');
+    require('./watchers');
+    require('./computed');
 
     after (function () {
 

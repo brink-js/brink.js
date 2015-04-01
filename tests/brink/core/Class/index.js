@@ -1,4 +1,4 @@
-describe("$b.Class", function () {
+describe('Brink.Class', function () {
 
     before (function () {
 
@@ -16,9 +16,9 @@ describe("$b.Class", function () {
 
     });
 
-	require("./construction");
-	require("./destruction");
-	require("./publish-subscribe");
+	require('./construction');
+	require('./destruction');
+	require('./publish-subscribe');
 
     after (function () {
 

@@ -59,6 +59,10 @@ describe('watchers', function () {
 
     it('should trigger watchers on nested properties', function (done) {
 
+        var a,
+            b,
+            c;
+
         a = $b.Object.create({
             test1 : 1
         });
