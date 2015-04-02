@@ -22,6 +22,10 @@ $b(
 
             options = options || {};
 
+            if (options.map) {
+                options.embedded = true;
+            }
+
             var hasMany = computed({
 
                 get : function (key) {
@@ -152,10 +156,6 @@ $b(
 
                     val = val || [];
 
-                    if (options.embedded) {
-                        hasMany.meta({fromJSON : val});
-                    }
-
                     if (options.map) {
                         val2 = [];
 
@@ -190,7 +190,13 @@ $b(
                         if (val && val[i]) {
 
                             if (options.embedded && typeof val[i] === 'object') {
+
                                 record = ModelClass.create();
+
+                                if (store) {
+                                    store.add(mKey, record);
+                                }
+
                                 record.deserialize(val[i]);
                             }
 
@@ -215,20 +221,29 @@ $b(
                     return collection;
                 },
 
-                revert : function () {
+                revert : function (revertRelationships) {
 
-                    var meta,
-                        json;
+                    var key,
+                        val,
+                        meta,
+                        pristine;
 
                     meta = hasMany.meta();
+                    key = meta.key;
+                    pristine = this.__meta.pristineData;
 
-                    json = meta.fromJSON;
+                    if (options.embedded) {
+                        val = get(this, key);
+                        if (val) {
+                            pristine[key] = undefined;
+                            val.revertAll(revertRelationships);
+                        }
+                    }
 
-                    if (json) {
-                        meta.deserialize.call(this, json);
+                    else if (pristine[key]) {
+                        set(this, key, pristine[key]);
                     }
                 }
-
             });
 
             return hasMany;

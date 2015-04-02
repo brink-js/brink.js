@@ -9,7 +9,7 @@ require('require-main')();
 
 fs = require('fs');
 path = require('path');
-chai = require("chai"),
+chai = require('chai'),
 mocha = require('mocha');
 
 mocha = new mocha({

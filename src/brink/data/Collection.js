@@ -80,6 +80,31 @@ $b(
                 return this.length;
             },
 
+            serialize : function (isEmbedded) {
+
+                var a = [];
+
+                this.forEach(function (item) {
+
+                    if (isEmbedded) {
+                        a.push(item.serialize());
+                    }
+
+                    else {
+                        a.push(item.get('pk'));
+                    }
+
+                });
+
+                return a;
+            },
+
+            revertAll : function (revertRelationships) {
+                this.forEach(function (item) {
+                    item.revert(revertRelationships);
+                });
+            },
+
             destroy : function (destroyRecords) {
 
                 var i;
