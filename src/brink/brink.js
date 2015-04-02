@@ -118,6 +118,7 @@ $b.init = function (deps, cb) {
             'brink/utils/expandProps',
             'brink/utils/flatten',
             'brink/utils/intersect',
+            'brink/utils/promise',
 
             'brink/utils/isBrinkInstance',
             'brink/utils/isFunction',
