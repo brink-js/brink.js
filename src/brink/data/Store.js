@@ -33,6 +33,8 @@ $b(
                 Class = this.modelFor(mKey);
                 collection = this.getCollection(mKey);
 
+                records = Array.isArray(records) ? records : [records];
+
                 for (i = 0, l = records.length; i < l; i ++) {
                     collection.push(records[i]);
                 }
@@ -91,6 +93,21 @@ $b(
                     return doesMatch;
 
                 }, this);
+            },
+
+            findOrCreate : function (mKey, pk) {
+
+                var record;
+
+                record = this.find(mKey, q);
+
+                if (!record) {
+                    record = this.modelFor(mKey).create();
+                    set(record, 'pk', pk);
+                    this.add(mKey, record);
+                }
+
+                return record;
             },
 
             filter : function (mKey, q) {

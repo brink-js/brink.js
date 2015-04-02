@@ -114,7 +114,6 @@ $b.init = function (deps, cb) {
             'brink/utils/configure',
             'brink/utils/defineProperty',
 
-
             'brink/utils/extend',
             'brink/utils/expandProps',
             'brink/utils/flatten',
@@ -152,6 +151,8 @@ $b.init = function (deps, cb) {
             'brink/browser/ready',
 
             'brink/data/attr',
+            'brink/data/belongsTo',
+            'brink/data/hasMany',
             'brink/data/Model',
             'brink/data/Store',
             'brink/data/Collection',
