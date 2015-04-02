@@ -2,8 +2,12 @@ describe('belongsTo', function () {
 
     var store;
 
-    before (function () {
+    beforeEach(function () {
         store = $b.Store.create();
+    });
+
+    afterEach(function () {
+        store.destroy(true);
     });
 
 	it('should properly deserialize belongsTos.', function () {
@@ -47,7 +51,6 @@ describe('belongsTo', function () {
 
         Light.unregister();
         LightSwitch.unregister();
-        store.clear();
 	});
 
     it('should properly serialize belongsTos.', function () {
@@ -91,7 +94,6 @@ describe('belongsTo', function () {
 
         Light.unregister();
         LightSwitch.unregister();
-        store.clear();
     });
 
     it('should properly deserialize embedded belongsTos.', function () {
@@ -133,7 +135,6 @@ describe('belongsTo', function () {
 
         Light.unregister();
         LightSwitch.unregister();
-        store.clear();
     });
 
     it('should properly serialize embedded belongsTos.', function () {
@@ -181,11 +182,5 @@ describe('belongsTo', function () {
 
         Light.unregister();
         LightSwitch.unregister();
-        store.clear();
     });
-
-    after (function () {
-        store.destroy(true);
-    });
-
 });

@@ -245,7 +245,7 @@ $b(
                         (pMeta.isRelationship &&
                         (revertRelationships || pMeta.options.embedded))
                     ) {
-                        pMeta.revert.call(this, revertRelationships)
+                        pMeta.revert.call(this, revertRelationships);
                     }
                 }
 
