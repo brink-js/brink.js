@@ -28,6 +28,7 @@ $b(
                 var i,
                     l,
                     Class,
+                    record,
                     collection;
 
                 Class = this.modelFor(mKey);
@@ -36,7 +37,9 @@ $b(
                 records = Array.isArray(records) ? records : [records];
 
                 for (i = 0, l = records.length; i < l; i ++) {
-                    collection.push(records[i]);
+                    record = records[i];
+                    record.__store = this;
+                    collection.push(record);
                 }
 
                 return collection;
@@ -99,7 +102,7 @@ $b(
 
                 var record;
 
-                record = this.find(mKey, q);
+                record = this.find(mKey, pk);
 
                 if (!record) {
                     record = this.modelFor(mKey).create();

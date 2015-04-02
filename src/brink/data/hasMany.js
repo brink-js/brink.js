@@ -38,7 +38,7 @@ $b(
                         pristine;
 
                     meta = this.__meta;
-                    store = this.store;
+                    store = this.__store;
                     dirty = get(this, 'dirtyAttributes');
                     data = meta.data;
                     pristine = meta.pristineData;
@@ -130,7 +130,7 @@ $b(
                     return val;
                 },
 
-                deserialize : function (val, override) {
+                deserialize : function (val) {
 
                     var i,
                         j,
@@ -138,17 +138,17 @@ $b(
                         key,
                         map,
                         obj2,
+                        val2,
                         meta,
                         store,
                         record,
-                        record2,
                         records,
                         collection;
 
                     meta = hasMany.meta();
                     key = meta.key;
                     map = options.map || {};
-                    store = this.store;
+                    store = this.__store;
 
                     val = val || [];
 

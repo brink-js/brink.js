@@ -37,7 +37,7 @@ $b(
                         pristine;
 
                     meta = this.__meta;
-                    store = this.store;
+                    store = this.__store;
                     dirty = get(this, 'dirtyAttributes');
                     data = meta.data;
                     pristine = meta.pristineData;
@@ -73,8 +73,7 @@ $b(
 
                     if (
                         store &&
-                        typeof val === 'string' ||
-                        typeof val === 'number'
+                        (typeof val === 'string' || typeof val === 'number')
                     ) {
                         val = store.findOrCreate(mKey, val);
                     }
