@@ -1,6 +1,6 @@
 describe('add + remove', function () {
 
-    it('should properly add records.', function (done) {
+    it('should properly add records.', function () {
 
         var i,
             Model,
@@ -24,11 +24,9 @@ describe('add + remove', function () {
         expect(store.__store.tests.content).to.deep.equal(instances);
 
         Model.unregister();
-
-        done();
     });
 
-    it('should properly remove records.', function (done) {
+    it('should properly remove records.', function () {
 
         var i,
             Model,
@@ -58,7 +56,5 @@ describe('add + remove', function () {
         expect(store.__store.tests.content).to.not.deep.equal(instances);
 
         Model.unregister();
-
-        done();
     });
 });

@@ -1,6 +1,6 @@
 describe('find + filter', function () {
 
-    it('should return all records with all().', function (done) {
+    it('should return all records with all().', function () {
 
         var i,
             Model,
@@ -26,11 +26,9 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
-
-        done();
     });
 
-    it('should clear all records with clear().', function (done) {
+    it('should clear all records with clear().', function () {
 
         var i,
             Model,
@@ -59,11 +57,9 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
-
-        done();
     });
 
-    it('should properly find records.', function (done) {
+    it('should properly find records.', function () {
 
         var i,
             Model,
@@ -91,11 +87,9 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
-
-        done();
     });
 
-    it('should properly find records by primary key.', function (done) {
+    it('should properly find records by primary key.', function () {
 
         var i,
             Model,
@@ -122,11 +116,9 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
-
-        done();
     });
 
-    it('should properly find records with a function.', function (done) {
+    it('should properly find records with a function.', function () {
 
         var i,
             Model,
@@ -156,11 +148,9 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
-
-        done();
     });
 
-    it('should properly filter records.', function (done) {
+    it('should properly filter records.', function () {
 
         var i,
             Model,
@@ -194,11 +184,9 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
-
-        done();
     });
 
-    it('should properly filter records with a function.', function (done) {
+    it('should properly filter records with a function.', function () {
 
         var i,
             Model,
@@ -234,7 +222,5 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
-
-        done();
     });
 });
