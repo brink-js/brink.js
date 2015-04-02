@@ -95,6 +95,22 @@ $b(
                 deserialize : function (val) {
                     set(this, attr.meta().key, val);
                     return val;
+                },
+
+                revert : function () {
+
+                    var key,
+                        meta,
+                        pristine;
+
+                    meta = attr.meta();
+                    key = meta.key;
+
+                    pristine = this.__meta.pristineData;
+
+                    if (pristine[key]) {
+                        set(this, key, pristine[key]);
+                    }
                 }
             });
 

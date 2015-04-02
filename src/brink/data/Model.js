@@ -97,6 +97,8 @@ $b(
                 }
 
                 meta.pristineData = {};
+                meta.pristineContent = {};
+
                 set(this, 'dirtyAttributes', BrinkArray.create());
             },
 
@@ -206,8 +208,49 @@ $b(
                 }
 
                 return this.constructor.create(json);
-            }
+            },
 
+            revert : function (revertRelationships) {
+
+                var i,
+                    p,
+                    key,
+                    val,
+                    desc,
+                    meta,
+                    pMeta,
+                    props,
+                    dirty,
+                    attributes,
+                    relationships;
+
+                meta = this.__meta;
+
+                dirty = get(this, 'dirtyAttributes');
+                attributes = meta.attributes;
+                relationships = meta.relationships;
+
+                props = attributes.concat(relationships);
+
+                i = props.length;
+                while (i--) {
+                    p = props[i];
+                    desc = this.prop(p);
+                    pMeta = desc.meta();
+
+                    key = pMeta.options.key || p;
+
+                    if (
+                        pMeta.isAttribute ||
+                        (pMeta.isRelationship &&
+                        (revertRelationships || pMeta.options.embedded))
+                    ) {
+                        pMeta.revert.call(this, revertRelationships)
+                    }
+                }
+
+                return this;
+            }
         });
 
         Model.extend = function () {

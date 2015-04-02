@@ -138,6 +138,22 @@ $b(
                     set(this, key, val);
 
                     return val;
+                },
+
+                revert : function (revertRelationships) {
+
+                    var key,
+                        val,
+                        meta;
+
+                    meta = belongsTo.meta();
+                    key = meta.key;
+
+                    val = get(this, key);
+
+                    if (val) {
+                        val.revert(revertRelationships);
+                    }
                 }
             });
 
