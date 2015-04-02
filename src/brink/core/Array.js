@@ -2,10 +2,11 @@ $b(
 
     [
         './Object',
-        '../utils/get'
+        '../utils/get',
+        '../utils/computed'
     ],
 
-    function (Obj, get) {
+    function (Obj, get, computed) {
 
         'use strict';
 
@@ -16,8 +17,11 @@ $b(
 
         Arr = Obj({
 
+            length : computed(function () {
+                return this.content.length;
+            }, 'content'),
+
             content : null,
-            length : 0,
 
             oldContent : null,
             pristineContent : null,
@@ -131,14 +135,14 @@ $b(
                 var i;
 
                 for (i = 0; i < arguments.length; i ++) {
-                    this.insertAt(this.length, arguments[i]);
+                    this.insertAt(get(this, 'length'), arguments[i]);
                 }
 
-                return this.length;
+                return get(this, 'length');
             },
 
             pop : function (i) {
-                i = this.length - 1;
+                i = get(this, 'length') - 1;
                 return this.removeAt(i);
             },
 
@@ -212,7 +216,7 @@ $b(
                     this.insertAt(0, arguments[i]);
                 }
 
-                return this.length;
+                return get(this, 'length');
             },
 
             reverse : function () {
@@ -338,7 +342,7 @@ $b(
             },
 
             contentDidChange : function () {
-                this.set('length', this.content ? this.content.length : 0);
+                this.propertyDidChange('length');
                 this.propertyDidChange('@each');
             }
 
