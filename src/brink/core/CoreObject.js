@@ -1,10 +1,11 @@
 $b(
 
     [
+        '../utils/merge',
         '../utils/extend'
     ],
 
-    function (extend) {
+    function (merge, extend) {
 
         'use strict';
 
@@ -63,6 +64,8 @@ $b(
 
             BrinkObject.prototype.constructor = BrinkObject;
 
+            BrinkObject.__meta = merge({isObject : true}, BrinkObject.__meta);
+
             return BrinkObject;
         };
 
@@ -99,6 +102,10 @@ $b(
             }
 
             return instance;
+        };
+
+        CoreObject.toString = function () {
+            return this.__meta.name;
         };
 
         return CoreObject;

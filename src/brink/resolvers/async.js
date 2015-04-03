@@ -112,23 +112,22 @@
                             _module(idPart, this.module);
 
                             if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
-                                module.toString = function () {
-                                    return 'Brink.' + idPart;
-                                };
+                                module.__meta = module.__meta || {};
+                                module.__meta.name = 'Brink.' + idPart;
                             }
                         }
 
                         this.attachTo[idPart] = this.module.exports || this.module;
+                        return;
                     }
 
-                    if (this.id && module && !module.hasOwnProperty('toString')) {
+                    if (
+                        this.id &&
+                        module &&
+                        module.__meta
+                    ) {
 
-                        if ($b.CoreObject && module.prototype instanceof $b.CoreObject) {
-
-                            module.toString = function () {
-                                return id;
-                            };
-                        }
+                        module.__meta.name = this.id;
                     }
                 }
             };

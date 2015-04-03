@@ -625,6 +625,10 @@ $b(
 
             },
 
+            toString : function () {
+                return '[instance ' + this.constructor.__meta.name + ']';
+            },
+
             /***********************************************************************
             Destroys an object, removes all bindings and watchers and clears all metadata.
 
@@ -732,8 +736,6 @@ $b(
             proto.__parsePrototype.call(proto);
             proto.constructor = SubObj;
 
-            SubObj.__meta = merge({}, SubObj.__meta);
-
             return SubObj;
         };
 
@@ -773,8 +775,6 @@ $b(
 
             return this;
         };
-
-        Obj.__meta = {isObject : true};
 
         return Obj;
     }
