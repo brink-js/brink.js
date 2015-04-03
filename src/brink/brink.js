@@ -118,7 +118,11 @@ $b.init = function (deps, cb) {
             'brink/utils/expandProps',
             'brink/utils/flatten',
             'brink/utils/intersect',
+            'brink/utils/params',
             'brink/utils/promise',
+
+            'brink/utils/xhr',
+            'brink/utils/ready',
 
             'brink/utils/isBrinkInstance',
             'brink/utils/isFunction',
@@ -148,12 +152,10 @@ $b.init = function (deps, cb) {
             'brink/dom/tags/if',
             'brink/dom/tags/for',
 
-            'brink/browser/ajax',
-            'brink/browser/ready',
-
             'brink/data/attr',
             'brink/data/belongsTo',
             'brink/data/hasMany',
+            'brink/data/Adapter',
             'brink/data/Model',
             'brink/data/Store',
             'brink/data/Collection',

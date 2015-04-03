@@ -4,7 +4,7 @@ $b(
         './Element',
         '../core/Class',
         '../utils/get',
-        '../browser/ready',
+        '../utils/ready',
         '../utils/unbound'
     ],
 
