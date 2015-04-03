@@ -25,7 +25,6 @@ $b(
             isFetching : false,
             isLoaded : false,
             isDeleting : false,
-            isDeleted : false,
 
             isDirty : computed(function () {
                 return !!get(this, 'dirtyAttributes.length');
@@ -34,6 +33,10 @@ $b(
             isClean : computed(function () {
                 return !get(this, 'isDirty');
             }, 'isDirty'),
+
+            isNew : computed(function () {
+                return !!get(this, 'pk');
+            }, 'pk'),
 
             pk : computed({
 
@@ -199,6 +202,68 @@ $b(
                 return this;
             },
 
+            save : function () {
+
+                var self,
+                    isNew;
+
+                self = this;
+                isNew = get(this, 'isNew');
+
+                set(this, 'isSaving', true);
+
+                return this.adapter.saveRecord(this).then(function (json) {
+
+                    self.deserialize(json);
+                    set(self, 'isSaving', false);
+                    set(self, 'isLoaded', true);
+
+                    if (isNew && self.store) {
+                        self.store.add(self);
+                    }
+                });
+            },
+
+            fetch : function () {
+
+                var self,
+                    isNew;
+
+                self = this;
+                isNew = get(this, 'isNew');
+
+                $b.assert('Can\'t fetch records without a primary key.', !isNew);
+
+                set(this, 'isFetching', true);
+
+                return this.adapter.fetchRecord(this).then(function (json) {
+
+                    self.deserialize(json);
+                    set(self, 'isFetching', false);
+                    set(self, 'isLoaded', true);
+                });
+            },
+
+            del : function () {
+
+                var self,
+                    isNew;
+
+                self = this;
+                isNew = get(this, 'isNew');
+
+                set(this, 'isDeleting', true);
+
+                return this.adapter.deleteRecord(this).then(function () {
+
+                    if (self.store) {
+                        self.store.remove(this);
+                    }
+
+                    self.destroy();
+                });
+            },
+
             clone : function () {
 
                 var json = this.serialize();
@@ -261,6 +326,10 @@ $b(
             SubClass = Class.extend.apply(this, arguments);
             proto = SubClass.prototype;
 
+            if (proto.url) {
+                SubClass.url = proto.url;
+            }
+
             if (proto.modelKey) {
                 meta = SubClass.__meta;
 
@@ -268,8 +337,8 @@ $b(
                     proto.collectionKey = proto.modelKey.concat('s');
                 }
 
-                meta.modelKey = proto.modelKey;
-                meta.collectionKey = proto.collectionKey;
+                SubClass.modelKey = proto.modelKey;
+                SubClass.collectionKey = proto.collectionKey;
 
                 $b.registerModel(SubClass);
             }

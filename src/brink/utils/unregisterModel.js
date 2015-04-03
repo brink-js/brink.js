@@ -17,13 +17,11 @@ $b(
         ************************************************************************/
         return function (model) {
 
-            var meta,
-                mKey,
+            var mKey,
                 cKey;
 
-            meta = model.__meta;
-            mKey = meta.modelKey;
-            cKey = meta.collectionKey;
+            mKey = model.modelKey;
+            cKey = model.collectionKey;
 
             if (!$b.__models[mKey]) {
                 throw new Error('`modelKey` not registered : "' + mKey +  '".');

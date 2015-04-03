@@ -106,6 +106,7 @@ $b.init = function (deps, cb) {
 
             'brink/dev/assert',
             'brink/dev/error',
+            'brink/dev/warn',
 
             'brink/utils/alias',
             'brink/utils/bindTo',
@@ -152,10 +153,12 @@ $b.init = function (deps, cb) {
             'brink/dom/tags/if',
             'brink/dom/tags/for',
 
+            'brink/data/Adapter',
+            'brink/data/RESTAdapter',
+
             'brink/data/attr',
             'brink/data/belongsTo',
             'brink/data/hasMany',
-            'brink/data/Adapter',
             'brink/data/Model',
             'brink/data/Store',
             'brink/data/Collection',

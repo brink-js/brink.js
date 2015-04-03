@@ -27,14 +27,20 @@ $b(
 
                 var i,
                     l,
-                    Class,
                     record,
                     collection;
 
-                Class = this.modelFor(mKey);
-                collection = this.getCollection(mKey);
+                if (arguments.length === 1) {
+                    records = mKey;
+                    records = Array.isArray(records) ? records : [records];
+                    mKey = records[0].modelKey;
+                }
 
-                records = Array.isArray(records) ? records : [records];
+                else {
+                    records = Array.isArray(records) ? records : [records];
+                }
+
+                collection = this.getCollection(mKey);
 
                 for (i = 0, l = records.length; i < l; i ++) {
                     record = records[i];
@@ -49,10 +55,18 @@ $b(
 
                 var i,
                     l,
-                    Class,
                     collection;
 
-                Class = this.modelFor(mKey);
+                if (arguments.length === 1) {
+                    records = mKey;
+                    records = Array.isArray(records) ? records : [records];
+                    mKey = records[0].modelKey;
+                }
+
+                else {
+                    records = Array.isArray(records) ? records : [records];
+                }
+
                 collection = this.getCollection(mKey);
 
                 for (i = 0, l = records.length; i < l; i ++) {
@@ -143,8 +157,7 @@ $b(
 
             getCollection : function (mKey) {
 
-                var meta,
-                    Class,
+                var Class,
                     collection;
 
                 Class = this.modelFor(mKey);
@@ -153,11 +166,10 @@ $b(
                     throw new Error('No model was found with a modelKey of "' + mKey + '"');
                 }
 
-                meta = Class.__meta;
-                collection = this.__store[meta.collectionKey];
+                collection = this.__store[Class.collectionKey];
 
                 if (!collection) {
-                    collection = this.__store[meta.collectionKey] = this.createCollection(Class);
+                    collection = this.__store[Class.collectionKey] = this.createCollection(Class);
                 }
 
                 return collection;

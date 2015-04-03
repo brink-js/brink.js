@@ -26,15 +26,15 @@ $b(
 
                 if (xhr.readyState === 4) {
 
-                    if (xhr.mimeType === 'json' && response.responseType !== 'json') {
+                    if (xhr.mimeType === 'json' && xhr.responseType !== 'json') {
                         response = JSON.parse(xhr.responseText);
                     }
 
                     else if (
-                        response.responseType === 'json' ||
-                        response.responseType === 'blob' ||
-                        response.responseType === 'document' ||
-                        response.responseType === 'arraybuffer'
+                        xhr.responseType === 'json' ||
+                        xhr.responseType === 'blob' ||
+                        xhr.responseType === 'document' ||
+                        xhr.responseType === 'arraybuffer'
                     ) {
                         response = xhr.response;
                     }
@@ -44,11 +44,11 @@ $b(
                     }
 
                     if (xhr.status === 200) {
-                        deferred.resolve(xhr.status, response, xhr);
+                        deferred.resolve(response);
                     }
 
                     else {
-                        deferred.reject(new Error('XHR failed with status code of : ' + xhr.status));
+                        deferred.reject(xhr);
                     }
                 }
             };
@@ -64,7 +64,8 @@ $b(
                 body,
                 contentType;
 
-            method = method.toUpperCase();
+            options = options || {};
+            method = (method || 'GET').toUpperCase();
 
             xhr = new XMLHttpRequest();
 
