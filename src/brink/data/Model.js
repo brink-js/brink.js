@@ -215,7 +215,6 @@ $b(
                 var i,
                     p,
                     key,
-                    val,
                     desc,
                     meta,
                     pMeta,
