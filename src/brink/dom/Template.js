@@ -60,9 +60,7 @@ $b(
 
                 if (!isClone) {
                     $b.assert('Must pass a string or Node when constructing a Template', !!tmpl);
-
-                    this.template = tmpl;
-                    this.compile();
+                    this.compile(tmpl);
                 }
             },
 
@@ -77,17 +75,19 @@ $b(
                 return $(s);
             },
 
-            compile : function () {
+            compile : function (tmpl) {
 
-                var tmpl,
+                var el,
                     children,
                     fragment;
 
-                tmpl = this.template;
-
-                if (!(tmpl instanceof Node)) {
-                    tmpl = this.parseHTML(replaceTags(tmpl));
+                if ((tmpl instanceof Node)) {
+                    el = document.createElement('div');
+                    el.appendChild(tmpl);
+                    tmpl = el.innerHTML;
                 }
+
+                this.template = tmpl = this.parseHTML(replaceTags(tmpl));
 
                 children = tmpl.childNodes;
 
@@ -143,22 +143,6 @@ $b(
 
         if (typeof document !== 'undefined') {
 
-            var style;
-
-            style = document.createElement('style');
-            style.appendChild(document.createTextNode(''));
-            document.head.appendChild(style);
-            style.sheet.insertRule('brink-template {display : none;}', 0);
-
-            if (document.registerElement) {
-                document.registerElement('brink-template');
-            }
-
-            // IE...
-            else {
-                document.createElement('brink-template');
-            }
-
             // Load any templates in the DOM...
             ready(function () {
 
@@ -167,14 +151,49 @@ $b(
                     name,
                     templates;
 
-                templates = document.getElementsByTagName('brink-template');
+                function polyfill () {
+
+                    var i,
+                        el,
+                        frag,
+                        style,
+                        content,
+                        templates;
+
+                    style = document.createElement('style');
+                    style.appendChild(document.createTextNode(''));
+                    document.head.appendChild(style);
+                    style.sheet.insertRule('template {display : none;}', 0);
+
+                    templates = document.getElementsByTagName('template');
+                    i = templates.length;
+
+                    while (i --) {
+                        el = templates[i];
+                        content = el.childNodes;
+                        frag = document.createDocumentFragment();
+
+                        while (content[0]) {
+                            frag.appendChild(content[0]);
+                        }
+
+                        el.content = frag;
+                    }
+                }
+
+                templates = document.getElementsByTagName('template');
+
+                if (templates.length && !('content' in templates[0])) {
+                    polyfill();
+                }
 
                 for (i = 0; i < templates.length; i ++) {
                     tmpl = templates[i];
                     name = tmpl.getAttribute('name');
-                    $b.assert('Embedded templates must specify a name... ' + tmpl.innerHTML, !!name);
 
-                    $b('templates/' + name, Template.create(tmpl.innerHTML));
+                    if (name) {
+                        $b('templates/' + name, Template.create(tmpl.content));
+                    }
                 }
             });
         }

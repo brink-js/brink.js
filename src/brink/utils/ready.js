@@ -8,14 +8,21 @@ $b(
 
         return function (fn) {
 
+            function ready () {
+
+                if (fn) {
+                    fn();
+                }
+            }
+
             if (typeof document !== 'undefined') {
 
                 if (document.readyState === 'complete') {
-                    fn();
+                    ready();
                     return;
                 }
 
-                document.addEventListener('DOMContentLoaded', fn);
+                document.addEventListener('DOMContentLoaded', ready);
 
                 return;
             }
