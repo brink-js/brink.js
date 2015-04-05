@@ -62,6 +62,7 @@ include('./polyfills/Array.forEach.js');
 include('./polyfills/Array.filter.js');
 include('./polyfills/Array.indexOf.js');
 include('./polyfills/Array.isArray.js');
+include('./polyfills/Document.registerElement.js');
 include('./polyfills/Function.bind.js');
 include('./polyfills/requestAnimationFrame.js');
 
