@@ -11,7 +11,6 @@ $b(
         return DOMObject({
 
             isAttr : true,
-            isDynamic : true,
             updateProp : 'value'
 
         });

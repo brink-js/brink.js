@@ -19,7 +19,11 @@ $b(
             isAttr : false,
             isText : false,
             isElement : false,
-            isDynamic : false,
+
+            isDynamic : $b.computed(function () {
+                return !!this.get('tokens').length;
+            }, 'tokens'),
+
             isLocked : false,
 
             tokens : null,
@@ -118,7 +122,9 @@ $b(
             },
 
             render : function (context) {
-                this.set('context', context);
+                if (this.get('isDynamic')) {
+                    this.set('context', context);
+                }
             },
 
             rerender : function () {

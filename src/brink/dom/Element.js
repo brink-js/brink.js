@@ -16,7 +16,6 @@ $b(
         var BrinkElement = DOMObject({
 
             isElement : true,
-            isDynamic : false,
             tokens : null,
 
             init : function () {

@@ -11,7 +11,6 @@ $b(
         return DOMObject({
 
             isText : true,
-            isDynamic : true,
             updateProp : 'nodeValue'
 
         });
