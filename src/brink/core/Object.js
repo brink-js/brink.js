@@ -389,7 +389,8 @@ $b(
                     val = {
                         get : true,
                         set : true,
-                        value : val
+                        value : val,
+                        watch : null
                     };
                 }
 
@@ -404,7 +405,9 @@ $b(
 
                 if (watched && (i = watched.length)) {
                     tmp = [];
+
                     while (i--) {
+
                         a = watched[i].split('.');
                         p = null;
                         while (a.length) {

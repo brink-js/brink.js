@@ -91,7 +91,7 @@ $b(
                 o.value = o.defaultValue;
             }
 
-            o.watch = o.watch ? [].concat(o.watch) : [];
+            o.watch = o.hasOwnProperty('watch') ? [].concat(o.watch) : [];
             o.__meta = {};
             o.__isComputed = true;
 
