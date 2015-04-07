@@ -121,12 +121,7 @@
                         return;
                     }
 
-                    if (
-                        this.id &&
-                        module &&
-                        module.__meta
-                    ) {
-
+                    if (this.id && module && module.__meta) {
                         module.__meta.name = this.id;
                     }
                 }
@@ -302,6 +297,7 @@
             * Essentially they are stored along with the context in a special 'plugins'
             * subpath. This allows modules to lookup plugins with the sync require('index!./foo:./bar') method
             */
+
             pluginPath = (context ? context + '/' : '') + 'plugins/' + module.replace(/\//g, '_');
 
             /*
@@ -340,7 +336,7 @@
                     pluginModule.normalize(module, function (path) {
                         return _resolve(path, context);
                     }) :
-                    _normalize(module);
+                    _resolve(_normalize(module), context);
 
                 function load (definition) {
                     _module(pluginPath, {exports: definition});
@@ -665,8 +661,7 @@
         */
         function require (ids, callback, context, plugins, i, modules, plugin) {
 
-            if (!callback) {
-
+            if (!callback && typeof ids === 'string') {
                 /**
                 * If no callback is specified, then try to get the module by it's ID
                 */
@@ -695,6 +690,10 @@
                 * Otherwise return the module's definition.
                 */
                 return callback;
+            }
+
+            if (!callback) {
+                callback = function () {};
             }
 
             ids = (!Array.isArray(ids)) ? [ids] : ids;

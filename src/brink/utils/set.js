@@ -64,52 +64,53 @@ $b(
 
                 isDiff = old !== val;
 
-                if (skipCompare || isDiff) {
+                if (!skipCompare && !isDiff) {
+                    return false;
+                }
 
-                    if (obj instanceof $b.Object) {
+                if (obj instanceof $b.Object) {
 
-                        if (isDiff) {
-                            if (old instanceof $b.Object) {
-                                old.__removeReference(obj);
-                            }
-
-                            if (val instanceof $b.Object) {
-                                val.__addReference(
-                                    obj,
-                                    (
-                                        key === 'proxy' &&
-                                        val instanceof $b.ObjectProxy ?
-                                        '' :
-                                        key
-                                    )
-                                );
-                            }
+                    if (isDiff) {
+                        if (old instanceof $b.Object) {
+                            old.__removeReference(obj);
                         }
 
-                        if (val && val.__isUnbound) {
-                            val = val.value;
+                        if (val instanceof $b.Object) {
+                            val.__addReference(
+                                obj,
+                                (
+                                    key === 'proxy' &&
+                                    val instanceof $b.ObjectProxy ?
+                                    '' :
+                                    key
+                                )
+                            );
                         }
+                    }
 
-                        if (obj.__meta.setters[key]) {
-                            obj.__meta.setters[key].call(obj, val, key);
-                        }
+                    if (val && val.__isUnbound) {
+                        val = val.value;
+                    }
 
-                        else {
-                            if (obj.__meta.pojoStyle) {
-                                obj[key] = val;
-                            }
-
-                            obj.__meta.values[key] = val;
-                        }
-
-                        if (!quiet) {
-                            obj.propertyDidChange(key);
-                        }
+                    if (obj.__meta.setters[key]) {
+                        obj.__meta.setters[key].call(obj, val, key);
                     }
 
                     else {
-                        obj[key] = val;
+                        if (obj.__meta.pojoStyle) {
+                            obj[key] = val;
+                        }
+
+                        obj.__meta.values[key] = val;
                     }
+
+                    if (!quiet) {
+                        obj.propertyDidChange(key);
+                    }
+                }
+
+                else {
+                    obj[key] = val;
                 }
 
                 return obj;

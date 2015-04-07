@@ -66,6 +66,8 @@ include('./polyfills/Document.registerElement.js');
 include('./polyfills/Function.bind.js');
 include('./polyfills/requestAnimationFrame.js');
 
+$b.F = EMPTY_FN;
+
 /*
     These are empty functions for production builds,
     only the dev version actually implements these, but
@@ -148,6 +150,7 @@ $b.init = function (deps, cb) {
             'brink/dom/DOMObject',
             'brink/dom/Element',
             'brink/dom/Template',
+            'brink/dom/Component',
             'brink/dom/Tag',
             'brink/dom/Text',
 
@@ -164,6 +167,7 @@ $b.init = function (deps, cb) {
             'brink/data/Store',
             'brink/data/Collection',
 
+            'brink/amd/text',
             'brink/node/build'
         ]
         /*{{/modules}}*/
@@ -174,10 +178,6 @@ $b.init = function (deps, cb) {
 
             /********* ALIASES *********/
 
-            $b.merge($b, {
-                F : EMPTY_FN
-            });
-
             $b.merge($b.config, CONFIG);
 
             if ($b.isFunction(deps)) {
@@ -186,7 +186,16 @@ $b.init = function (deps, cb) {
             }
 
             else {
-                $b.require(deps, cb);
+                deps = deps || [];
+                if (deps.length) {
+                    $b.require(deps, cb);
+                }
+
+                else {
+                    if (cb) {
+                        cb();
+                    }
+                }
             }
 
         }
@@ -204,7 +213,7 @@ if (IS_NODE) {
         });
     };
 
-    $b.configure({paths : {brink : __dirname}});
+    $b.configure({paths : {brink : __dirname, plugins : __dirname + '/amd'}});
     $b.init();
     $b.configure({paths : null});
 

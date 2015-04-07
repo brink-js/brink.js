@@ -742,43 +742,6 @@ $b(
             return SubObj;
         };
 
-        Obj.define = function () {
-            $b.define(this.prototype.__dependencies, bindFunction(this.resolveDependencies, this));
-            return this;
-        };
-
-        Obj.resolveDependencies = function () {
-
-            var proto,
-                p;
-
-            proto = this.prototype;
-
-            for (p in proto.__dependencies) {
-                proto[p] = proto.__dependencies[p].resolve();
-            }
-
-            this.__meta.dependenciesResolved = true;
-
-            return this;
-        };
-
-        Obj.load = function (cb) {
-
-            cb = typeof cb === 'function' ? cb : function () {};
-
-            if (this.__meta.dependenciesResolved) {
-                cb(this);
-            }
-
-            $b.require(this.prototype.__dependencies, bindFunction(function () {
-                this.resolveDependencies.call(this);
-                cb(this);
-            }, this));
-
-            return this;
-        };
-
         return Obj;
     }
 
