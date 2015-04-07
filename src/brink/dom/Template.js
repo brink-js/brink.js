@@ -122,9 +122,10 @@ $b(
             },
 
             render : function (context) {
-                this.set('context', context);
-                this.get('domObj').render(context);
-                return this.get('dom');
+                var clone = this.clone();
+                clone.set('context', context);
+                clone.get('domObj').render(context);
+                return clone.get('dom');
             },
 
             destroy : function () {
