@@ -30,7 +30,8 @@ $b(
 
             dom : null,
             tagName : '',
-            useShadow : false,
+
+            useShadow : true,
 
             __init : function () {
 
@@ -58,38 +59,59 @@ $b(
 
                 var css,
                     dom,
-                    style;
+                    style,
+                    content,
+                    styleFragment;
 
                 css = this.css;
+                styleFragment = this.styleFragment;
 
-                if (typeof document !== 'undefined') {
-                    this.useShadow = !!document.body.createShadowRoot;
-                }
-
-                console.log(this.useShadow);
-
-                if (this.useShadow) {
+                if (
+                    this.useShadow &&
+                    typeof document !== 'undefined' &&
+                    document.body.createShadowRoot
+                ) {
                     this.shadow = dom = this.dom.createShadowRoot();
                 }
 
                 else {
+                    this.useShadow = false;
                     dom = this.dom;
 
-                    if (typeof css === 'string') {
+                    if (typeof css === 'string' && !styleFragment) {
                         css = unshadowCSS(css, this.tagName);
                     }
                 }
 
-                if (css) {
+                if (css && !styleFragment) {
+                    styleFragment = document.createDocumentFragment();
                     style = document.createElement('style');
                     style.appendChild(document.createTextNode(css));
                     style.setAttribute('scoped', 'scoped');
-                    dom.appendChild(style);
+                    styleFragment.appendChild(style);
+                    this.styleFragment = styleFragment;
                 }
 
                 if (this.template) {
-                    dom.appendChild(this.template.render(this));
+
+                    if (this.useShadow) {
+                        content = this.template.render(this);
+                    }
+
+                    else {
+                        content = this.template.renderWithContentReplace(this, dom);
+                    }
                 }
+
+
+                if (styleFragment) {
+                    dom.appendChild(styleFragment);
+                }
+
+                if (content) {
+                    dom.appendChild(content);
+                }
+
             },
 
             /* Nicer names */

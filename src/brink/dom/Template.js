@@ -102,7 +102,7 @@ $b(
                     parent : unbound(this)
                 }));
 
-                return this.clone();
+                return this;
             },
 
             clone : function () {
@@ -123,6 +123,56 @@ $b(
 
             render : function (context) {
                 var clone = this.clone();
+                clone.set('context', context);
+                clone.get('domObj').render(context);
+                return clone.get('dom');
+            },
+
+            renderWithContentReplace : function (context, content) {
+
+                var q,
+                    m,
+                    frag,
+                    clone,
+                    child,
+                    matched,
+                    children;
+
+                clone = this.clone();
+                children = clone.get('domObj.dom').querySelectorAll('content');
+
+                while (children.length) {
+                    child = children[0];
+                    q = child.getAttribute('select');
+
+                    frag = document.createDocumentFragment();
+
+                    if (q) {
+                        matched = content.querySelectorAll(q);
+                    }
+
+                    else {
+                        matched = content.childNodes;
+                    }
+
+                    while (matched.length) {
+                        m = matched[0];
+                        frag.appendChild(m);
+                    }
+
+                    child.parentNode.replaceChild(frag, child);
+
+                    if (!q) {
+                        break;
+                    }
+                }
+
+                matched = content.childNodes;
+
+                while (matched.length) {
+                    content.removeChild(matched[0]);
+                }
+
                 clone.set('context', context);
                 clone.get('domObj').render(context);
                 return clone.get('dom');
