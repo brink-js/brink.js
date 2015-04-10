@@ -138,18 +138,15 @@ $b(
 
                 return collection.find(function (item) {
 
-                    var p,
-                        doesMatch;
-
-                    doesMatch = true;
+                    var p;
 
                     for (p in q) {
                         if (get(item, p) !== q[p]) {
-                            doesMatch = false;
+                            return false;
                         }
                     }
 
-                    return doesMatch;
+                    return true;
 
                 }, this);
             },
