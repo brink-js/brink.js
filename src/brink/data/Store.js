@@ -1,14 +1,15 @@
 $b(
 
     [
-        '../core/Class',
         './Model',
         './Collection',
+        './ModelController',
+        '../core/Class',
         '../utils/get',
         '../utils/set'
     ],
 
-    function (Class, Model, Collection, get, set) {
+    function (Model, Collection, ModelController, Class, get, set) {
 
         'use strict';
 
@@ -24,6 +25,46 @@ $b(
             },
 
             add : function (mKey, records) {
+
+                var i,
+                    l,
+                    record,
+                    Controller,
+                    collection;
+
+                if (arguments.length === 1) {
+                    records = mKey;
+                    records = Array.isArray(records) ? records : [records];
+                    mKey = records[0].modelKey;
+                }
+
+                else {
+                    records = Array.isArray(records) ? records : [records];
+                }
+
+                collection = this.getCollection(mKey);
+
+                for (i = 0, l = records.length; i < l; i ++) {
+                    record = records[i];
+
+                    Controller = record.constructor.controllerClass;
+
+                    if (record instanceof Model && Controller) {
+                        record = Controller.create({model : record});
+                    }
+
+                    else if (!record instanceof ModelController) {
+                        throw new Error('Invalid model.');
+                    }
+
+                    set(record, 'store', this);
+                    collection.push(record);
+                }
+
+                return collection;
+            },
+
+            remove : function (mKey, records) {
 
                 var i,
                     l,
@@ -44,32 +85,7 @@ $b(
 
                 for (i = 0, l = records.length; i < l; i ++) {
                     record = records[i];
-                    record.__store = this;
-                    collection.push(record);
-                }
-
-                return collection;
-            },
-
-            remove : function (mKey, records) {
-
-                var i,
-                    l,
-                    collection;
-
-                if (arguments.length === 1) {
-                    records = mKey;
-                    records = Array.isArray(records) ? records : [records];
-                    mKey = records[0].modelKey;
-                }
-
-                else {
-                    records = Array.isArray(records) ? records : [records];
-                }
-
-                collection = this.getCollection(mKey);
-
-                for (i = 0, l = records.length; i < l; i ++) {
+                    record = record.__meta.controller || record;
                     collection.remove(records[i]);
                 }
 
@@ -78,6 +94,32 @@ $b(
 
             all : function (mKey) {
                 return this.getCollection(mKey);
+            },
+
+            fetchAll : function (mKey) {
+
+                var i,
+                    item,
+                    model,
+                    record,
+                    primaryKey;
+
+                model = this.modelFor(mKey);
+                primaryKey = model.primaryKey;
+
+                return model.adapter.fetchAll(model).then(function (json) {
+
+                    json = Array.isArray(json) ? json : [json];
+
+                    for (i = 0; i < json.length; i ++) {
+                        item = json[i];
+                        record = this.findOrCreate(model, item[model.primaryKey]);
+                        record.deserialize(item);
+                    }
+
+                    return this.all(model);
+
+                }.bind(this));
             },
 
             find : function (mKey, q) {
@@ -116,12 +158,15 @@ $b(
 
                 var record;
 
-                record = this.find(mKey, pk);
+                if (pk) {
+                    record = this.find(mKey, pk);
+                }
 
                 if (!record) {
                     record = this.modelFor(mKey).create();
                     set(record, 'pk', pk);
                     this.add(mKey, record);
+                    record = record.__meta.controller || record;
                 }
 
                 return record;

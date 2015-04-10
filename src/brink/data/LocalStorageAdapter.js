@@ -2,7 +2,7 @@ $b(
 
     [
         './Adapter',
-        '../utils/promise'
+        '../utils/Q'
     ],
 
     function (Adapter, Q) {

@@ -112,7 +112,7 @@ $b(
                 if (destroyRecords) {
                     i = this.content.length;
                     while (i--) {
-                        this.content[i].destroy();
+                        this.content[i].destroy(true);
                     }
                 }
                 BrinkArray.prototype.destroy.call(this);

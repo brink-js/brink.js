@@ -11,14 +11,6 @@ $b(
 
         return (function (mKey, options) {
 
-            var ModelClass;
-
-            ModelClass = $b.__models[mKey];
-
-            if (!ModelClass) {
-                throw new Error('No model was found with a modelKey of "' + mKey + '"');
-            }
-
             options = options || {};
 
             var belongsTo = computed({
@@ -37,7 +29,7 @@ $b(
                         pristine;
 
                     meta = this.__meta;
-                    store = this.__store;
+                    store = this.store;
                     dirty = get(this, 'dirtyAttributes');
                     data = meta.data;
                     pristine = meta.pristineData;
@@ -81,7 +73,7 @@ $b(
                     if (val) {
                         $b.assert(
                             'Must be a model of type "' + mKey + '".',
-                            val instanceof ModelClass
+                            val instanceof $b.__models[mKey]
                         );
                     }
 
@@ -106,7 +98,7 @@ $b(
 
                     val = get(this, key);
 
-                    if (val && val instanceof ModelClass) {
+                    if (val && val instanceof $b.__models[mKey]) {
 
                         if (options.embedded) {
                             return val.serialize();
@@ -128,7 +120,7 @@ $b(
                     key = meta.key;
 
                     if (options.embedded) {
-                        record = get(this, key) || ModelClass.create();
+                        record = get(this, key) || $b.__models[mKey].create();
 
                         if (val && typeof val === 'object') {
                             val = record.deserialize(val, override);

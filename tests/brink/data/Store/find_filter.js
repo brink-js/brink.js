@@ -118,7 +118,7 @@ describe('find + filter', function () {
         Model.unregister();
     });
 
-    it('should properly find records with a function.', function () {
+    it('should properly find records with a function.', function (done) {
 
         var i,
             Model,
@@ -148,9 +148,11 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
+
+        done();
     });
 
-    it('should properly filter records.', function () {
+    it('should properly filter records.', function (done) {
 
         var i,
             Model,
@@ -160,7 +162,8 @@ describe('find + filter', function () {
 
         Model = $b.Model({
             modelKey : 'test',
-            idx : $b.attr()
+            idx : $b.attr(),
+            hidden : $b.attr()
         });
 
         instances = [];
@@ -184,6 +187,8 @@ describe('find + filter', function () {
 
         store.destroy(true);
         Model.unregister();
+
+        done();
     });
 
     it('should properly filter records with a function.', function () {
@@ -196,7 +201,8 @@ describe('find + filter', function () {
 
         Model = $b.Model({
             modelKey : 'test',
-            idx : $b.attr()
+            idx : $b.attr(),
+            hidden : $b.attr()
         });
 
         instances = [];

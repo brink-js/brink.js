@@ -12,14 +12,6 @@ $b(
 
         return (function (mKey, options) {
 
-            var ModelClass;
-
-            ModelClass = $b.__models[mKey];
-
-            if (!ModelClass) {
-                throw new Error('No model was found with a modelKey of "' + mKey + '"');
-            }
-
             options = options || {};
 
             if (options.map) {
@@ -42,7 +34,7 @@ $b(
                         pristine;
 
                     meta = this.__meta;
-                    store = this.__store;
+                    store = this.store;
                     dirty = get(this, 'dirtyAttributes');
                     data = meta.data;
                     pristine = meta.pristineData;
@@ -152,7 +144,7 @@ $b(
                     meta = hasMany.meta();
                     key = meta.key;
                     map = options.map || {};
-                    store = this.__store;
+                    store = this.store;
 
                     val = val || [];
 
@@ -191,7 +183,7 @@ $b(
 
                             if (options.embedded && typeof val[i] === 'object') {
 
-                                record = ModelClass.create();
+                                record = $b.__models[mKey].create();
 
                                 if (store) {
                                     store.add(mKey, record);
@@ -203,7 +195,7 @@ $b(
                             else {
 
                                 if (!store) {
-                                    record = ModelClass.create({pk : val[i]});
+                                    record = $b.__models[mKey].create({pk : val[i]});
                                 }
 
                                 else {

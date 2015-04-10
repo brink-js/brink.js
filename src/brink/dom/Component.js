@@ -103,7 +103,6 @@ $b(
                     }
                 }
 
-
                 if (styleFragment) {
                     dom.appendChild(styleFragment);
                 }

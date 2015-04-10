@@ -1,21 +1,26 @@
 $b(
 
     [
+        './ModelController',
         '../core/Class',
         '../core/Array',
         '../utils/get',
         '../utils/set',
+        '../utils/bindTo',
         '../utils/computed'
     ],
 
-    function (Class, BrinkArray, get, set, computed) {
+    function (ModelController, Class, BrinkArray, get, set, bindTo, computed) {
 
         'use strict';
 
         var Model = Class({
 
+            store : null,
+            adapter : null,
             modelKey : null,
             collectionKey : null,
+            controllerClass : null,
 
             primaryKey : 'id',
 
@@ -35,7 +40,7 @@ $b(
             }, 'isDirty'),
 
             isNew : computed(function () {
-                return !!get(this, 'pk');
+                return !get(this, 'pk');
             }, 'pk'),
 
             pk : computed({
@@ -63,6 +68,8 @@ $b(
 
                 meta = this.__meta;
                 cMeta = this.constructor.__meta;
+
+                meta.isInitialized = false;
 
                 if (cMeta.attributes) {
                     meta.attributes = cMeta.attributes;
@@ -95,14 +102,20 @@ $b(
 
                 meta.data = {};
 
-                for (p in o) {
-                    set(this, p, o[p]);
-                }
-
                 meta.pristineData = {};
                 meta.pristineContent = {};
 
+                if (typeof o === 'object') {
+                    this.deserialize(o);
+                }
+
                 set(this, 'dirtyAttributes', BrinkArray.create());
+
+                meta.isInitialized = true;
+            },
+
+            getController : function () {
+                return this.__meta.controller;
             },
 
             serialize : function () {
@@ -168,7 +181,11 @@ $b(
 
                 meta = this.__meta;
 
-                dirty = get(this, 'dirtyAttributes');
+                if (!json) {
+                    return this;
+                }
+
+                dirty = get(this, 'dirtyAttributes') || [];
                 attributes = meta.attributes;
                 relationships = meta.relationships;
 
@@ -213,7 +230,6 @@ $b(
                 set(this, 'isSaving', true);
 
                 return this.adapter.saveRecord(this).then(function (json) {
-
                     self.deserialize(json);
                     set(self, 'isSaving', false);
                     set(self, 'isLoaded', true);
@@ -244,7 +260,7 @@ $b(
                 });
             },
 
-            del : function () {
+            delete : function () {
 
                 var self,
                     isNew;
@@ -319,8 +335,11 @@ $b(
 
         Model.extend = function () {
 
-            var meta,
+            var p,
+                props,
+                meta,
                 proto,
+                toProxy,
                 SubClass;
 
             SubClass = Class.extend.apply(this, arguments);
@@ -328,6 +347,10 @@ $b(
 
             if (proto.url) {
                 SubClass.url = proto.url;
+            }
+
+            if (proto.primaryKey) {
+                SubClass.primaryKey = proto.primaryKey;
             }
 
             if (proto.modelKey) {
@@ -341,6 +364,26 @@ $b(
                 SubClass.collectionKey = proto.collectionKey;
 
                 $b.registerModel(SubClass);
+            }
+
+            if (proto.adapter) {
+                SubClass.adapter = proto.adapter;
+                proto.adapter.registerModel(SubClass);
+            }
+
+            if (proto.controllerClass) {
+
+                toProxy = {};
+
+                props = proto.__meta.properties;
+
+                for (p in props) {
+                    toProxy[p] = bindTo('model.' + p);
+                }
+
+                SubClass.controllerClass = proto.controllerClass.extend(toProxy);
+
+                delete proto.controllerClass;
             }
 
             return SubClass;

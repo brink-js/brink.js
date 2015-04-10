@@ -10,12 +10,6 @@ $b(
 
         var Adapter = Class({
 
-            fetch : $b.F,
-            fetchAll : $b.F,
-            createRecord : $b.F,
-            updateRecord : $b.F,
-            deleteRecord : $b.F,
-
             __init : function () {
 
                 var meta;
@@ -43,6 +37,25 @@ $b(
                 }
 
                 return this._super.apply(this, arguments);
+            },
+
+            fetch : $b.F,
+            fetchAll : $b.F,
+            createRecord : $b.F,
+            updateRecord : $b.F,
+            deleteRecord : $b.F,
+
+            saveRecord : function (record) {
+
+                if (record.get('isNew')) {
+                    return this.createRecord(record);
+                }
+
+                return this.updateRecord(record);
+            },
+
+            registerModel : function () {
+                // Hook for if you need to do any fancy pants stuff...
             }
 
         });
