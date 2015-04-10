@@ -115,7 +115,17 @@ $b(
             },
 
             getController : function () {
-                return this.__meta.controller;
+
+                var controller = this.__meta.controller;
+
+                if (!controller) {
+                    if (!this.constructor.controllerClass) {
+                        return null;
+                    }
+                    controller = this.constructor.controllerClass.create({model : this});
+                }
+
+                return controller;
             },
 
             serialize : function () {

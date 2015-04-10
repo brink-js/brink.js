@@ -29,7 +29,7 @@ $b(
                 var i,
                     l,
                     record,
-                    Controller,
+                    controller,
                     collection;
 
                 if (arguments.length === 1) {
@@ -45,16 +45,13 @@ $b(
                 collection = this.getCollection(mKey);
 
                 for (i = 0, l = records.length; i < l; i ++) {
+
                     record = records[i];
 
-                    Controller = record.constructor.controllerClass;
+                    controller = record.getController();
 
-                    if (record instanceof Model && Controller) {
-                        record = Controller.create({model : record});
-                    }
-
-                    else if (!record instanceof ModelController) {
-                        throw new Error('Invalid model.');
+                    if (controller) {
+                        record = controller;
                     }
 
                     set(record, 'store', this);
