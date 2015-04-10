@@ -123,7 +123,7 @@ $b.init = function (deps, cb) {
             'brink/utils/flatten',
             'brink/utils/intersect',
             'brink/utils/params',
-            'brink/utils/promise',
+            'brink/utils/Q',
 
             'brink/utils/xhr',
             'brink/utils/ready',

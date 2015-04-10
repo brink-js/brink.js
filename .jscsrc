@@ -10,5 +10,5 @@
     "disallowMultipleVarDecl" : null,
     "disallowQuotedKeysInObjects" : null,
     "disallowEmptyBlocks" : null,
-    "excludeFiles": ["node_modules/**", "src/brink/utils/promise.js"]
+    "excludeFiles": ["node_modules/**", "src/brink/utils/Q.js"]
 }

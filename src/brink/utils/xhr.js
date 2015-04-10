@@ -2,7 +2,7 @@ $b(
 
     [
         './params',
-        './promise'
+        './Q'
     ],
 
     function (params, Q) {
