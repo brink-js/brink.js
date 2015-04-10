@@ -81,6 +81,10 @@ $b(
 
                 meta = obj.__meta;
 
+                if (!meta.isInitialized) {
+                    return;
+                }
+
                 chInstances = this.changedInstances;
                 chProps = this.changedProps;
 

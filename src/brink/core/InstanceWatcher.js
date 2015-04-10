@@ -56,7 +56,7 @@ $b(
 
                 for (i = 0, l = prefixReset = props.length; i < l; i ++) {
 
-                    if (i < prefixReset) {
+                    if (prefix && i < prefixReset) {
                         p = prefix.concat(props[i]);
                         props[i] = p;
                     }
@@ -72,6 +72,10 @@ $b(
 
                         if (bindings[p]) {
                             memoized = bindings[p].concat();
+                        }
+
+                        if (bindings[p + '.']) {
+                            Array.prototype.push.apply(memoized, bindings[p + '.']);
                         }
 
                         tmp = p.split('.');

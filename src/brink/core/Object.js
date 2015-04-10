@@ -412,7 +412,7 @@ $b(
                         p = null;
                         while (a.length) {
                             p = (p ? p.concat('.') : '').concat(a.splice(0, 1)[0]);
-                            tmp.push(p);
+                            tmp.push(a.length ? p.concat('.') : p);
                         }
                     }
 
@@ -497,8 +497,10 @@ $b(
             @param val The value to set.
             @return The value returned from the property's setter.
             ***********************************************************************/
-            set : function (key, val, quiet, skipCompare) {
-                return set(this, key, val, quiet, skipCompare);
+            set : function () {
+                var args = Array.prototype.slice.call(arguments);
+                args.unshift(this);
+                return set.apply(null, args);
             },
 
             /***********************************************************************
