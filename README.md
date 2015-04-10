@@ -96,7 +96,7 @@ a.color = 'red';
 
 ######How it works.
 
-Data binding works by using `Object.defineProperty()` to define getters and setters for your properties behind the scenes.ect`
+Data binding works by using `Object.defineProperty()` to define getters and setters for your properties behind the scenes.
 
 Watchers are not invoked immediately when a property changes, they are automatically debounced. So even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
