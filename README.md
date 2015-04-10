@@ -5,7 +5,7 @@
 - Works in the browser and node.js.
 - No external dependencies.
 - Stays out of your way.
-- < 30kb (minified and gzipped)
+- 20kb (minified and gzipped)
 - Use as much or as little of it as you want.
 - Easily use side-by-side with React or Angular.
 
@@ -20,11 +20,6 @@
 - Models + Collections
 - No `get()` or `set()`, uses ES5 property descriptors
 - IE9 + support
-
-###### Experimental :
-
-- Web Components!!
-- Templates
 
 -----------------------------
 
@@ -185,6 +180,7 @@ watching `sum` will be invoked.
 #### Building
 
 Clone this repo, then :
+
     $ cd brink.js
     $ npm install
     $ node tasks/build
