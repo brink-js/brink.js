@@ -185,6 +185,8 @@ Clone this repo, then :
     $ npm install
     $ node tasks/build
 
+Files are be written to the `dist` dir.
+
 #### Running Unit Tests
 
     $ npm install
