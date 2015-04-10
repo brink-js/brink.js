@@ -24,8 +24,8 @@ describe('pub/sub', function () {
 
         var instance = $b('TestClass').create();
 
-        instance.subscribe('pub-data-test', function (n) {
-            expect(n.data).to.eql({
+        instance.subscribe('pub-data-test', function (n, data) {
+            expect(data).to.deep.equal({
                 x : 1,
                 y : 2
             });
@@ -59,7 +59,7 @@ describe('pub/sub', function () {
 
     describe('notifications', function () {
 
-        it('should hold and release a notification', function (done) {
+        it('should support subscribers that return promises', function (done) {
 
             var instance = $b('TestClass').create(),
                 instance2 = $b('TestClass').create(),
@@ -67,13 +67,14 @@ describe('pub/sub', function () {
 
             instance.subscribe('hold-test-2', function (n) {
 
-                n.hold();
+                var deferred = $b.Q.defer();
 
                 setTimeout(function () {
                     didHold = true;
-                    n.release();
+                    deferred.resolve();
                 }, 10);
 
+                return deferred.promise;
             });
 
             instance2.subscribe('hold-test-2', function (n) {
@@ -87,8 +88,27 @@ describe('pub/sub', function () {
             instance.publish('hold-test-2');
         });
 
+        it('should support subscribers that return values', function (done) {
 
-        it('should cancel a notification', function (done) {
+            var instance = $b('TestClass').create();
+
+            instance.subscribe('respond-test-2', function (n) {
+                expect(n).to.be.an('object');
+                return {x : 1, y : 2};
+            });
+
+            instance.publish('respond-test-2', {}).then(function (obj) {
+                expect(obj).to.eql({
+                    x : 1,
+                    y : 2
+                });
+
+                instance.destroy();
+                done();
+            });
+        });
+
+        it('should be able to cancel notifications', function (done) {
 
             var instance = $b('TestClass').create(),
                 instance2 = $b('TestClass').create();
@@ -110,30 +130,6 @@ describe('pub/sub', function () {
             });
 
             instance.publish('cancel-test-2');
-        });
-
-        it('should respond to a notification with a callback', function (done) {
-
-            var instance = $b('TestClass').create();
-
-            instance.subscribe('respond-test-2', function (n) {
-                expect(n).to.be.an('object');
-
-                n.respond({
-                    x : 1,
-                    y : 2
-                });
-            });
-
-            instance.publish('respond-test-2', {}, function (obj) {
-                expect(obj).to.eql({
-                    x : 1,
-                    y : 2
-                });
-
-                instance.destroy();
-                done();
-            });
         });
     });
 });

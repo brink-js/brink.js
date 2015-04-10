@@ -1,10 +1,10 @@
 $b(
 
     [
-        '../utils/isFunction'
+        '../utils/Q'
     ],
 
-    function (isFunction) {
+    function (Q) {
 
         'use strict';
 
@@ -17,38 +17,22 @@ $b(
         _pendingNotifications = [];
         _interests = {};
 
-        Notification = function (name, args, callback) {
+        Notification = function (name, args) {
             this.name = name;
             this.args = args;
-            this.data = args && args.length === 1 ? args[0] : null;
-            this.callback = callback;
             return this;
         };
 
-        Notification.prototype.data = {};
         Notification.prototype.name = '';
         Notification.prototype.dispatcher = null;
         Notification.prototype.status = 0;
         Notification.prototype.pointer = 0;
-        Notification.prototype.callback = null;
-
-        Notification.prototype.hold = function () {
-            this.status = 2;
-        };
-
-        Notification.prototype.release = function () {
-            this.status = 1;
-            NotificationManager.releaseNotification(this);
-        };
 
         Notification.prototype.cancel = function () {
-            this.data = {};
             this.name = '';
             this.status = 0;
             this.pointer = 0;
             this.dispatcher = null;
-            this.callback = null;
-
             NotificationManager.cancelNotification(this);
         };
 
@@ -59,49 +43,51 @@ $b(
             NotificationManager.publishNotification(this);
         };
 
-        Notification.prototype.respond = function () {
-            if (this.callback) {
-                this.callback.apply(this.dispatcher, arguments);
-                this.cancel();
-            }
-        };
-
-        function _publishNotification(notification) {
+        function _publishNotification (notification) {
             _pendingNotifications.push(notification);
-            _notifyObjects(notification);
+            return _notifyObjects(notification);
         }
 
-        function _notifyObjects(notification) {
+        function _notifyObjects (n) {
 
-            var name,
-                subs,
-                len;
+            var fn,
+                name,
+                subs;
 
-            name = notification.name;
+            function next () {
+
+                if (n.status === 1 && n.pointer < subs.length) {
+
+                    fn = subs[n.pointer];
+                    n.pointer ++;
+
+                    return (
+                        Q(fn.apply(null, [].concat(n, n.args)))
+                        .then(function (response) {
+                            n.response = response;
+                            return next();
+                        })
+                        .catch(function (err) {
+                            return Q.reject(err);
+                        })
+                    );
+                }
+
+                else {
+                    subs = null;
+                    if (n.status === 1) {
+                        n.cancel();
+                    }
+
+                    return Q(n.response);
+                }
+            }
+
+            name = n.name;
 
             if (_interests[name]) {
-
                 subs = _interests[name].slice(0);
-                len = subs.length;
-
-                while (notification.pointer < len) {
-                    if (notification.status === 1) {
-                        subs[notification.pointer].apply(null, [].concat(notification, notification.args));
-                        notification.pointer ++;
-                    } else {
-                        return;
-                    }
-                }
-
-                subs = null;
-
-                /**
-                * Notified all subscribers, notification is no longer needed,
-                * unless it has a callback to be called later via notification.respond()
-                */
-                if (notification.status === 1 && !notification.callback) {
-                    notification.cancel();
-                }
+                return next();
             }
         }
 
@@ -131,25 +117,16 @@ $b(
             var notification,
                 args = Array.prototype.slice.call(arguments),
                 name = args[0],
-                dispatcher = args[args.length - 1],
-                callback = args[args.length - 2];
+                dispatcher = args[args.length - 1];
 
-            callback = isFunction(callback) ? callback : null;
+            args = args.slice(1, args.length - 1);
 
-            args = args.slice(1, (callback ? args.length - 2 : args.length - 1));
-
-            notification = new Notification(name, args, callback);
+            notification = new Notification(name, args);
             notification.status = 1;
             notification.pointer = 0;
             notification.dispatcher = dispatcher;
-            _publishNotification(notification);
-        };
 
-        NotificationManager.releaseNotification = function (notification) {
-            notification.status = 1;
-            if (_pendingNotifications.indexOf(notification) > -1) {
-                _notifyObjects(notification);
-            }
+            return _publishNotification(notification);
         };
 
         NotificationManager.cancelNotification = function (notification) {
