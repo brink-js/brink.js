@@ -210,7 +210,7 @@ $b(
                     }
                 }
 
-                if (this.primaryKey) {
+                if (this.primaryKey && json[this.primaryKey]) {
                     set(this, 'pk', json[this.primaryKey]);
                 }
 
