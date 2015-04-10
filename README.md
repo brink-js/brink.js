@@ -13,16 +13,17 @@
 
 #### Core Features
 
-- Inheritance
-- Two-way Data Binding
-- Computed Properties
-- Promise-based Publish/Subscribe
+- [Two-way Data Binding](#dataBinding)
+- [Computed Properties](#computedProps)
+- [Inheritance](#inheritance)
+- [Publish/Subscribe](#pubsub) (promise-based)
 - Models + Collections
 - No `get()` or `set()`, uses ES5 property descriptors
 - IE9 + support
 
 -----------------------------
 
+<a name="dataBinding"></a>
 #### Data Binding
 
 Bindings enable you to keep two or more properties in sync.
@@ -44,6 +45,9 @@ b = $b.Object.create({
 console.log(b.color); // 'green'
 b.color = 'red';
 console.log(a.color); // 'red'
+
+a.color = 'blue';
+console.log(b.color); // 'blue'
 
 ```
 You can bind any property of a `$b.Object` instance to any other property of a `$b.Object` instance.
@@ -95,6 +99,7 @@ Data binding works by using `Object.defineProperty()` to define getters and sett
 
 Watchers are not invoked immediately when a property changes, they are automatically debounced. So even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
+<a name="computedProps"></a>
 #### Computed Properties
 
 Computed properties let you define your own getters and setters for a property:
@@ -167,8 +172,172 @@ b.watch('sum', function () {
 
 ````
 
-By specifying the `watch` array, anytime `prop1` or `prop2` changes, `sum` will also be marked as dirty and any watchers
-watching `sum` will be invoked.
+By specifying the `watch` array, anytime `prop1` or `prop2` changes, `sum` will also be marked as dirty and any watchers watching `sum` will be invoked.
+
+-----------------------------
+<a name="inheritance"></a>
+#### Inheritance
+
+To define a Class, call the `extend()` method on `$b.Class` :
+
+```javascript
+
+var Animal = $b.Class.extend({
+
+    name : '',
+    sound : '???',
+
+    say : function (thing) {
+        console.log(this.name + ' : ' + thing);
+    },
+
+    greet : function () {
+        this.say(this.sound);
+    }
+});
+
+````
+
+You can then extend Animal, by using its `extend()` method :
+
+```javascript
+
+var Dog = Animal.extend({
+
+    sound : 'woof',
+
+    init : function () {
+        console.log(this.name + ' created...');
+    },
+
+    say : function (thing) {
+        this._super(thing + '!');
+    }
+});
+
+````
+
+You can call `this._super()` within a method to invoke the Parent class' method.
+
+To create an instance of your Class, call the `create()` method of your Class. You can pass
+in property values with an optional object.
+
+If you define an `init` method on your Class, that method will be invoked during creation.
+
+```javascript
+
+var fido = Dog.create({name : 'Fido'}); // 'Fido created...'
+
+fido.greet(); // 'Fido : woof!'
+
+````
+
+To
+
+-----------------------------
+<a name="pubsub"></a>
+#### Publish/Subscribe
+
+Publish/Subscribe is a very good model for loose-coupling your components.
+Brink takes it a step further by making it's pub/sub system promise-based.
+
+```javascript
+
+var Publisher = $b.Class.extend({
+
+    doSomething : function (someValue){
+
+        this.publish('something', 'hello!').then(function (response) {
+            console.log(response);
+        });
+    }
+});
+
+var Subscriber = $b.Class.extend({
+
+    init : function() {
+        this.subscribe('something', this.handleSomething);
+    },
+
+    handleSomething : function (n, message) {
+        console.log(message);
+        return 'received!';
+    }
+});
+
+var subscriberInstance = Subscriber.create();
+var publisherInstance = Publisher.create();
+
+publisherInstance.doSomething(); // 'hello!', 'received!'
+
+````
+
+`subscribe()` takes three arguments. The first two are mandatory, the third is optional. The first, a String, for name of the notification you want to listen for. The second, a function that handles the notification.
+
+The third argument is `priority`. If you have multiple instances listening for a notification, the lower the `priority` the sooner an instance will receive the notification.
+
+`publish()` takes at least one argument. The first argument is the `name` of the notification you are sending. Subsequent arguments will be passed to all subscribers in order (see `message` above).
+
+So, where do promises come in? Subscibers can return values or promises, the publisher's
+`then()` method will be invoked at the end of the subscriber chain.
+
+If you replace the `Subscriber` above with the follwing Class, you will see the publishers `then()` invoked 1 second later.
+
+````javascript
+
+var Subscriber = $b.Class.extend({
+
+    init : function() {
+        this.subscribe('something', this.handleSomething);
+    },
+
+    handleSomething : function (n, message) {
+
+        console.log(message);
+
+        return $b.Q.Promise(function (resolve, reject) {
+            setTimeout(function () {
+                resolve('received!');
+            }, 1000);
+        });
+    }
+});
+
+````
+
+##### Notifications
+
+Each time a subsciber's listener is invoked it receives a `Notification` instance as the first argument. You can think of this much like an `Event` object.
+
+Notifications have two properties that might be of interest to you, `name` and `dispatcher`. Use `name` to get the name of the notification that was sent; this is useful if you have the same method handling multiple notification types. You can use `dispatcher` to see which instance fired the notification.
+
+Notifications also have a very useful `cancel()` method. This is much like `stopPropagation()` for events. When you call `cancel()` any subscribers later in the chain will not hear about that notification, and the publishers `then()` will be invoked when the current method returns. If the method returns a promise, the publishers `then()` will be invoked once the promise is resolved.
+
+````javascript
+
+var Subscriber = $b.Class.extend({
+
+    init : function() {
+        this.subscribe('something', this.handleSomething);
+    },
+
+    handleSomething : function (n, message) {
+
+        console.log(message);
+
+        n.cancel(); // No other subscribers will hear about this notification.
+
+        return $b.Q.Promise(function (resolve, reject) {
+
+            setTimeout(function () {
+                resolve('received!'); // Publisher's `then()` method will be invoked now.
+            }, 1000);
+
+        });
+    }
+});
+
+````
 
 ----------------------------
 
@@ -184,8 +353,6 @@ Clone this repo, then :
     $ cd brink.js
     $ npm install
     $ node tasks/build
-
-Files are be written to the `dist` dir.
 
 #### Running Unit Tests
 
