@@ -1,6 +1,6 @@
 describe('Brink.Array', function () {
 
-    before (function () {
+    before(function () {
 
     });
 
@@ -8,7 +8,7 @@ describe('Brink.Array', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
 
         expect(a.content[0]).to.equal(1);
         expect(a.content[1]).to.equal(2);
@@ -20,7 +20,7 @@ describe('Brink.Array', function () {
         var a,
             b;
 
-        a = $b.Array.create([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
         b = a.concat();
 
         expect(a.content).to.deep.equal(b.content);
@@ -31,7 +31,7 @@ describe('Brink.Array', function () {
         var a,
             b;
 
-        a = $b.Array.create([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
         b = [];
 
         a.forEach(function (item) {
@@ -41,11 +41,11 @@ describe('Brink.Array', function () {
         expect(a.content).to.deep.equal(b);
     });
 
-	require('./mutations');
+    require('./mutations');
     require('./sorting');
     require('./find_filter');
 
-    after (function () {
+    after(function () {
 
     });
 });

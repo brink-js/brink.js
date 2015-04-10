@@ -185,11 +185,11 @@ describe('hasMany', function () {
             author : 1,
             content : 'post...',
             comments : [
-                {content : 'comment 1', author : 1, likes : [3,2,5]},
+                {content : 'comment 1', author : 1, likes : [3, 2, 5]},
                 {content : 'comment 2', author : 2},
                 {content : 'comment 3', author : 3, likes : [2]},
                 {content : 'comment 4', author : 4},
-                {content : 'comment 5', author : 5, likes : [1,5]},
+                {content : 'comment 5', author : 5, likes : [1, 5]}
             ],
             likes : [1, 3]
         };
@@ -219,11 +219,11 @@ describe('hasMany', function () {
             author : 1,
             content : 'post...',
             comments : [
-                {content : 'comment 1', author : 1, likes : [3,2,5]},
+                {content : 'comment 1', author : 1, likes : [3, 2, 5]},
                 {content : 'comment 2', author : 2},
                 {content : 'comment 3', author : 3, likes : [2]},
                 {content : 'comment 4', author : 4},
-                {content : 'comment 5', author : 5, likes : [1,5]},
+                {content : 'comment 5', author : 5, likes : [1, 5]}
             ],
             likes : [1, 3]
         };

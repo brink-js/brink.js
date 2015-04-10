@@ -35,7 +35,7 @@ var done = function (failures) {
     process.exit(failures);
 };
 
-function addTests(folder, p) {
+function addTests (folder, p) {
 
     fs.readdirSync(folder).filter(function (file) {
 

@@ -1,69 +1,69 @@
 describe('destruction', function () {
 
-	it('should run the destroy method', function (done) {
+    it('should run the destroy method', function (done) {
 
-		var Class,
-			instance;
+        var Class,
+            instance;
 
-		Class = $b('TestClass')({
+        Class = $b('TestClass')({
 
-			init : function () {
-				this.initialized = true;
-			},
+            init : function () {
+                this.initialized = true;
+            },
 
-			unwatchAll : function () {
-				this._super();
-			},
+            unwatchAll : function () {
+                this._super();
+            },
 
-			destroy : function () {
+            destroy : function () {
 
-				var p;
-				this.x = this.y = this.z = null;
-				this.initialized = false;
+                var p;
+                this.x = this.y = this.z = null;
+                this.initialized = false;
 
-				expect(this.x).to.not.be.ok;
-				expect(this.y).to.not.be.ok;
-				expect(this.z).to.not.be.ok;
-				expect(this.initialized).to.not.be.ok;
+                expect(this.x).to.not.be.ok;
+                expect(this.y).to.not.be.ok;
+                expect(this.z).to.not.be.ok;
+                expect(this.initialized).to.not.be.ok;
 
-				this._super();
+                this._super();
 
-				done();
-			}
-		});
+                done();
+            }
+        });
 
-		instance = Class.create();
-		instance.destroy();
-	});
+        instance = Class.create();
+        instance.destroy();
+    });
 
-	it('destroy()\'s super method should unsubscribe to all notifications', function (done) {
+    it('destroy()\'s super method should unsubscribe to all notifications', function (done) {
 
-		var Class,
-			instance;
+        var Class,
+            instance;
 
-		Class = $b('TestClass')({
+        Class = $b('TestClass')({
 
-			x : 0,
+            x : 0,
 
-			init : function () {
-				this.subscribe('test', function () {
-					this.x = 1;
-				}.bind(this));
-			},
+            init : function () {
+                this.subscribe('test', function () {
+                    this.x = 1;
+                }.bind(this));
+            },
 
-			destroy : function () {
+            destroy : function () {
 
-				this._super();
+                this._super();
 
-				this.publish('test');
+                this.publish('test');
 
-				expect(this.x).to.not.be.ok;
+                expect(this.x).to.not.be.ok;
 
-				done();
-			}
-		});
+                done();
+            }
+        });
 
-		instance = Class.create();
-		instance.destroy();
-	});
+        instance = Class.create();
+        instance.destroy();
+    });
 });

@@ -4,7 +4,7 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
 
         expect(a.get(0)).to.equal(1);
         expect(a.get(1)).to.equal(2);
@@ -17,8 +17,8 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3]);
-        expect(a.content).to.deep.equal([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
+        expect(a.content).to.deep.equal([1, 2, 3]);
 
         a.set(2, 10);
         expect(a.get(2)).to.equal(10);
@@ -30,11 +30,11 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3]);
-        expect(a.content).to.deep.equal([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
+        expect(a.content).to.deep.equal([1, 2, 3]);
 
-        a.push(4,5,6);
-        expect(a.content).to.deep.equal([1,2,3,4,5,6]);
+        a.push(4, 5, 6);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5, 6]);
 
         a.destroy();
     });
@@ -43,11 +43,11 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3]);
-        expect(a.content).to.deep.equal([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
+        expect(a.content).to.deep.equal([1, 2, 3]);
 
         a.insertAt(3, 4);
-        expect(a.content).to.deep.equal([1,2,3,4]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4]);
 
         a.destroy();
     });
@@ -56,11 +56,11 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3,4,5,6]);
-        expect(a.content).to.deep.equal([1,2,3,4,5,6]);
+        a = $b.Array.create([1, 2, 3, 4, 5, 6]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5, 6]);
 
         a.remove(3);
-        expect(a.content).to.deep.equal([1,2,4,5,6]);
+        expect(a.content).to.deep.equal([1, 2, 4, 5, 6]);
 
         a.destroy();
     });
@@ -69,11 +69,11 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3,4,5,6]);
-        expect(a.content).to.deep.equal([1,2,3,4,5,6]);
+        a = $b.Array.create([1, 2, 3, 4, 5, 6]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5, 6]);
 
         a.removeAt(0);
-        expect(a.content).to.deep.equal([2,3,4,5,6]);
+        expect(a.content).to.deep.equal([2, 3, 4, 5, 6]);
 
         a.destroy();
     });
@@ -83,30 +83,29 @@ describe('mutations', function () {
         var a,
             b;
 
-        a = $b.Array.create([1,2,3,4,5,6]);
-        expect(a.content).to.deep.equal([1,2,3,4,5,6]);
+        a = $b.Array.create([1, 2, 3, 4, 5, 6]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5, 6]);
 
         b = a.pop();
 
         expect(b).to.equal(6);
-        expect(a.content).to.deep.equal([1,2,3,4,5]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5]);
 
         a.destroy();
     });
-
 
     it('should allow removing items with shift()', function () {
 
         var a,
             b;
 
-        a = $b.Array.create([1,2,3,4,5,6]);
-        expect(a.content).to.deep.equal([1,2,3,4,5,6]);
+        a = $b.Array.create([1, 2, 3, 4, 5, 6]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5, 6]);
 
         b = a.shift();
 
         expect(b).to.equal(1);
-        expect(a.content).to.deep.equal([2,3,4,5,6]);
+        expect(a.content).to.deep.equal([2, 3, 4, 5, 6]);
 
         a.destroy();
     });
@@ -115,10 +114,10 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,1,1]);
-        expect(a.content).to.deep.equal([1,1,1]);
+        a = $b.Array.create([1, 1, 1]);
+        expect(a.content).to.deep.equal([1, 1, 1]);
         a.splice(1, 2, 2, 3, 4);
-        expect(a.content).to.deep.equal([1,2,3,4]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4]);
 
         a.destroy();
     });
@@ -127,10 +126,10 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([4,5,6]);
-        expect(a.content).to.deep.equal([4,5,6]);
-        a.unshift(1,2,3);
-        expect(a.content).to.deep.equal([1,2,3,4,5,6]);
+        a = $b.Array.create([4, 5, 6]);
+        expect(a.content).to.deep.equal([4, 5, 6]);
+        a.unshift(1, 2, 3);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5, 6]);
 
         a.destroy();
     });
@@ -139,25 +138,24 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([0,2,3]);
-        expect(a.content).to.deep.equal([0,2,3]);
+        a = $b.Array.create([0, 2, 3]);
+        expect(a.content).to.deep.equal([0, 2, 3]);
 
-        a.replace(0,1);
-        expect(a.content).to.deep.equal([1,2,3]);
+        a.replace(0, 1);
+        expect(a.content).to.deep.equal([1, 2, 3]);
 
         a.destroy();
     });
-
 
     it('should allow replacing with replaceAt()', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3,0]);
-        expect(a.content).to.deep.equal([1,2,3,0]);
+        a = $b.Array.create([1, 2, 3, 0]);
+        expect(a.content).to.deep.equal([1, 2, 3, 0]);
 
-        a.replaceAt(3,4);
-        expect(a.content).to.deep.equal([1,2,3,4]);
+        a.replaceAt(3, 4);
+        expect(a.content).to.deep.equal([1, 2, 3, 4]);
 
         a.destroy();
     });
@@ -166,7 +164,7 @@ describe('mutations', function () {
 
         var a;
 
-        a = $b.Array.create([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
 
         a.watch('@each', function () {
             expect(a.getChanges().added.length).to.equal(3);
@@ -174,14 +172,14 @@ describe('mutations', function () {
             done();
         });
 
-        a.push(4,5,6);
+        a.push(4, 5, 6);
     });
 
     it('should call watchers on removal of items', function (done) {
 
         var a;
 
-        a = $b.Array.create([1,2,3]);
+        a = $b.Array.create([1, 2, 3]);
 
         a.watch('@each', function () {
             expect(a.getChanges().removed[0].item).to.equal(1);

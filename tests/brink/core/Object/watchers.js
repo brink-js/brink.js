@@ -8,7 +8,6 @@ describe('watchers', function () {
             test : 1
         });
 
-
         a.watch('test', function () {
             expect(a.test).to.equal(10);
             a.test = 20;

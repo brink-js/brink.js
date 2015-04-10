@@ -4,10 +4,10 @@ describe('sorting', function () {
 
         var a;
 
-        a = $b.Array.create([3,2,6,1,5,4]);
+        a = $b.Array.create([3, 2, 6, 1, 5, 4]);
         a.sort();
 
-        expect(a.content).to.deep.equal([1,2,3,4,5,6]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5, 6]);
 
         a.destroy();
     });
@@ -49,31 +49,30 @@ describe('sorting', function () {
 
         var a;
 
-        a = $b.Array.create([5,4,3,2,1]);
-        expect(a.content).to.deep.equal([5,4,3,2,1]);
+        a = $b.Array.create([5, 4, 3, 2, 1]);
+        expect(a.content).to.deep.equal([5, 4, 3, 2, 1]);
 
         a.reverse();
-        expect(a.content).to.deep.equal([1,2,3,4,5]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5]);
 
         a.reverse();
-        expect(a.content).to.deep.equal([5,4,3,2,1]);
+        expect(a.content).to.deep.equal([5, 4, 3, 2, 1]);
 
         a.destroy();
     });
-
 
     it('should allow reseting an array to original sequence', function () {
 
         var a;
 
-        a = $b.Array.create([5,4,3,2,1]);
-        expect(a.content).to.deep.equal([5,4,3,2,1]);
+        a = $b.Array.create([5, 4, 3, 2, 1]);
+        expect(a.content).to.deep.equal([5, 4, 3, 2, 1]);
 
         a.reverse();
-        expect(a.content).to.deep.equal([1,2,3,4,5]);
+        expect(a.content).to.deep.equal([1, 2, 3, 4, 5]);
 
         a.reset();
-        expect(a.content).to.deep.equal([5,4,3,2,1]);
+        expect(a.content).to.deep.equal([5, 4, 3, 2, 1]);
 
         a.destroy();
     });

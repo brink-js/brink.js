@@ -83,7 +83,6 @@ describe('bindings', function () {
         expect(a.test1).to.equal(10);
         expect(c.test3).to.equal(a.test1);
 
-
         a.destroy();
         b.destroy();
         c.destroy();

@@ -44,7 +44,7 @@ $b(
                     quiet,
                     skipCompare
                 );
-            },
+            }
         });
     }
 

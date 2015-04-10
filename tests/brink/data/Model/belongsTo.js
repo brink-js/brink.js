@@ -10,9 +10,9 @@ describe('belongsTo', function () {
         store.destroy(true);
     });
 
-	it('should properly deserialize belongsTos.', function () {
+    it('should properly deserialize belongsTos.', function () {
 
-		var Light,
+        var Light,
             LightSwitch,
             lightInstance,
             switchInstance;
@@ -22,7 +22,7 @@ describe('belongsTo', function () {
             isOn : $b.attr({defaultValue : false})
         });
 
-		LightSwitch = $b.Model({
+        LightSwitch = $b.Model({
 
             modelKey : 'lightSwitch',
             collectionKey : 'lightSwitches',
@@ -32,7 +32,7 @@ describe('belongsTo', function () {
             flip : function () {
                 this.light.isOn = !this.light.isOn;
             }
-		});
+        });
 
         lightInstance = Light.create({id : 1});
         store.add('light', lightInstance);
@@ -51,7 +51,7 @@ describe('belongsTo', function () {
 
         Light.unregister();
         LightSwitch.unregister();
-	});
+    });
 
     it('should properly serialize belongsTos.', function () {
 

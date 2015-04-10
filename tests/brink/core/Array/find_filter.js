@@ -21,7 +21,6 @@ describe('find + filter', function () {
         a.destroy();
     });
 
-
     it('should find an item in an array with findBy', function () {
 
         var a,
@@ -39,7 +38,6 @@ describe('find + filter', function () {
         expect(b).to.deep.equal({val : 3});
         a.destroy();
     });
-
 
     it('should filter an array properly', function () {
 
@@ -60,7 +58,7 @@ describe('find + filter', function () {
 
         expect(b.content).to.deep.equal([
             {val : 2, hidden : false},
-            {val : 4, hidden : false},
+            {val : 4, hidden : false}
         ]);
         a.destroy();
     });

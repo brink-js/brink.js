@@ -1,6 +1,6 @@
 describe('utils', function () {
 
-    before (function () {
+    before(function () {
 
     });
 
@@ -8,8 +8,7 @@ describe('utils', function () {
     require('./expandProps');
     require('./trim');
 
-    after (function () {
-
+    after(function () {
 
     });
 });

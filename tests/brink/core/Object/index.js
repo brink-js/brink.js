@@ -1,6 +1,6 @@
 describe('Brink.Object', function () {
 
-    before (function () {
+    before(function () {
 
         $b.define('TestObj', $b.Object({
 
@@ -16,13 +16,13 @@ describe('Brink.Object', function () {
 
     });
 
-	require('./construction');
-	require('./destruction');
-	require('./bindings');
+    require('./construction');
+    require('./destruction');
+    require('./bindings');
     require('./watchers');
     require('./computed');
 
-    after (function () {
+    after(function () {
 
         $b.undefine('TestObject');
 

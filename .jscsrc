@@ -10,5 +10,19 @@
     "disallowMultipleVarDecl" : null,
     "disallowQuotedKeysInObjects" : null,
     "disallowEmptyBlocks" : null,
+
+	"requireSpacesInFunction": {
+	    "beforeOpeningRoundBrace": true,
+	    "beforeOpeningCurlyBrace": true
+	},
+
+	"disallowTrailingComma" : true,
+	"disallowSpacesInsideParentheses" : true,
+
+	"requireCurlyBraces" : true,
+	"requireSpacesInForStatement": true,
+	"disallowSpacesInCallExpression": true,
+	"requireSpacesInConditionalExpression": true,
+
     "excludeFiles": ["node_modules/**", "src/brink/utils/Q.js"]
 }

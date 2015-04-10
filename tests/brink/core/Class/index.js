@@ -1,6 +1,6 @@
 describe('Brink.Class', function () {
 
-    before (function () {
+    before(function () {
 
         $b.define('TestClass', $b.Class({
 
@@ -16,11 +16,11 @@ describe('Brink.Class', function () {
 
     });
 
-	require('./construction');
-	require('./destruction');
-	require('./publish-subscribe');
+    require('./construction');
+    require('./destruction');
+    require('./publish-subscribe');
 
-    after (function () {
+    after(function () {
 
         $b.undefine('TestClass');
 

@@ -1,0 +1,9 @@
+{
+	"expr" : true,
+
+    "globals" : {
+        "expect" : false,
+        "describe" : false,
+        "it" : false
+    }
+}

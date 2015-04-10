@@ -56,7 +56,6 @@ describe('pub/sub', function () {
         instance.publish('pub-args-test', 1, 2, 'z');
     });
 
-
     describe('notifications', function () {
 
         it('should support subscribers that return promises', function (done) {

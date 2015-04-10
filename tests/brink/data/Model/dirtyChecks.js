@@ -1,24 +1,24 @@
 describe('isDirty/isClean', function () {
 
-	it('should return isDirty === true and isClean === false on dirty properties.', function (done) {
+    it('should return isDirty === true and isClean === false on dirty properties.', function (done) {
 
-		var Model,
-			instance;
+        var Model,
+            instance;
 
-		Model = $b.Model({
+        Model = $b.Model({
             a : $b.attr({defaultValue : 1})
-		});
+        });
 
-		instance = Model.create();
+        instance = Model.create();
 
         instance.a = 3;
 
-		expect(instance.isDirty).to.equal(true);
+        expect(instance.isDirty).to.equal(true);
         expect(instance.isClean).to.equal(false);
-		done();
-	});
+        done();
+    });
 
-	it('should list all dirty properties in dirtyAttributes.', function (done) {
+    it('should list all dirty properties in dirtyAttributes.', function (done) {
 
         var Model,
             instance;
@@ -37,7 +37,7 @@ describe('isDirty/isClean', function () {
 
         expect(instance.dirtyAttributes.content).to.deep.equal(['a', 'c']);
         done();
-	});
+    });
 
     it('should unflag dirty properties if they are no longer dirty.', function (done) {
 

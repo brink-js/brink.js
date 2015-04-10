@@ -23,21 +23,21 @@ var done = function (failures) {
     process.exit(failures);
 };
 
-function addTests(folder, p) {
+function addTests (folder, p) {
 
-	fs.readdirSync(folder).filter(function (file) {
+    fs.readdirSync(folder).filter(function (file) {
 
-		p = path.join(folder, file);
+        p = path.join(folder, file);
 
-		if (fs.statSync(p).isDirectory()) {
-			addTests(p);
-			return;
-		}
+        if (fs.statSync(p).isDirectory()) {
+            addTests(p);
+            return;
+        }
 
-		if (file === 'index.js') {
-			mocha.addFile(p);
-		}
-	});
+        if (file === 'index.js') {
+            mocha.addFile(p);
+        }
+    });
 }
 
 module.exports = function (cb) {

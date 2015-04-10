@@ -1,79 +1,79 @@
 describe('serialize', function () {
 
-	it('should properly serialize default values.', function (done) {
+    it('should properly serialize default values.', function (done) {
 
-		var json,
-			Model,
-			expected,
-			instance;
+        var json,
+            Model,
+            expected,
+            instance;
 
-		Model = $b.Model({
+        Model = $b.Model({
             a : $b.attr({defaultValue : 'a'}),
             b : $b.attr({defaultValue : 'b'}),
             c : $b.attr({defaultValue : 'c'})
-		});
+        });
 
-		instance = Model.create();
+        instance = Model.create();
 
-		expected = {a : 'a', b : 'b', c : 'c'};
-		json = instance.serialize();
+        expected = {a : 'a', b : 'b', c : 'c'};
+        json = instance.serialize();
 
-		expect(json).to.deep.equal(expected);
+        expect(json).to.deep.equal(expected);
 
-		done();
-	});
+        done();
+    });
 
-	it('should properly serialize nested keys.', function (done) {
+    it('should properly serialize nested keys.', function (done) {
 
-		var json,
-			Model,
-			expected,
-			instance;
+        var json,
+            Model,
+            expected,
+            instance;
 
-		Model = $b.Model({
+        Model = $b.Model({
             a : $b.attr({key : 'a.b.c.d'})
-		});
+        });
 
-		instance = Model.create();
-		instance.a = 'test';
+        instance = Model.create();
+        instance.a = 'test';
 
-		expected = {
-			a : {
-				b : {
-					c : {
-						d : 'test'
-					}
-				}
-			}
-		};
+        expected = {
+            a : {
+                b : {
+                    c : {
+                        d : 'test'
+                    }
+                }
+            }
+        };
 
-		json = instance.serialize();
-		expect(json).to.deep.equal(expected);
+        json = instance.serialize();
+        expect(json).to.deep.equal(expected);
 
-		done();
-	});
+        done();
+    });
 
-	it('should properly serialize primary keys.', function (done) {
+    it('should properly serialize primary keys.', function (done) {
 
-		var json,
-			Model,
-			expected,
-			instance;
+        var json,
+            Model,
+            expected,
+            instance;
 
-		Model = $b.Model({
-			primaryKey : 'uuid'
-		});
+        Model = $b.Model({
+            primaryKey : 'uuid'
+        });
 
-		instance = Model.create();
-		instance.pk = 'xxx';
+        instance = Model.create();
+        instance.pk = 'xxx';
 
-		expected = {
-			uuid : 'xxx'
-		};
+        expected = {
+            uuid : 'xxx'
+        };
 
-		json = instance.serialize();
-		expect(json).to.deep.equal(expected);
+        json = instance.serialize();
+        expect(json).to.deep.equal(expected);
 
-		done();
-	});
+        done();
+    });
 });

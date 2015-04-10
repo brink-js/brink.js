@@ -1,62 +1,62 @@
 describe('construction', function () {
 
-	it('should run the init method', function (done) {
+    it('should run the init method', function (done) {
 
-		var Class,
-			instance;
+        var Class,
+            instance;
 
-		Class = $b('TestClass')({
+        Class = $b('TestClass')({
 
-			init : function () {
-				this.initialized = true;
-			}
-		});
+            init : function () {
+                this.initialized = true;
+            }
+        });
 
-		instance = Class().create();
+        instance = Class().create();
 
-		expect(instance.initialized).to.be.ok;
+        expect(instance.initialized).to.be.ok;
 
-		instance.destroy();
-		done();
-	});
+        instance.destroy();
+        done();
+    });
 
-	it('should run the __init() method before init()', function (done) {
+    it('should run the __init() method before init()', function (done) {
 
-		var Class,
-			y = 0;
+        var Class,
+            y = 0;
 
-		Class = $b('TestClass')({
+        Class = $b('TestClass')({
 
-			__init : function () {
-				expect(y).to.equal(0);
-				this._super();
-				expect(y).to.equal(1);
-			},
+            __init : function () {
+                expect(y).to.equal(0);
+                this._super();
+                expect(y).to.equal(1);
+            },
 
-			init : function () {
-				y = 1;
-				done();
-			}
-		});
+            init : function () {
+                y = 1;
+                done();
+            }
+        });
 
-		Class().create().destroy();
-	});
+        Class().create().destroy();
+    });
 
-	it('should be an instance of it\'s parent Classes', function (done) {
+    it('should be an instance of it\'s parent Classes', function (done) {
 
-		var Class,
-			instance;
+        var Class,
+            instance;
 
-		Class = $b('TestClass')({});
+        Class = $b('TestClass')({});
 
-		instance = Class().create();
+        instance = Class().create();
 
-		expect(instance).to.be.an.instanceof(Class);
-		expect(instance).to.be.an.instanceof($b('TestClass'));
-		expect(instance).to.be.an.instanceof($b.Class);
+        expect(instance).to.be.an.instanceof(Class);
+        expect(instance).to.be.an.instanceof($b('TestClass'));
+        expect(instance).to.be.an.instanceof($b.Class);
 
-		instance.destroy();
-		done();
-	});
+        instance.destroy();
+        done();
+    });
 
 });
