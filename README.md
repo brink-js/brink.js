@@ -232,8 +232,6 @@ fido.greet(); // 'Fido : woof!'
 
 ````
 
-To
-
 -----------------------------
 <a name="pubsub"></a>
 #### Publish/Subscribe
