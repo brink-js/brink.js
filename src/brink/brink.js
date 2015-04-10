@@ -146,17 +146,6 @@ $b.init = function (deps, cb) {
             'brink/core/ObjectProxy',
             'brink/core/InstanceManager',
 
-            'brink/dom/Attr',
-            'brink/dom/DOMObject',
-            'brink/dom/Element',
-            'brink/dom/Template',
-            'brink/dom/Component',
-            'brink/dom/Tag',
-            'brink/dom/Text',
-
-            'brink/dom/tags/if',
-            'brink/dom/tags/for',
-
             'brink/data/Adapter',
             'brink/data/RESTAdapter',
 
@@ -167,7 +156,6 @@ $b.init = function (deps, cb) {
             'brink/data/Store',
             'brink/data/Collection',
 
-            'brink/amd/text',
             'brink/node/build'
         ]
         /*{{/modules}}*/
