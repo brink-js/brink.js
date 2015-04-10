@@ -1,34 +1,30 @@
 # brink.js
-####The modular MVC framework
+####A Modular JavaScript Framework
 
 ---------------------
-#####[API Docs](http://brinkjs.com/ "Brink.js API Docs")
-
 - Works in the browser and node.js.
 - No external dependencies.
 - Stays out of your way.
-- < 10kb (minified and gzipped)
-- Solves low-level problems with as little magic and opinion as possible.
+- < 30kb (minified and gzipped)
 - Use as much or as little of it as you want.
-- Easily use side-by-side with <a href="http://jsfiddle.net/gigafied/VkebS/233/" target="_blank">ReactJS</a> or Angular.
+- Easily use side-by-side with React or Angular.
 
 ---------------------
 
 #### Core Features
 
 - Inheritance
-- Two-way data binding
-- Computed properties
+- Two-way Data Binding
+- Computed Properties
+- Promise-based Publish/Subscribe
+- Models + Collections
+- No `get()` or `set()`, uses ES5 property descriptors
+- IE9 + support
 
-#### Opt-In Features
+###### Experimental :
 
-- Dependency management & injection
-- Build tool
-
-###### Not yet implemented and/or documented:
-- Models & Collections
-- Promise based publish/subscribe
-- DOM-aware client-side templating
+- Web Components!!
+- Templates
 
 -----------------------------
 
@@ -100,54 +96,13 @@ a.color = 'red';
 
 ######How it works.
 
-Data binding works by using `Object.defineProperty()` in browsers that support it (IE9+ and evergreen browsers), and falling back to dirty-checking for browsers that don't. The dirty-checking is still highy efficient as it only checks properties that are bound or watched.
+Data binding works by using `Object.defineProperty()` to define getters and setters for your properties behind the scenes.ect`
 
-What this means though is that for browers that don't support `Object.defineProperty()` bindings are not propagated instantly.
-
-To support instant bindings in <= IE8, you can call `get()` to get properties and `set()` to set them.
-
-Usually though, you don't need instantaneous bindings and you can get and set properties like any normal object in all browsers. Brink will make sure your changes get propagated on the next run loop.
-
-Watchers are not invoked immediately when a property changes, they are called every run loop if their watched properties have changed. This means that even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
+Watchers are not invoked immediately when a property changes, they are automatically debounced. So even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
 #### Computed Properties
 
-Computed properties are properties that are dependent on other values.
-
-While you could setup watcher functions to watch for property changes, then update
-the dependent property, using computed properties is far less cumbersome:
-
-```javascript
-
-var A,
-    b;
-
-A = $b.Object.extend({
-
-    prop1 : 1,
-    prop2 : 2,
-
-    sum : $b.computed({
-
-        watch : ['prop1', 'prop2'],
-
-        get : function () {
-            return this.prop1 + this.prop2;
-        }
-
-    })
-});
-
-b = A.create();
-
-b.prop1 = 5;
-b.prop2 = 10;
-
-console.log(b.sum); // 15
-
-````
-
-Computed properties can have getters and setters:
+Computed properties let you define your own getters and setters for a property:
 
 ```javascript
 
@@ -180,12 +135,57 @@ console.log(person.firstName, person.lastName); // 'John', 'Doe';
 
 ````
 
-You can bind properties to computed properties.
+An added benefit of computed properties is automatically specifying dependencies on other properties. This means you don't need
+to write custom watchers to notify Brink a computed property has a new value.
+
+You specify property dependencies by defining a `watch` property:
+
+```javascript
+
+var A,
+    b;
+
+A = $b.Object.extend({
+
+    prop1 : 1,
+    prop2 : 2,
+
+    sum : $b.computed({
+
+        watch : ['prop1', 'prop2'],
+
+        get : function () {
+            return this.prop1 + this.prop2;
+        }
+
+    })
+});
+
+b = A.create();
+
+b.prop1 = 5;
+b.prop2 = 10;
+
+b.watch('sum', function () {
+    console.log(b.sum); // 15
+});
+
+````
+
+By specifying the `watch` array, anytime `prop1` or `prop2` changes, `sum` will also be marked as dirty and any watchers
+watching `sum` will be invoked.
 
 ----------------------------
 
+#### Documentation
+
+- [API Docs](http://brinkjs.com/ "Brink.js API Docs")
+- [Unit Tests](https://github.com/brink-js/brink.js/tree/master/tests/brink "Unit Tests")
+
 #### Building
 
+Clone this repo, then :
+    $ cd brink.js
     $ npm install
     $ node tasks/build
 
