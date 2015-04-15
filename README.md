@@ -1,7 +1,6 @@
 # brink.js
+##### Data-binding, observers and computed properties in Node and the browser.
 
-####Data-binding, observers and computed properties in Node and the browser.
------------------------------
 - [Two-way Data Binding](#dataBinding)
 - [Observers](#observers)
 - [Computed Properties](#computedProps)
@@ -15,12 +14,13 @@
 
 -----------------------------
 
-######How it works.
+###### How it works.
 
 Data binding works by using `Object.defineProperty()` to define getters and setters for your properties behind the scenes.
 
 Watchers are not invoked immediately when a property changes, they are automatically debounced. So even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
+-----------------------------
 <a name="dataBinding"></a>
 #### Data Binding
 
@@ -69,9 +69,9 @@ console.log(a.color); // 'red'
 
 ````
 
+-----------------------------
 <a name="observers"></a>
 #### Observers
-
 
 You can also set up functions to watch for property changes:
 
@@ -95,6 +95,7 @@ a.color = 'red';
 
 ````
 
+-----------------------------
 <a name="computedProps"></a>
 #### Computed Properties
 
