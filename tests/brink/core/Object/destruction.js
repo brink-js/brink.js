@@ -29,6 +29,31 @@ describe('destruction', function () {
         });
 
         instance = Obj.create();
+        expect(instance.initialized).to.equal(true);
         instance.destroy();
+        expect(instance.initialized).to.equal(false);
+        expect(instance.isDestroyed).to.equal(true);
+        expect(instance.__meta).to.equal(null);
+
+    });
+
+    it('should not error on subsequent calls to destroy', function () {
+
+        var Obj,
+            instance;
+
+        Obj = $b('TestObj')({
+
+        });
+
+        instance = Obj.create();
+        instance.destroy();
+        instance.destroy();
+        instance.destroy();
+        instance.destroy();
+
+        expect(instance.isDestroyed).to.equal(true);
+        expect(instance.__meta).to.equal(null);
+
     });
 });

@@ -196,6 +196,10 @@ $b(
 
                 meta = obj.__meta;
 
+                if (!meta) {
+                    return;
+                }
+
                 meta.watchers = {
                     fns : [],
                     props : []

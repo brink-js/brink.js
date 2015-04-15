@@ -643,6 +643,11 @@ $b(
             @method destroy
             ***********************************************************************/
             destroy : function () {
+
+                if (this.isDestroyed) {
+                    return;
+                }
+
                 this.unwatchAll();
                 this.__undefineProperties();
 
