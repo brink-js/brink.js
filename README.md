@@ -1,27 +1,25 @@
 # brink.js
-####A Modular JavaScript Framework
 
----------------------
-- Works in the browser and node.js.
-- No external dependencies.
-- Stays out of your way.
-- 20kb (minified and gzipped)
-- Use as much or as little of it as you want.
-- Easily use side-by-side with React or Angular.
-
----------------------
-
-#### Core Features
-
+####Data-binding, observers and computed properties in Node and the browser.
+-----------------------------
 - [Two-way Data Binding](#dataBinding)
+- [Observers](#observers)
 - [Computed Properties](#computedProps)
 - [Inheritance](#inheritance)
 - [Publish/Subscribe](#pubsub) (promise-based)
 - Models + Collections
 - No `get()` or `set()`, uses ES5 property descriptors
 - IE9 + support
+- 20kb (minified and gzipped)
+- Works in the browser and node.js.
 
 -----------------------------
+
+######How it works.
+
+Data binding works by using `Object.defineProperty()` to define getters and setters for your properties behind the scenes.
+
+Watchers are not invoked immediately when a property changes, they are automatically debounced. So even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
 <a name="dataBinding"></a>
 #### Data Binding
@@ -71,6 +69,10 @@ console.log(a.color); // 'red'
 
 ````
 
+<a name="observers"></a>
+#### Observers
+
+
 You can also set up functions to watch for property changes:
 
 ```javascript
@@ -92,12 +94,6 @@ a = $b.Object.create({
 a.color = 'red';
 
 ````
-
-######How it works.
-
-Data binding works by using `Object.defineProperty()` to define getters and setters for your properties behind the scenes.
-
-Watchers are not invoked immediately when a property changes, they are automatically debounced. So even if you change a property multiple times in one run loop, the watcher will only be called once (in the next run loop).
 
 <a name="computedProps"></a>
 #### Computed Properties
