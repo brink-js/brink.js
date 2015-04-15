@@ -46,11 +46,11 @@ $b(
             pk : computed({
 
                 get : function () {
-                    return get(this, this.primaryKey);
+                    return this.primaryKey ? get(this, this.primaryKey) : null;
                 },
 
                 set : function (val) {
-                    return set(this, this.primaryKey, val);
+                    return this.primaryKey ? set(this, this.primaryKey, val) : null;
                 }
             }),
 
