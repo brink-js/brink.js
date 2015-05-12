@@ -82,7 +82,7 @@ $b(
 
                 for (i = 0, l = records.length; i < l; i ++) {
                     record = records[i];
-                    record = record.__meta.controller || record;
+                    record = record.getController() || record;
                     collection.remove(records[i]);
                 }
 
@@ -160,10 +160,22 @@ $b(
                     record = this.modelFor(mKey).create();
                     set(record, 'pk', pk);
                     this.add(mKey, record);
-                    record = record.__meta.controller || record;
+                    record = record.getController() || record;
                 }
 
                 return record;
+            },
+
+            createRecord : function (mKey, data, wrap) {
+
+                record = this.modelFor(mKey).create(data);
+                this.add(mKey, record);
+
+                if (wrap === false) {
+                    return record;
+                }
+
+                return record.getController() || record;
             },
 
             filter : function (mKey, q) {
