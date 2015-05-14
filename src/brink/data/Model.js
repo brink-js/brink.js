@@ -128,7 +128,7 @@ $b(
                 return controller;
             },
 
-            serialize : function () {
+            serialize : function (filter) {
 
                 var i,
                     l,
@@ -159,7 +159,7 @@ $b(
                     pMeta = desc.meta();
                     key = pMeta.options.key || p;
 
-                    val = pMeta.serialize.call(this);
+                    val = pMeta.serialize.call(this, filter);
                     if (typeof val !== 'undefined') {
                         set(json, key, val);
                     }
@@ -175,7 +175,7 @@ $b(
                 return json;
             },
 
-            deserialize : function (json, override) {
+            deserialize : function (json, override, filter) {
 
                 var i,
                     p,
@@ -214,8 +214,8 @@ $b(
                     key = pMeta.options.key || p;
                     val = get(json, key);
 
-                    if (typeof val !== 'undefined') {
-                        val = pMeta.deserialize.call(this, val, override);
+                    if (typeof val !== 'undefined' && (!filter || filter(pMeta, key, val))) {
+                        val = pMeta.deserialize.call(this, val, override, filter);
                         meta.pristineData[p] = val;
                     }
                 }

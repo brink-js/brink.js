@@ -21,6 +21,9 @@ $b(
             var hasMany = computed({
 
                 get : function (key) {
+                    if (!this.__meta.data[key]) {
+                        this.__meta.data[key] = Collection.create();
+                    }
                     return this.__meta.data[key];
                 },
 
@@ -85,7 +88,7 @@ $b(
                 isRelationship : true,
                 options : options,
 
-                serialize : function () {
+                serialize : function (filter) {
 
                     var i,
                         val,
@@ -101,7 +104,7 @@ $b(
                     val = get(this, key);
 
                     if (val) {
-                        val = val.serialize(options.embedded);
+                        val = val.serialize(options.embedded, filter);
                     }
 
                     if (val && options.map) {
@@ -123,10 +126,13 @@ $b(
                         val = val2;
                     }
 
-                    return val;
+                    if (!filter || filter(meta, key, val)) {
+                        return val;
+                    }
+
                 },
 
-                deserialize : function (val) {
+                deserialize : function (val, override, filter) {
 
                     var i,
                         j,
@@ -189,7 +195,7 @@ $b(
                                     store.add(mKey, record);
                                 }
 
-                                record.deserialize(val[i]);
+                                record.deserialize(val[i], override, filter);
                             }
 
                             else {

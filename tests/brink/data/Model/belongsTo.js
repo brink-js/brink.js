@@ -183,4 +183,66 @@ describe('belongsTo', function () {
         Light.unregister();
         LightSwitch.unregister();
     });
+
+    it('should allow filtering.', function () {
+
+        var json,
+            Light,
+            LightSwitch,
+            switchInstance;
+
+        Light = $b.Model({
+            modelKey : 'light',
+            isOn : $b.attr({defaultValue : false}),
+            isDimmable : $b.attr({defaultValue : false, internal : true}),
+            voltage : $b.attr({readOnly: true})
+        });
+
+        LightSwitch = $b.Model({
+
+            modelKey : 'lightSwitch',
+            collectionKey : 'lightSwitches',
+
+            light : $b.belongsTo('light', {embedded : true}),
+            linkedTo : $b.belongsTo('light', {embedded: true, readOnly : true}),
+
+            flip : function () {
+                this.light.isOn = !this.light.isOn;
+            }
+        });
+
+        switchInstance = LightSwitch.create();
+        store.add('lightSwitch', switchInstance);
+
+        switchInstance.deserialize({
+            light : {
+                isOn : true,
+                voltage: 1.2
+            },
+            linkedTo: {isOn: true, voltage: 123}
+        }, false, function (meta) {
+            return !meta.options.readOnly;
+        });
+
+        switchInstance.flip();
+        expect(switchInstance.linkedTo).to.equal(undefined);
+        switchInstance.linkedTo = Light.create({voltage: 345});
+
+        json = switchInstance.serialize(function (meta) {
+            return !meta.options.internal;
+        });
+
+        expect(json).to.deep.equal({
+            light : {
+                isOn : false
+            },
+            linkedTo: {
+                isOn: false,
+                voltage: 345
+            }
+        });
+
+        Light.unregister();
+        LightSwitch.unregister();
+    });
 });
