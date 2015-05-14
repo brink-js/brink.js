@@ -126,11 +126,10 @@ $b(
                         val = val2;
                     }
 
-                    if (filter) {
-                        val = filter(key, val, options);
+                    if (!filter || filter(meta, key, val)) {
+                        return val;
                     }
 
-                    return val;
                 },
 
                 deserialize : function (val, override, filter) {

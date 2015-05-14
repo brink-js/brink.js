@@ -274,20 +274,14 @@ describe('hasMany', function () {
 
         post = Post.create();
         store.add('post', post);
-        post.deserialize(json, false, function (k, v, options) {
-            if (options.readOnly) {
-                return;
-            }
-            return v;
+        post.deserialize(json, false, function (meta) {
+            return !meta.options.readOnly;
         });
 
         post.comments.content[3].showTo.content.push(User.create({name: 'bart'}));
 
-        expect(post.serialize(function (key, val, options) {
-            if (options.internal) {
-                return;
-            }
-            return val;
+        expect(post.serialize(function (meta) {
+            return !meta.options.internal;
         })).to.deep.equal({
             author : 1,
             content : 'post...',

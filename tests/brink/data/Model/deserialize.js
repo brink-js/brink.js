@@ -175,7 +175,7 @@ describe('deserialize', function () {
             instance;
 
         Model = $b.Model({
-            a : $b.attr({key : 'a.b.c.d', internal: true})
+            a : $b.attr({key : 'a.b.c.d', readOnly: true})
         });
 
         json = {
@@ -189,11 +189,8 @@ describe('deserialize', function () {
         };
 
         instance = Model.create();
-        instance.deserialize(json, false, function (k, v, options) {
-            if (options.internal) {
-                return;
-            }
-            return v;
+        instance.deserialize(json, false, function (meta) {
+            return !meta.options.readOnly;
         });
 
         expect(instance.serialize()).to.deep.equal({});

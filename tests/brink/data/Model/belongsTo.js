@@ -220,22 +220,16 @@ describe('belongsTo', function () {
                 voltage: 1.2
             },
             linkedTo: {isOn: true, voltage: 123}
-        }, false, function (k, v, options) {
-            if (options.readOnly) {
-                return;
-            }
-            return v;
+        }, false, function (meta) {
+            return !meta.options.readOnly;
         });
 
         switchInstance.flip();
         expect(switchInstance.linkedTo).to.equal(undefined);
         switchInstance.linkedTo = Light.create({voltage: 345});
 
-        json = switchInstance.serialize(function (key, val, options) {
-            if (options.internal) {
-                return;
-            }
-            return val;
+        json = switchInstance.serialize(function (meta) {
+            return !meta.options.internal;
         });
 
         expect(json).to.deep.equal({

@@ -214,11 +214,7 @@ $b(
                     key = pMeta.options.key || p;
                     val = get(json, key);
 
-                    if (filter) {
-                        val = filter(key, val, pMeta.options);
-                    }
-
-                    if (typeof val !== 'undefined') {
+                    if (typeof val !== 'undefined' && (!filter || filter(pMeta, key, val))) {
                         val = pMeta.deserialize.call(this, val, override, filter);
                         meta.pristineData[p] = val;
                     }

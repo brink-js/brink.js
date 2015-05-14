@@ -101,11 +101,8 @@ describe('serialize', function () {
             }
         };
 
-        json = instance.serialize(function (key, value, options) {
-            if (options.internal) {
-                return;
-            }
-            return value;
+        json = instance.serialize(function (meta) {
+            return !meta.options.internal;
         });
         expect(json).to.deep.equal({});
 

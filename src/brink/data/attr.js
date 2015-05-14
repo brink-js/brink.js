@@ -89,11 +89,10 @@ $b(
                 options : options,
 
                 serialize : function (filter) {
-                    var k = attr.meta().key,
+                    var meta = attr.meta(),
+                        k = meta.key,
                         v = get(this, k);
-                    if (filter) {
-                        return filter(k, v, options);
-                    } else {
+                    if (!filter || filter(meta, k, v)) {
                         return v;
                     }
                 },
