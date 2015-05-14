@@ -76,4 +76,39 @@ describe('serialize', function () {
 
         done();
     });
+
+    it('should properly filter nested keys', function (done) {
+
+        var json,
+            Model,
+            expected,
+            instance;
+
+        Model = $b.Model({
+            a : $b.attr({key : 'a.b.c.d', internal: true})
+        });
+
+        instance = Model.create();
+        instance.a = 'test';
+
+        expected = {
+            a : {
+                b : {
+                    c : {
+                        d : 'test'
+                    }
+                }
+            }
+        };
+
+        json = instance.serialize(function (key, value, options) {
+            if (options.internal) {
+                return;
+            }
+            return value;
+        });
+        expect(json).to.deep.equal({});
+
+        done();
+    });
 });

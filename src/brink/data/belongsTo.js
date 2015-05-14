@@ -87,7 +87,7 @@ $b(
                 isRelationship : true,
                 options : options,
 
-                serialize : function () {
+                serialize : function (filter) {
 
                     var key,
                         val,
@@ -101,16 +101,21 @@ $b(
                     if (val && val instanceof $b.__models[mKey]) {
 
                         if (options.embedded) {
-                            return val.serialize();
+                            val = val.serialize(filter);
+                        } else {
+                            val = get(val, 'pk');
                         }
 
-                        return get(val, 'pk');
+                    }
+
+                    if (filter) {
+                        return filter(key, val, options);
                     }
 
                     return val;
                 },
 
-                deserialize : function (val, override) {
+                deserialize : function (val, override, filter) {
 
                     var key,
                         meta,
@@ -123,7 +128,7 @@ $b(
                         record = get(this, key) || $b.__models[mKey].create();
 
                         if (val && typeof val === 'object') {
-                            val = record.deserialize(val, override);
+                            val = record.deserialize(val, override, filter);
                         }
                     }
 

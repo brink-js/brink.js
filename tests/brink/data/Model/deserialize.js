@@ -169,4 +169,36 @@ describe('deserialize', function () {
         instance.destroy();
     });
 
+    it('should apply filterers to properties', function () {
+        var json,
+            Model,
+            instance;
+
+        Model = $b.Model({
+            a : $b.attr({key : 'a.b.c.d', internal: true})
+        });
+
+        json = {
+            a : {
+                b : {
+                    c : {
+                        d : 'test'
+                    }
+                }
+            }
+        };
+
+        instance = Model.create();
+        instance.deserialize(json, false, function (k, v, options) {
+            if (options.internal) {
+                return;
+            }
+            return v;
+        });
+
+        expect(instance.serialize()).to.deep.equal({});
+
+        instance.destroy();
+    });
+
 });

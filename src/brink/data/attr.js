@@ -88,8 +88,14 @@ $b(
                 isAttribute : true,
                 options : options,
 
-                serialize : function () {
-                    return get(this, attr.meta().key);
+                serialize : function (filter) {
+                    var k = attr.meta().key,
+                        v = get(this, k);
+                    if (filter) {
+                        return filter(k, v, options);
+                    } else {
+                        return v;
+                    }
                 },
 
                 deserialize : function (val) {

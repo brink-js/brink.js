@@ -80,14 +80,14 @@ $b(
                 return this.length;
             },
 
-            serialize : function (isEmbedded) {
+            serialize : function (isEmbedded, filter) {
 
                 var a = [];
 
                 this.forEach(function (item) {
 
                     if (isEmbedded) {
-                        a.push(item.serialize());
+                        a.push(item.serialize(filter));
                     }
 
                     else {
