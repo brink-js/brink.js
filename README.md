@@ -360,6 +360,9 @@ Clone this repo, then :
 - [Taka Kojima][gigafied]
 - [Patrick Weygand][derduher]
 
+[gigafied]: https://github.com/gigafied
+[derduher]: https://github.com/derduher
+
 #### License
 
 	This software is released under the terms of the MIT License.
