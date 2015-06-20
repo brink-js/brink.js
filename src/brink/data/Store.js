@@ -54,8 +54,10 @@ $b(
                         record = controller;
                     }
 
-                    set(record, 'store', this);
-                    collection.push(record);
+                    if (!~collection.indexOf(record)) {
+                        set(record, 'store', this);
+                        collection.push(record);
+                    }
                 }
 
                 return collection;
