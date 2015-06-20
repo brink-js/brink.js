@@ -170,6 +170,8 @@ $b(
 
             createRecord : function (mKey, data, wrap) {
 
+                var record;
+
                 record = this.modelFor(mKey).create(data);
                 this.add(mKey, record);
 
