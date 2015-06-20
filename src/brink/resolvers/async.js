@@ -10,7 +10,7 @@
 
     moduleIndex = 0;
 
-    IS_NODE = typeof exports !== 'undefined' && this.exports !== exports;
+    IS_NODE = typeof module !== 'undefined' && module.exports;
 
     _global = IS_NODE ? global : window;
     origRequire = typeof require !== 'undefined' ? require : null;

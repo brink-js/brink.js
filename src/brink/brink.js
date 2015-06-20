@@ -8,8 +8,9 @@ var $b,
     EMPTY_FN;
 
 /*jshint ignore : start */
-IS_NODE = typeof exports !== 'undefined' && this.exports !== exports;
+IS_NODE = typeof module !== 'undefined' && module.exports;
 IS_BROWSER = !IS_NODE;
+
 /*jshint ignore : end */
 
 _global = IS_NODE ? global : window;
