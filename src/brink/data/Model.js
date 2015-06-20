@@ -239,14 +239,14 @@ $b(
 
                 set(this, 'isSaving', true);
 
+                if (isNew && self.store) {
+                    self.store.add(self);
+                }
+
                 return this.adapter.saveRecord(this).then(function (json) {
                     self.deserialize(json);
                     set(self, 'isSaving', false);
                     set(self, 'isLoaded', true);
-
-                    if (isNew && self.store) {
-                        self.store.add(self);
-                    }
                 });
             },
 
