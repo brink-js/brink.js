@@ -103,7 +103,7 @@ $b(
                     }
                 }
 
-                if (this.init) {
+                if (this.init && this.__callInit !== false) {
                     this.init.apply(this, arguments);
                 }
 

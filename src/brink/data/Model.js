@@ -63,6 +63,8 @@ $b(
                     attributes,
                     relationships;
 
+                this.__callInit = false;
+
                 this._super.call(this);
 
                 meta = this.__meta;
@@ -110,6 +112,13 @@ $b(
                 set(this, 'dirtyAttributes', BrinkArray.create());
 
                 meta.isInitialized = true;
+
+                if (this.init) {
+                    this.__callInit = true;
+                    this.init.apply(this, arguments);
+                }
+
+                return this;
             },
 
             serialize : function (filter) {
