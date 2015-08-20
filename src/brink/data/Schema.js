@@ -17,7 +17,6 @@ $b(
                 this.__meta.isSchema = true;
 
                 extend(this, o);
-
                 return this;
             }
 

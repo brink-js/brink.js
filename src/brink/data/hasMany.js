@@ -10,7 +10,7 @@ $b(
 
         'use strict';
 
-        return (function (mKey, options) {
+        return (function make (mKey, options) {
 
             options = options || {};
 
@@ -21,9 +21,11 @@ $b(
             var hasMany = computed({
 
                 get : function (key) {
+
                     if (!this.__meta.data[key]) {
                         this.__meta.data[key] = Collection.create();
                     }
+
                     return this.__meta.data[key];
                 },
 
@@ -243,6 +245,10 @@ $b(
                     }
                 }
             });
+
+            hasMany.clone = function () {
+                return make(mKey, options);
+            };
 
             return hasMany;
         });

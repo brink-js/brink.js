@@ -19,28 +19,36 @@ $b(
         ************************************************************************/
         return function (obj, prop, descriptor) {
 
-            $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
+            var d;
 
-            descriptor.configurable = true;
-            descriptor.enumerable = descriptor.enumerable !== 'undefined' ? descriptor.enumerable : true;
+            d = descriptor;
 
-            if (prop.indexOf('__') === 0) {
-                descriptor.configurable = false;
-                descriptor.enumerable = false;
+            if (d.__meta && (d.__meta.isAttribute || d.__meta.isRelationship)) {
+                d = d.clone();
             }
 
-            descriptor.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
-            descriptor.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
+            $b.assert('Object must be an instance of Brink.Object or Brink.Class', isBrinkInstance(obj));
 
-            descriptor.defaultValue = (
+            d.configurable = true;
+            d.enumerable = descriptor.enumerable !== 'undefined' ? descriptor.enumerable : true;
+
+            if (prop.indexOf('__') === 0) {
+                d.configurable = false;
+                d.enumerable = false;
+            }
+
+            d.get = obj.__defineGetter(prop, descriptor.get || obj.__writeOnly(prop));
+            d.set = obj.__defineSetter(prop, descriptor.set || obj.__readOnly(prop));
+
+            d.defaultValue = (
                 typeof descriptor.defaultValue !== 'undefined' ?
                     descriptor.defaultValue : descriptor.value
             );
 
-            delete descriptor.value;
-            delete descriptor.writable;
+            delete d.value;
+            delete d.writable;
 
-            return descriptor;
+            return d;
         };
     }
 

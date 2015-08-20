@@ -180,9 +180,7 @@ $b(
                                     this.__appendToMeta(v, meta, isThis, true);
                                 }
 
-                                else {
-                                    this.prop.call(this, p, v);
-                                }
+                                this.prop.call(this, p, v);
                             }
                         }
                     }
@@ -387,7 +385,7 @@ $b(
                 meta.bindings = meta.bindings || {};
                 meta.externalBindings = meta.externalBindings || {};
 
-                if (typeof meta.properties[key] !== 'undefined') {
+                if (!val && typeof meta.properties[key] !== 'undefined') {
                     if (typeof val === 'undefined') {
                         return meta.properties[key];
                     }
@@ -403,11 +401,12 @@ $b(
                     };
                 }
 
-                else {
+                val = meta.properties[key] = defineProperty(obj, key, val);
+
+                if (val.__isComputed) {
                     val.__meta.key = key;
                 }
 
-                val = meta.properties[key] = defineProperty(obj, key, val);
                 val.key = key;
 
                 watched = val.watch;

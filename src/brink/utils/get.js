@@ -36,7 +36,6 @@ $b(
 
             var i,
                 k;
-
             key = key.split('.');
 
             for (i = 0; i < key.length; i ++) {

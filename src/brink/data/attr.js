@@ -9,7 +9,7 @@ $b(
 
         'use strict';
 
-        return (function (type, options) {
+        return (function make (type, options) {
 
             if (typeof type === 'object') {
                 options = type;
@@ -24,15 +24,11 @@ $b(
 
                 get : function (key) {
 
-                    var data;
-
-                    data = this.__meta.data;
-
-                    if (typeof data[key] === 'undefined') {
+                    if (typeof this.__meta.data[key] === 'undefined') {
                         return options.defaultValue;
                     }
 
-                    return data[key];
+                    return this.__meta.data[key];
                 },
 
                 set : function (val, key) {
@@ -118,6 +114,10 @@ $b(
                     }
                 }
             });
+
+            attr.clone = function () {
+                return make(type, options);
+            };
 
             return attr;
         });

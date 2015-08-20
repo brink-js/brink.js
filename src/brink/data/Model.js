@@ -67,6 +67,7 @@ $b(
 
                 meta = this.__meta;
                 cMeta = this.constructor.__meta;
+                meta.data = {};
 
                 meta.isInitialized = false;
 
@@ -98,8 +99,6 @@ $b(
                     meta.attributes = cMeta.attributes = attributes;
                     meta.relationships = cMeta.relationships = relationships;
                 }
-
-                meta.data = {};
 
                 meta.pristineData = {};
                 meta.pristineContent = {};

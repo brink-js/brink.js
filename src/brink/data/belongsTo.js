@@ -9,7 +9,7 @@ $b(
 
         'use strict';
 
-        return (function (mKey, options) {
+        return (function make (mKey, options) {
 
             options = options || {};
 
@@ -152,6 +152,10 @@ $b(
                     }
                 }
             });
+
+            belongsTo.clone = function () {
+                return make(mKey, options);
+            };
 
             return belongsTo;
         });
