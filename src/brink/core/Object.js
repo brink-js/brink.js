@@ -6,6 +6,7 @@ $b(
         '../utils/get',
         '../utils/set',
         '../utils/clone',
+        '../utils/extend',
         '../utils/merge',
         '../utils/bindTo',
         '../utils/flatten',
@@ -24,6 +25,7 @@ $b(
         get,
         set,
         clone,
+        extend,
         merge,
         bindTo,
         flatten,
@@ -146,7 +148,7 @@ $b(
                 this.__appendToMeta(this, this.__buildMeta(), true);
             },
 
-            __appendToMeta : function (o, meta, isThis) {
+            __appendToMeta : function (o, meta, isThis, deep) {
 
                 var p,
                     v;
@@ -164,7 +166,7 @@ $b(
                         }
                     }
 
-                    else if (o.hasOwnProperty(p)) {
+                    else if (deep || o.hasOwnProperty(p)) {
 
                         if (p !== '__meta') {
 
@@ -175,7 +177,7 @@ $b(
                             else {
 
                                 if (v && v.__meta && v.__meta.isSchema) {
-                                    this.__appendToMeta(v, meta, isThis);
+                                    this.__appendToMeta(v, meta, isThis, true);
                                 }
 
                                 else {
