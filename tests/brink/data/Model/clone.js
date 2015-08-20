@@ -11,8 +11,10 @@ describe('clone', function () {
             instance4;
 
         Model = $b.Model({
-            a : $b.attr(),
-            b : $b.attr()
+            schema : $b.Schema.create({
+                a : $b.attr(),
+                b : $b.attr()
+            })
         });
 
         json = [

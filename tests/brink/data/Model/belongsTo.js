@@ -19,7 +19,10 @@ describe('belongsTo', function () {
 
         Light = $b.Model({
             modelKey : 'light',
-            isOn : $b.attr({defaultValue : false})
+
+            schema : $b.Schema.create({
+                isOn : $b.attr({defaultValue : false})
+            })
         });
 
         LightSwitch = $b.Model({
@@ -27,7 +30,9 @@ describe('belongsTo', function () {
             modelKey : 'lightSwitch',
             collectionKey : 'lightSwitches',
 
-            light : $b.belongsTo('light'),
+            schema : $b.Schema.create({
+                light : $b.belongsTo('light')
+            }),
 
             flip : function () {
                 this.light.isOn = !this.light.isOn;
@@ -63,7 +68,10 @@ describe('belongsTo', function () {
 
         Light = $b.Model({
             modelKey : 'light',
-            isOn : $b.attr({defaultValue : false})
+
+            schema : $b.Schema.create({
+                isOn : $b.attr({defaultValue : false})
+            })
         });
 
         LightSwitch = $b.Model({
@@ -71,7 +79,9 @@ describe('belongsTo', function () {
             modelKey : 'lightSwitch',
             collectionKey : 'lightSwitches',
 
-            light : $b.belongsTo('light'),
+            schema : $b.Schema.create({
+                light : $b.belongsTo('light')
+            }),
 
             flip : function () {
                 this.light.isOn = !this.light.isOn;
@@ -104,7 +114,10 @@ describe('belongsTo', function () {
 
         Light = $b.Model({
             modelKey : 'light',
-            isOn : $b.attr({defaultValue : false})
+
+            schema : $b.Schema.create({
+                isOn : $b.attr({defaultValue : false})
+            })
         });
 
         LightSwitch = $b.Model({
@@ -112,7 +125,9 @@ describe('belongsTo', function () {
             modelKey : 'lightSwitch',
             collectionKey : 'lightSwitches',
 
-            light : $b.belongsTo('light', {embedded : true}),
+            schema : $b.Schema.create({
+                light : $b.belongsTo('light', {embedded : true})
+            }),
 
             flip : function () {
                 this.light.isOn = !this.light.isOn;
@@ -146,7 +161,11 @@ describe('belongsTo', function () {
 
         Light = $b.Model({
             modelKey : 'light',
-            isOn : $b.attr({defaultValue : false})
+
+            schema : $b.Schema.create({
+                isOn : $b.attr({defaultValue : false})
+            })
+
         });
 
         LightSwitch = $b.Model({
@@ -154,7 +173,9 @@ describe('belongsTo', function () {
             modelKey : 'lightSwitch',
             collectionKey : 'lightSwitches',
 
-            light : $b.belongsTo('light', {embedded : true}),
+            schema : $b.Schema.create({
+                light : $b.belongsTo('light', {embedded : true})
+            }),
 
             flip : function () {
                 this.light.isOn = !this.light.isOn;
@@ -193,9 +214,12 @@ describe('belongsTo', function () {
 
         Light = $b.Model({
             modelKey : 'light',
-            isOn : $b.attr({defaultValue : false}),
-            isDimmable : $b.attr({defaultValue : false, internal : true}),
-            voltage : $b.attr({readOnly: true})
+
+            schema : $b.Schema.create({
+                isOn : $b.attr({defaultValue : false}),
+                isDimmable : $b.attr({defaultValue : false, internal : true}),
+                voltage : $b.attr({readOnly: true})
+            })
         });
 
         LightSwitch = $b.Model({
@@ -203,8 +227,10 @@ describe('belongsTo', function () {
             modelKey : 'lightSwitch',
             collectionKey : 'lightSwitches',
 
-            light : $b.belongsTo('light', {embedded : true}),
-            linkedTo : $b.belongsTo('light', {embedded: true, readOnly : true}),
+            schema : $b.Schema.create({
+                light : $b.belongsTo('light', {embedded : true}),
+                linkedTo : $b.belongsTo('light', {embedded: true, readOnly : true})
+            }),
 
             flip : function () {
                 this.light.isOn = !this.light.isOn;

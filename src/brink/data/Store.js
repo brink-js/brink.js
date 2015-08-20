@@ -3,13 +3,12 @@ $b(
     [
         './Model',
         './Collection',
-        './ModelController',
         '../core/Class',
         '../utils/get',
         '../utils/set'
     ],
 
-    function (Model, Collection, ModelController, Class, get, set) {
+    function (Model, Collection, Class, get, set) {
 
         'use strict';
 
@@ -29,7 +28,6 @@ $b(
                 var i,
                     l,
                     record,
-                    controller,
                     collection;
 
                 if (arguments.length === 1) {
@@ -47,12 +45,6 @@ $b(
                 for (i = 0, l = records.length; i < l; i ++) {
 
                     record = records[i];
-
-                    controller = record.getController();
-
-                    if (controller) {
-                        record = controller;
-                    }
 
                     if (!~collection.indexOf(record)) {
                         set(record, 'store', this);
@@ -84,7 +76,6 @@ $b(
 
                 for (i = 0, l = records.length; i < l; i ++) {
                     record = records[i];
-                    record = record.getController() || record;
                     collection.remove(records[i]);
                 }
 
@@ -162,24 +153,19 @@ $b(
                     record = this.modelFor(mKey).create();
                     set(record, 'pk', pk);
                     this.add(mKey, record);
-                    record = record.getController() || record;
                 }
 
                 return record;
             },
 
-            createRecord : function (mKey, data, wrap) {
+            createRecord : function (mKey, data) {
 
                 var record;
 
                 record = this.modelFor(mKey).create(data);
                 this.add(mKey, record);
 
-                if (wrap === false) {
-                    return record;
-                }
-
-                return record.getController() || record;
+                return record;
             },
 
             filter : function (mKey, q) {

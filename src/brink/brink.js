@@ -154,6 +154,7 @@ $b.init = function (deps, cb) {
             'brink/data/belongsTo',
             'brink/data/hasMany',
             'brink/data/Model',
+            'brink/data/Schema',
             'brink/data/Store',
             'brink/data/Collection',
 

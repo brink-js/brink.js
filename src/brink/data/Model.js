@@ -1,7 +1,6 @@
 $b(
 
     [
-        './ModelController',
         '../core/Class',
         '../core/Array',
         '../utils/get',
@@ -10,7 +9,7 @@ $b(
         '../utils/computed'
     ],
 
-    function (ModelController, Class, BrinkArray, get, set, bindTo, computed) {
+    function (Class, BrinkArray, get, set, bindTo, computed) {
 
         'use strict';
 
@@ -112,20 +111,6 @@ $b(
                 set(this, 'dirtyAttributes', BrinkArray.create());
 
                 meta.isInitialized = true;
-            },
-
-            getController : function () {
-
-                var controller = this.__meta.controller;
-
-                if (!controller) {
-                    if (!this.constructor.controllerClass) {
-                        return null;
-                    }
-                    controller = this.constructor.controllerClass.create({model : this});
-                }
-
-                return controller;
             },
 
             serialize : function (filter) {
@@ -345,11 +330,8 @@ $b(
 
         Model.extend = function () {
 
-            var p,
-                props,
-                meta,
+            var meta,
                 proto,
-                toProxy,
                 SubClass;
 
             SubClass = Class.extend.apply(this, arguments);
@@ -379,21 +361,6 @@ $b(
             if (proto.adapter) {
                 SubClass.adapter = proto.adapter;
                 proto.adapter.registerModel(SubClass);
-            }
-
-            if (proto.controllerClass) {
-
-                toProxy = {};
-
-                props = proto.__meta.properties;
-
-                for (p in props) {
-                    toProxy[p] = bindTo('model.' + p);
-                }
-
-                SubClass.controllerClass = proto.controllerClass.extend(toProxy);
-
-                delete proto.controllerClass;
             }
 
             return SubClass;

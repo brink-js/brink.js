@@ -6,9 +6,11 @@ describe('defaults', function () {
             instance;
 
         Model = $b.Model({
-            a : $b.attr({defaultValue : 'a'}),
-            b : $b.attr({defaultValue : 'b'}),
-            c : $b.attr({defaultValue : 'c'})
+            schema : $b.Schema.create({
+                a : $b.attr({defaultValue : 'a'}),
+                b : $b.attr({defaultValue : 'b'}),
+                c : $b.attr({defaultValue : 'c'})
+            })
         });
 
         instance = Model.create();
@@ -26,9 +28,12 @@ describe('defaults', function () {
             instance;
 
         Model = $b.Model({
-            a : $b.attr({defaultValue : 'a'}),
-            b : $b.attr({defaultValue : 'b'}),
-            c : $b.attr({defaultValue : 'c'})
+
+            schema : $b.Schema.create({
+                a : $b.attr({defaultValue : 'a'}),
+                b : $b.attr({defaultValue : 'b'}),
+                c : $b.attr({defaultValue : 'c'})
+            })
         });
 
         instance = Model.create({a : 'a2', b : 'b2'});
@@ -46,9 +51,11 @@ describe('defaults', function () {
             instance;
 
         Model = $b.Model({
-            a : $b.attr({defaultValue : 'a'}),
-            b : $b.attr({defaultValue : 'b'}),
-            c : $b.attr({defaultValue : 'c'})
+            schema : $b.Schema.create({
+                a : $b.attr({defaultValue : 'a'}),
+                b : $b.attr({defaultValue : 'b'}),
+                c : $b.attr({defaultValue : 'c'})
+            })
         });
 
         instance = Model.create();

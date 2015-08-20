@@ -173,7 +173,14 @@ $b(
                             }
 
                             else {
-                                this.prop.call(this, p, v);
+
+                                if (v && v.__meta && v.__meta.isSchema) {
+                                    this.__appendToMeta(v, meta, isThis);
+                                }
+
+                                else {
+                                    this.prop.call(this, p, v);
+                                }
                             }
                         }
                     }
