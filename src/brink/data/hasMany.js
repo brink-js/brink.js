@@ -10,6 +10,15 @@ $b(
 
         'use strict';
 
+        /***********************************************************************
+        Define a Schema hasMany relationship (one to many).
+
+        @method hasMany
+        @param  {String} modelKey The modelKey of the relationship.
+        @param  {Object} options Options for the relationship.
+        @return {ComputedProperty}
+        ************************************************************************/
+
         return (function make (mKey, options) {
 
             options = options || {};

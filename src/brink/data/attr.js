@@ -9,6 +9,15 @@ $b(
 
         'use strict';
 
+        /***********************************************************************
+        Define a Schema attribute.
+
+        @method attr
+        @param  {Type} type The value type of the attribute.
+        @param  {Object} options Options for the attribute
+        @return {ComputedProperty}
+        ************************************************************************/
+
         return (function make (type, options) {
 
             if (typeof type === 'object') {

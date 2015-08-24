@@ -6,6 +6,7 @@
   "options": {
     "paths": [
       "src/brink/core",
+      "src/brink/data",
       "src/brink/utils"
     ],
     "outdir": "./docs/api",

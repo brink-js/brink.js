@@ -9,6 +9,15 @@ $b(
 
         'use strict';
 
+        /***********************************************************************
+        Define a Schema belongsTo relationship (many to one).
+
+        @method belongsTo
+        @param  {String} modelKey The modelKey of the relationship.
+        @param  {Object} options Options for the relationship.
+        @return {ComputedProperty}
+        ************************************************************************/
+
         return (function make (mKey, options) {
 
             options = options || {};

@@ -11,6 +11,17 @@ $b(
 
         var Schema = CoreObject.extend({
 
+            /***********************************************************************
+
+            Schemas allow you to define your models properties and relationships.
+
+            @module Brink
+            @submodule data
+
+            @class Brink.Schema
+            @constructor
+            ************************************************************************/
+
             __init : function (o) {
 
                 this.__meta = this.__meta || {};

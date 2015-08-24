@@ -7,7 +7,7 @@
 - [Computed Properties](#computedProps)
 - [Inheritance](#inheritance)
 - [Publish/Subscribe](#pubsub) (promise-based)
-- Models + Collections
+- [Data Layer][#data]
 - No `get()` or `set()`, uses ES5 property descriptors
 - IE9 + support
 - 20kb (minified and gzipped)
@@ -334,6 +334,198 @@ var Subscriber = $b.Class.extend({
 });
 
 ````
+
+<a name="dataBinding"></a>
+#### Data Layer
+
+Brink's Model, Store and Adapter Classes offer you a flexible and easy way to work with your data layer.
+
+Using Brink.attr(), Brink.belongsTo() and Brink.hasMany() you can define simple or complex model
+structures.
+
+
+```javascript
+
+var MyStore = $b.Store.create();
+
+var Person = $b.Model.extend({
+
+    primaryKey : 'id',
+    modelKey : 'person',
+
+    adapter : $b.RESTAdapter.create(),
+    store : MyStore,
+
+    schema : $b.Schema.create({
+        firstName : $b.attr(String),
+        lastName : $b.attr(String),
+
+        children : $b.hasMany('person'),
+        spouse : $b.belongsTo('person')
+    })
+});
+
+var dad = Person.create({
+    firstName : 'John',
+    lastName : 'Doe'
+});
+
+var mom = Person.create({
+    firstName : 'Jane',
+    lastName : 'Doe'
+});
+
+var child1 = Person.create({
+    firstName : 'Mary',
+    lastName  : 'Doe'
+});
+
+var child2 = Person.create({
+    firstName : 'Bob',
+    lastName  : 'Doe'
+});
+
+dad.spouse = mom;
+dad.children.push(child1, child2);
+
+$b.Q.all([
+    mom.save(),
+    child1.save(),
+    child2.save()
+]).then(function () {
+    dad.save();
+});
+
+```
+
+Both `hasMany()` and `belongsTo()` relationships serialize as the primary key values of the records they represent.
+
+This is why we call `save()` on the mom and children before we save the `dad` record, otherwise they would not have primary keys.
+
+The reverse happens when we de-serialize. This means that if we were to do :
+
+```javascript
+
+var dad = Person.create();
+dad.deserialize({spouse : '123'});
+
+console.log(dad.spouse);
+
+```
+`dad.spouse` would be a Person instance, not the String value we gave it when we deserialized.
+
+If there is a record with that primary key value in the Store, it will be used, however if there is no
+corresponding record in the store, then a new record will be created with it's primary key set to the correct value.
+
+Thus, expanding on the above, if we wanted to get the name of the spouse we could do :
+
+```javascript
+
+var dad = Person.create();
+dad.deserialize({spouse : '123'});
+
+function logSpouseName () {
+    console.log(dad.spouse.firstName + ' ' + dad.spouse.lastName);    
+}
+
+if (dad.spouse.isLoaded) {
+    logSpouseName();
+}
+
+else {
+    dad.spouse.fetch().then(logSpouseName);
+}
+
+```
+
+`Brink.attr()`, `Brink.hasMany()` and Brink.belongsTo()` all take a second argument of `options` when you
+are declaring them.
+
+```javascript
+
+var MyStore = $b.Store.create();
+
+var Name = $b.Model.extend({
+    primaryKey : null,
+    schema : $b.Schema.create({
+        firstName  : $b.attr(String, {key : 'first_name', defaultValue : 'John'}),
+        lastName  : $b.attr(String, {key : 'last_name', defaultValue : 'Doe'})
+    })    
+});
+
+var Person = $b.Model.extend({
+
+    primaryKey : 'id',
+    modelKey : 'person',
+
+    adapter : $b.RESTAdapter.create(),
+    store : MyStore,
+
+    schema : $b.Schema.create({
+        name  : $b.belongsTo('name', {embedded : true})
+    })
+});
+
+```
+
+`options` which apply to all `attr()`, `belongsTo()` and `hasMany()` are `key` and `defaultValue`. 
+
+`defaultValue` allows you to specify exactly that, a default value to use for all records created.
+
+`key` allows you to specify a different 
+property name to use in your model, without affecting the serialization or deserialization of your models.
+
+```javascript
+
+var name = Name.create();
+name.deserialize({first_name : 'Bob', last_name : 'Smith'})l
+
+console.log(name.firstName); // Bob
+console.log(name.lastName); // Smith
+
+console.log(name.serialize()); // {first_name : 'Bob', last_name : 'Smith'}
+
+```
+
+`hasMany()` and `belongsTo()` relationships have another option they can use, `embedded`.
+
+Setting `embedded` to true overrides the default behavior of relationships in that they won't serialize
+and deserialize as primary keys, instead they will `serialize()` the whole record nested.
+
+```javascript
+
+var MyStore = $b.Store.create();
+
+var Name = $b.Model.extend({
+    primaryKey : null,
+    schema : $b.Schema.create({
+        firstName  : $b.attr(String, {key : 'first_name', defaultValue : 'John'}),
+        lastName  : $b.attr(String, {key : 'last_name', defaultValue : 'Doe'})
+    })    
+});
+
+var Person = $b.Model.extend({
+
+    primaryKey : 'id',
+    modelKey : 'person',
+
+    adapter : $b.RESTAdapter.create(),
+    store : MyStore,
+
+    schema : $b.Schema.create({
+        name  : $b.belongsTo('name', {embedded : true})
+    })
+});
+
+var person = Person.create();
+person.deserialize({name : {
+    first_name : 'Bob',
+    last_name : 'Smith'  
+}});
+
+console.log(person.serialize()); // {name : {first_name : 'Bob', last_name : 'Smith'}}
+
+```
 
 ----------------------------
 

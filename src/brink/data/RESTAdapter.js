@@ -11,6 +11,19 @@ $b(
 
         return Adapter({
 
+            /***********************************************************************
+
+            A basic RESTAdapter implementation, this can be used as a good reference point
+            for implementing your own adapters or extended to modify the default behavior.
+
+            @class Brink.RESTAdapter
+            @extends Brink.Adapter
+            @constructor
+
+            @module Brink
+            @submodule data
+            ************************************************************************/
+
             host : '',
             prefix : '',
             pluralizeURLs : false,
