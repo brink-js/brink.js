@@ -72,14 +72,16 @@ $b(
                         }
                     }
 
-                    if (
-                        store &&
-                        (typeof val === 'string' || typeof val === 'number')
-                    ) {
+                    if (store && val && !(val instanceof $b.__models[mKey])) {
+
+                        if (typeof val !== 'string' && typeof val !== 'number') {
+                            val = String(val);
+                        }
+
                         val = store.findOrCreate(mKey, val);
                     }
 
-                    if (val) {
+                    else if (val) {
                         $b.assert(
                             'Must be a model of type "' + mKey + '".',
                             val instanceof $b.__models[mKey]
