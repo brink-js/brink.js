@@ -35,7 +35,6 @@ $b(
                 this.__store = {};
             },
 
-
             /***********************************************************************
             Clear the store. Removes all record instances in the store.
             This does not in any way affect the persistence layer or call any methods
@@ -335,7 +334,7 @@ $b(
                 return collection;
             },
 
-           /***********************************************************************
+            /***********************************************************************
             Given a modelKey or collectionKey returns the corresponding Model Class.
 
             @method modelFor

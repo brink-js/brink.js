@@ -112,7 +112,6 @@ $b(
 
             deleteRecord : $b.F,
 
-
             /***********************************************************************
             Saves a record in your persistence layer.
 

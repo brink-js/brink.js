@@ -203,7 +203,6 @@ $b(
 
             isDeleting : false,
 
-
             /***********************************************************************
             Whether or not the record has one or more changed properties since the
             last save() or fetch().
@@ -216,7 +215,6 @@ $b(
             isDirty : computed(function () {
                 return !!get(this, 'dirtyAttributes.length');
             }, 'dirtyAttributes.length'),
-
 
             /***********************************************************************
             Opposite of isDirty.
@@ -241,7 +239,6 @@ $b(
             isNew : computed(function () {
                 return !get(this, 'pk');
             }, 'pk'),
-
 
             /***********************************************************************
             Get the primary key value of the record.
@@ -547,7 +544,6 @@ $b(
 
                 return this.constructor.create(json);
             },
-
 
             /***********************************************************************
             Reverts all changes made to this record since the last save() or fetch().
