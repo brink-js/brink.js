@@ -25,6 +25,22 @@ $b(
             var belongsTo = computed({
 
                 get : function (key) {
+
+                    var val;
+
+                    if (typeof this.__meta.data[key] === 'undefined') {
+
+                        if (typeof options.defaultValue !== 'undefined') {
+                            val = options.defaultValue;
+                        }
+
+                        else {
+                            val = $b.__models[mKey].create();
+                        }
+
+                        this.__meta.data[key] = val;
+                    }
+
                     return this.__meta.data[key];
                 },
 
@@ -113,7 +129,9 @@ $b(
 
                         if (options.embedded) {
                             val = val.serialize(filter);
-                        } else {
+                        }
+
+                        else {
                             val = get(val, 'pk');
                         }
 
@@ -122,7 +140,6 @@ $b(
                     if (!filter || filter(meta, key, val)) {
                         return val;
                     }
-
                 },
 
                 deserialize : function (val, override, filter) {
@@ -135,6 +152,7 @@ $b(
                     key = meta.key;
 
                     if (options.embedded) {
+
                         record = get(this, key) || $b.__models[mKey].create();
 
                         if (val && typeof val === 'object') {

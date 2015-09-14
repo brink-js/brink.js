@@ -229,7 +229,8 @@ describe('belongsTo', function () {
 
             schema : $b.Schema.create({
                 light : $b.belongsTo('light', {embedded : true}),
-                linkedTo : $b.belongsTo('light', {embedded: true, readOnly : true})
+                linkedTo : $b.belongsTo('light', {embedded: true, readOnly : true}),
+                linkedToNull : $b.belongsTo('light', {embedded: true, defaultValue : null})
             }),
 
             flip : function () {
@@ -251,7 +252,8 @@ describe('belongsTo', function () {
         });
 
         switchInstance.flip();
-        expect(switchInstance.linkedTo).to.equal(undefined);
+        expect(switchInstance.linkedTo).to.be.an.instanceOf(Light);
+        expect(switchInstance.linkedToNull).to.equal(null);
         switchInstance.linkedTo = Light.create({voltage: 345});
 
         json = switchInstance.serialize(function (meta) {
@@ -265,7 +267,8 @@ describe('belongsTo', function () {
             linkedTo: {
                 isOn: false,
                 voltage: 345
-            }
+            },
+            linkedToNull : null
         });
 
         Light.unregister();
