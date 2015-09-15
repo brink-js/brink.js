@@ -34,11 +34,13 @@ $b(
                             val = options.defaultValue;
                         }
 
-                        else {
+                        else if (options.embedded) {
                             val = $b.__models[mKey].create();
                         }
 
-                        this.__meta.data[key] = val;
+                        if (typeof val !== 'undefined') {
+                            this.__meta.data[key] = val;
+                        }
                     }
 
                     return this.__meta.data[key];
