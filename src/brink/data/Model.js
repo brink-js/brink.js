@@ -439,6 +439,10 @@ $b(
                     set(this, 'pk', json[this.primaryKey]);
                 }
 
+                if (override) {
+                    set(self, 'dirtyAttributes.content', []);
+                }
+
                 set(this, 'isLoaded', true);
 
                 return this;
@@ -469,7 +473,6 @@ $b(
                     self.deserialize(json, true);
                     set(self, 'isSaving', false);
                     set(self, 'isLoaded', true);
-                    set(self, 'dirtyAttributes.content', []);
                 });
             },
 
@@ -480,7 +483,7 @@ $b(
             @return {Promise}
             ************************************************************************/
 
-            fetch : function () {
+            fetch : function (override) {
 
                 var self,
                     isNew;
@@ -494,7 +497,7 @@ $b(
 
                 return this.adapter.fetchRecord(this).then(function (json) {
 
-                    self.deserialize(json);
+                    self.deserialize(json, !!override);
                     set(self, 'isFetching', false);
                     set(self, 'isLoaded', true);
                 });
