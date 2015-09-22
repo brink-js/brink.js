@@ -459,7 +459,6 @@ $b(
 
                 self = this;
                 isNew = get(this, 'isNew');
-
                 set(this, 'isSaving', true);
 
                 if (isNew && self.store) {
@@ -467,9 +466,10 @@ $b(
                 }
 
                 return this.adapter.saveRecord(this).then(function (json) {
-                    self.deserialize(json);
+                    self.deserialize(json, true);
                     set(self, 'isSaving', false);
                     set(self, 'isLoaded', true);
+                    set(self, 'dirtyAttributes.content', []);
                 });
             },
 
