@@ -440,7 +440,7 @@ $b(
                 }
 
                 if (override) {
-                    set(self, 'dirtyAttributes.content', []);
+                    set(this, 'dirtyAttributes.content', []);
                 }
 
                 set(this, 'isLoaded', true);
