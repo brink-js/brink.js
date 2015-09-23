@@ -6,7 +6,7 @@ $b(
 
         'use strict';
 
-        return function (opts) {
+        return function (opts, done) {
 
             var fs = require('fs'),
                 path = require('path'),
@@ -30,6 +30,10 @@ $b(
             /* jscs : enable */
 
             function replaceModules (modules, src) {
+
+                if (!modules || !modules.length) {
+                    return src;
+                }
 
                 return src.replace(
                     /([t| ]+)(\/\*{{modules}}\*\/)([\s\S]+?)(\/\*{{\/modules}}\*\/)/,
@@ -78,7 +82,7 @@ $b(
 
             includer(
 
-                __dirname + '/../brink.js',
+                __dirname + '/../browser.js',
 
                 {
                     wrap : wrap
@@ -112,6 +116,8 @@ $b(
 
                                 if (matches(meta.id)) {
 
+                                    modules.push(meta.id);
+
                                     moduleSrc = fs.readFileSync(require.resolve(meta.url), {encoding : 'utf8'});
                                     moduleSrc = replaceAnonymousDefine(meta.id, moduleSrc);
 
@@ -142,6 +148,10 @@ $b(
                         }
 
                         console.log('');
+
+                        if (done) {
+                            done();
+                        }
                     };
 
                     if (opts.modules.length) {

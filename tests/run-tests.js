@@ -5,7 +5,7 @@ var p,
     mocha,
     timeout;
 
-require('require-main')();
+require('../src/brink/node.js');
 
 fs = require('fs');
 path = require('path');

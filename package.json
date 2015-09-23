@@ -2,7 +2,7 @@
   "name": "brink",
   "version": "0.3.7",
   "description": "",
-  "main": "./src/brink/brink.js",
+  "main": "./brink.js",
   "directories": {
     "lib": "./brink"
   },
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/gigafied/brink.js",
   "dependencies": {},
   "devDependencies": {
-    "blanket": "git+ssh://git@github.com:alex-seville/blanket.git",
+    "blanket": "^1.1.7",
     "browserify": "~3.30.1",
     "chai": "~2.2.0",
     "chalk": "^1.0.0",
@@ -36,7 +36,6 @@
     "log-symbols": "^1.0.0",
     "minimatch": "~0.2.14",
     "mocha": "~2.2.1",
-    "require-main": "^0.1.1",
     "string-length": "^1.0.0",
     "text-table": "^0.2.0",
     "uglify-js": "~2.4.12",

@@ -4,30 +4,17 @@ var $b,
     _global,
     CONFIG,
     IS_NODE,
-    IS_BROWSER,
     EMPTY_FN;
 
 /*jshint ignore : start */
 IS_NODE = typeof module !== 'undefined' && module.exports;
-IS_BROWSER = !IS_NODE;
 /*jshint ignore : end */
-
-_global = IS_NODE ? global : window;
-CONFIG = _global.Brink || _global.$b || {};
-
-CONFIG.IS_NODE = IS_NODE;
-CONFIG.IS_BROWSER = IS_BROWSER;
 
 EMPTY_FN = function () {};
 
-if (IS_NODE) {
-    _global = global;
-    _global.include = _global.include || require;
-}
+_global = IS_NODE ? global : window;
 
-else {
-    _global = window;
-}
+CONFIG = _global.Brink || _global.$b || {};
 
 $b = _global.$b = _global.Brink = function () {
 
@@ -56,35 +43,6 @@ $b = _global.$b = _global.Brink = function () {
     return $b;
 };
 
-if (IS_NODE) {
-    process.env.NODE_PATH = __dirname + '/src/';
-    require('./polyfills/Array.forEach.js');
-    require('./polyfills/Array.filter.js');
-    require('./polyfills/Array.indexOf.js');
-    require('./polyfills/Array.isArray.js');
-    require('./polyfills/Document.registerElement.js');
-    require('./polyfills/Function.bind.js');
-    require('./polyfills/requestAnimationFrame.js');
-    require('./resolvers/async');
-}
-
-else {
-
-    /********* POLYFILLS *********/
-
-    include('./polyfills/Array.forEach.js');
-    include('./polyfills/Array.filter.js');
-    include('./polyfills/Array.indexOf.js');
-    include('./polyfills/Array.isArray.js');
-    include('./polyfills/Document.registerElement.js');
-    include('./polyfills/Function.bind.js');
-    include('./polyfills/requestAnimationFrame.js');
-
-    /********* RESOLVER *********/
-
-    include('./resolvers/async');
-}
-
 $b.F = EMPTY_FN;
 
 /*
@@ -94,10 +52,6 @@ $b.F = EMPTY_FN;
 */
 
 $b.assert = $b.error = EMPTY_FN;
-
-$b.require.config(CONFIG);
-
-$b.define('$b', $b);
 
 $b.configure = function (o) {
 
@@ -207,19 +161,5 @@ $b.init = function (deps, cb) {
 };
 
 if (IS_NODE) {
-
-    $b.build = function () {
-
-        var args = arguments;
-
-        $b.init(function () {
-            $b.build.apply(null, args);
-        });
-    };
-
-    $b.configure({paths : {brink : __dirname, plugins : __dirname + '/amd'}});
-    $b.init();
-    $b.configure({paths : null});
-
     module.exports = $b;
 }
