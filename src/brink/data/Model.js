@@ -470,6 +470,7 @@ $b(
                     self.deserialize(json);
                     set(self, 'isSaving', false);
                     set(self, 'isLoaded', true);
+                    return self;
                 });
             },
 
@@ -497,6 +498,7 @@ $b(
                     self.deserialize(json);
                     set(self, 'isFetching', false);
                     set(self, 'isLoaded', true);
+                    return self;
                 });
             },
 
@@ -524,6 +526,7 @@ $b(
                     }
 
                     self.destroy();
+                    return self;
                 });
             },
 
