@@ -9033,6 +9033,7 @@
                         self.deserialize(json, true);
                         set(self, 'isSaving', false);
                         set(self, 'isLoaded', true);
+                        return self;
                     });
                 },
     
@@ -9060,6 +9061,7 @@
                         self.deserialize(json, !!override);
                         set(self, 'isFetching', false);
                         set(self, 'isLoaded', true);
+                        return self;
                     });
                 },
     
@@ -9087,6 +9089,7 @@
                         }
     
                         self.destroy();
+                        return self;
                     });
                 },
     
