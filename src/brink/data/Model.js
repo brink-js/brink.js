@@ -525,7 +525,7 @@ $b(
                 return this.adapter.deleteRecord(this).then(function () {
 
                     if (self.store) {
-                        self.store.remove(this);
+                        self.store.remove(self);
                     }
 
                     self.destroy();
