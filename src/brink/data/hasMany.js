@@ -98,6 +98,7 @@ $b(
                 type : 'hasMany',
                 isRelationship : true,
                 options : options,
+                relationshipKey : mKey,
 
                 serialize : function (filter) {
 

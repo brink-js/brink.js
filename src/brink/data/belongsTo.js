@@ -115,6 +115,7 @@ $b(
                 type : 'belongsTo',
                 isRelationship : true,
                 options : options,
+                relationshipKey : mKey,
 
                 serialize : function (filter) {
 
