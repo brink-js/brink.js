@@ -9001,10 +9001,6 @@
                         set(this, 'pk', json[this.primaryKey]);
                     }
     
-                    if (override) {
-                        set(this, 'dirtyAttributes.content', []);
-                    }
-    
                     set(this, 'isLoaded', true);
     
                     return this;
@@ -9033,6 +9029,7 @@
     
                     return this.adapter.saveRecord(this).then(function (json) {
                         self.deserialize(json, true);
+                        set(self, 'dirtyAttributes.content', []);
                         set(self, 'isSaving', false);
                         set(self, 'isLoaded', true);
                         return self;
@@ -9061,6 +9058,9 @@
                     return this.adapter.fetchRecord(this).then(function (json) {
     
                         self.deserialize(json, !!override);
+                        if (!!override) {
+                            set(self, 'dirtyAttributes.content', []);
+                        }
                         set(self, 'isFetching', false);
                         set(self, 'isLoaded', true);
                         return self;
