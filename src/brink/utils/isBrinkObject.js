@@ -15,7 +15,7 @@ $b(
         @return {Boolean} Whether or not the value is a `Brink.Object` subclass.
         ************************************************************************/
         return function (obj) {
-            return obj.__isObject;
+            return obj.__meta && obj.__meta.isBrinkObject;
         };
     }
 

@@ -140,6 +140,7 @@ $b(
                 };
 
                 meta.memoizedBindings = {};
+                meta.isBrinkObject = true;
 
                 return meta;
             },
