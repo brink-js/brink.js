@@ -280,10 +280,15 @@ $b(
                 return !!~meta.references.indexOf(obj);
             },
 
-            __addReference : function (obj, key) {
+            __addReference : function (obj, key, bubbleEvents) {
                 var meta = this.__meta;
                 meta.references.push(obj);
                 meta.referenceKeys.push(key);
+
+                if (bubbleEvents) {
+                    meta.eventParents = meta.eventParents || [];
+                    meta.eventParents.push(obj);
+                }
             },
 
             __removeReference : function (obj) {
@@ -699,7 +704,7 @@ $b(
             /**
             * Trigger pseudo event
             */
-            trigger : function (name, data) {
+            trigger : function (name, data, target) {
 
                 var i,
                     l,
@@ -708,6 +713,7 @@ $b(
                     listeners;
 
                 tmp = name.split(':');
+                target = target || this;
 
                 while (tmp.length) {
 
@@ -721,12 +727,18 @@ $b(
                             listeners[i].call(null, {
                                 name : evt,
                                 data : data || null,
-                                currentTarget : this
+                                currentTarget : target
                             });
                         }
                     }
 
                     tmp.pop();
+                }
+
+                if (target === this && this.__meta.eventParents) {
+                    for (i = 0, l = this.__meta.eventParents.length; i < l; i ++) {
+                        this.__meta.eventParents[i].trigger(name, data, target);
+                    }
                 }
             },
 

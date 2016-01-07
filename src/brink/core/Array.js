@@ -49,7 +49,7 @@ $b(
 
                 content.forEach(function (item) {
                     if (isBrinkObject(item)) {
-                        item.__addReference(self, '@item.' + item.__meta.iid);
+                        item.__addReference(self, '@item.' + item.__meta.iid, true);
                     }
                 });
 

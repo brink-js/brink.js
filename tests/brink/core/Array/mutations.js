@@ -266,6 +266,43 @@ describe('mutations', function () {
         a.reverse();
     });
 
+    it('should bubble events from items in the array', function (done) {
+
+        var a,
+            b,
+            c,
+            arr,
+            count,
+            triggered;
+
+        a = $b.Object.create({test : 'a'});
+        b = $b.Object.create({test : 'b'});
+        c = $b.Object.create({test : 'c'});
+
+        arr = $b.Array.create([a, b, c]);
+        count = 0;
+        triggered = [];
+
+        arr.on('test', function (e) {
+
+            console.log(e.currentTarget.test);
+            triggered.push(e.currentTarget);
+
+            if (++count === 3) {
+                expect(triggered).to.have.members([a, b, c]);
+                a.destroy();
+                b.destroy();
+                c.destroy();
+                arr.destroy();
+                done();
+            }
+        });
+
+        a.trigger('test');
+        b.trigger('test');
+        c.trigger('test');
+    });
+
     it('should call watchers when @each.* properties change', function (done) {
 
         var a,
