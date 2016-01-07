@@ -263,6 +263,10 @@ $b(
 
             willNotifyWatchers : function () {
 
+                var addedListeners,
+                    movedListeners,
+                    removedListeners;
+
                 this.getChanges = function () {
 
                     var i,
@@ -346,20 +350,36 @@ $b(
                     };
 
                     changes.added.forEach(function (tmp) {
+                        self.trigger('added', tmp);
                         if (isBrinkObject(tmp.item)) {
-                            tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid);
+                            tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid, true);
                         }
                     });
 
                     changes.removed.forEach(function (tmp) {
+                        self.trigger('removed', tmp);
                         if (isBrinkObject(tmp.item)) {
                             tmp.item.__removeReference(self);
                         }
                     });
 
+                    changes.moved.forEach(function (tmp) {
+                        self.trigger('moved', tmp);
+                    });
+
                     return changes;
 
                 }.bind(this);
+
+                this.__meta.listeners = this.__meta.listeners || {};
+
+                addedListeners = this.__meta.listeners.added || [];
+                movedListeners = this.__meta.listeners.moved || [];
+                removedListeners = this.__meta.listeners.removed || [];
+
+                if (addedListeners.length || movedListeners.length || removedListeners.length) {
+                    this.getChanges();
+                }
             },
 
             didNotifyWatchers : function () {

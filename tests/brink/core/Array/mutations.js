@@ -175,6 +175,22 @@ describe('mutations', function () {
         a.push(4, 5, 6);
     });
 
+    it('should trigger added event on addition of items', function (done) {
+
+        var a,
+            changes;
+
+        a = $b.Array.create([1, 2, 3]);
+        changes = [];
+
+        a.on('added', function (e) {
+            expect(e.data.item).to.equal(4);
+            done();
+        });
+
+        a.push(4);
+    });
+
     it('should call watchers on removal of items', function (done) {
 
         var a;
@@ -188,6 +204,66 @@ describe('mutations', function () {
         });
 
         a.removeAt(0);
+    });
+
+    it('should trigger removed event on removal of items', function (done) {
+
+        var a,
+            changes;
+
+        a = $b.Array.create([1, 2, 3]);
+        changes = [];
+
+        a.on('removed', function (e) {
+            expect(e.data.item).to.equal(2);
+            done();
+        });
+
+        a.removeAt(1);
+    });
+
+    it('should call watchers on moving of items', function (done) {
+
+        var a,
+            moved;
+
+        a = $b.Array.create([1, 2, 3]);
+        moved = [];
+
+        a.watch('@each', function () {
+            a.changes.moved.forEach(function (tmp) {
+                moved.push(tmp.item);
+            });
+            expect(moved).to.have.members([3, 1]);
+            a.destroy();
+            done();
+        });
+
+        a.reverse();
+    });
+
+    it('should trigger moved event on moving of items', function (done) {
+
+        var a,
+            moved,
+            count;
+
+        a = $b.Array.create([1, 2, 3]);
+        moved = [];
+        count = 0;
+
+        a.on('moved', function (e) {
+
+            moved.push(e.data.item);
+
+            if (++count === 2) {
+                expect(moved).to.have.members([3, 1]);
+                a.destroy();
+                done();
+            }
+        });
+
+        a.reverse();
     });
 
     it('should call watchers when @each.* properties change', function (done) {
