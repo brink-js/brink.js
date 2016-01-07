@@ -111,6 +111,7 @@
                     "brink/core/Object",
                     "brink/core/NotificationManager",
                     "brink/core/Class",
+                    "brink/utils/isBrinkObject",
                     "brink/core/Array",
                     "brink/core/Dictionary",
                     "brink/core/ObjectProxy",
@@ -5515,6 +5516,7 @@
                     };
     
                     meta.memoizedBindings = {};
+                    meta.isBrinkObject = true;
     
                     return meta;
                 },
@@ -6459,15 +6461,39 @@
     
     ).attach('$b');
 
+    $b('brink/utils/isBrinkObject', 
+    
+        /***********************************************************************
+        @class Brink
+        ************************************************************************/
+        function () {
+    
+            'use strict';
+    
+            /***********************************************************************
+            Test whether or not a value is a `Brink.Object` subclass.
+    
+            @method isBrinkObject
+            @param {Any} obj The value to check.
+            @return {Boolean} Whether or not the value is a `Brink.Object` subclass.
+            ************************************************************************/
+            return function (obj) {
+                return obj.__meta && obj.__meta.isBrinkObject;
+            };
+        }
+    
+    ).attach('$b');
+
     $b('brink/core/Array', 
     
         [
             './Object',
             '../utils/get',
-            '../utils/computed'
+            '../utils/computed',
+            '../utils/isBrinkObject'
         ],
     
-        function (Obj, get, computed) {
+        function (Obj, get, computed, isBrinkObject) {
     
             'use strict';
     
@@ -6477,6 +6503,10 @@
             AP = Array.prototype;
     
             Arr = Obj({
+    
+                changes : computed(function () {
+                    return this.getChanges();
+                }, ''),
     
                 length : computed(function () {
                     return this.content.length;
@@ -6491,13 +6521,23 @@
                     return {
                         added : [],
                         removed : [],
-                        moved : []
+                        moved : [],
+                        updated : this.updatedItems
                     };
                 },
     
                 init : function (content) {
     
+                    var self = this;
+    
                     content = content || [];
+                    this.updatedItems = [];
+    
+                    content.forEach(function (item) {
+                        if (isBrinkObject(item)) {
+                            item.__addReference(self, '@item.' + item.__meta.iid);
+                        }
+                    });
     
                     this.set('content', content);
                     this.set('oldContent', content.concat());
@@ -6712,6 +6752,7 @@
                     this.getChanges = function () {
     
                         var i,
+                            self,
                             changes,
                             newItem,
                             oldItem,
@@ -6720,13 +6761,16 @@
                             oldContent,
                             newContent;
     
+                        self = this;
+    
                         oldContent = this.oldContent;
                         newContent = this.content;
     
                         changes = {
                             added : [],
                             removed : [],
-                            moved : []
+                            moved : [],
+                            updated : this.updatedItems
                         };
     
                         for (i = 0; i < Math.max(oldContent.length, newContent.length); i ++) {
@@ -6787,6 +6831,18 @@
                             return changes;
                         };
     
+                        changes.added.forEach(function (tmp) {
+                            if (isBrinkObject(tmp.item)) {
+                                tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid);
+                            }
+                        });
+    
+                        changes.removed.forEach(function (tmp) {
+                            if (isBrinkObject(tmp.item)) {
+                                tmp.item.__removeReference(self);
+                            }
+                        });
+    
                         return changes;
     
                     }.bind(this);
@@ -6795,18 +6851,31 @@
                 didNotifyWatchers : function () {
     
                     this.oldContent = this.content.concat();
+                    this.updatedItems = [];
     
                     if (this.__meta) {
                         this.__meta.contentChanges = {};
                     }
+                },
     
+                itemDidChange : function (item, props) {
+    
+                    var self = this;
+    
+                    this.updatedItems.push({
+                        item : item,
+                        changes : props
+                    });
+    
+                    props.forEach(function (p) {
+                        self.propertyDidChange('@each.' + p);
+                    });
                 },
     
                 contentDidChange : function () {
                     this.propertyDidChange('length');
                     this.propertyDidChange('@each');
                 }
-    
             });
     
             return Arr;
@@ -7174,11 +7243,12 @@
         [
             '../config',
             './CoreObject',
+            './Array',
             './RunLoop',
             '../utils/intersect'
         ],
     
-        function (config, CoreObject, RunLoop, intersect) {
+        function (config, CoreObject, BrinkArray, RunLoop, intersect) {
     
             'use strict';
     
@@ -7305,13 +7375,13 @@
                     instances = manager.instances;
                     chProps = manager.changedProps;
                     chInstances = manager.changedInstances;
-                    looped = [];
     
                     k = 0;
     
                     while (chInstances.length) {
                         iid = chInstances[k];
                         instance = instances[iid];
+                        looped = [];
     
                         if (!instance) {
                             chProps.splice(k, 1);
@@ -7322,7 +7392,6 @@
                         meta = instance.__meta;
                         references = meta.references;
                         referenceKeys = meta.referenceKeys;
-    
                         changed = chProps[k];
                         this.processBindings(instance, changed, meta);
     
@@ -7349,12 +7418,17 @@
                                     continue;
                                 }
                                 watched = this.processBindings(reference, changed.concat(), meta2, key);
-                                manager.propertiesDidChange(reference, watched);
+                                manager.propertiesDidChange(reference, watched, instance);
+    
+                                if (reference instanceof BrinkArray) {
+                                    reference.itemDidChange(instance, changed.concat());
+                                }
                             }
                         }
     
                         i = meta.watchers.fns.length;
                         instance.willNotifyWatchers.call(instance);
+    
                         while (i--) {
                             fn = meta.watchers.fns[i];
                             watched = meta.watchers.props[i];
