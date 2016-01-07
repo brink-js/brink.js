@@ -3,10 +3,11 @@ $b(
     [
         './Object',
         '../utils/get',
-        '../utils/computed'
+        '../utils/computed',
+        '../utils/isBrinkObject'
     ],
 
-    function (Obj, get, computed) {
+    function (Obj, get, computed, isBrinkObject) {
 
         'use strict';
 
@@ -16,6 +17,10 @@ $b(
         AP = Array.prototype;
 
         Arr = Obj({
+
+            changes : computed(function () {
+                return this.getChanges();
+            }, ''),
 
             length : computed(function () {
                 return this.content.length;
@@ -30,13 +35,23 @@ $b(
                 return {
                     added : [],
                     removed : [],
-                    moved : []
+                    moved : [],
+                    updated : this.updatedItems
                 };
             },
 
             init : function (content) {
 
+                var self = this;
+
                 content = content || [];
+                this.updatedItems = [];
+
+                content.forEach(function (item) {
+                    if (isBrinkObject(item)) {
+                        item.__addReference(self, '@item.' + item.__meta.iid);
+                    }
+                });
 
                 this.set('content', content);
                 this.set('oldContent', content.concat());
@@ -251,6 +266,7 @@ $b(
                 this.getChanges = function () {
 
                     var i,
+                        self,
                         changes,
                         newItem,
                         oldItem,
@@ -259,13 +275,16 @@ $b(
                         oldContent,
                         newContent;
 
+                    self = this;
+
                     oldContent = this.oldContent;
                     newContent = this.content;
 
                     changes = {
                         added : [],
                         removed : [],
-                        moved : []
+                        moved : [],
+                        updated : this.updatedItems
                     };
 
                     for (i = 0; i < Math.max(oldContent.length, newContent.length); i ++) {
@@ -326,6 +345,18 @@ $b(
                         return changes;
                     };
 
+                    changes.added.forEach(function (tmp) {
+                        if (isBrinkObject(tmp.item)) {
+                            tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid);
+                        }
+                    });
+
+                    changes.removed.forEach(function (tmp) {
+                        if (isBrinkObject(tmp.item)) {
+                            tmp.item.__removeReference(self);
+                        }
+                    });
+
                     return changes;
 
                 }.bind(this);
@@ -334,18 +365,31 @@ $b(
             didNotifyWatchers : function () {
 
                 this.oldContent = this.content.concat();
+                this.updatedItems = [];
 
                 if (this.__meta) {
                     this.__meta.contentChanges = {};
                 }
+            },
 
+            itemDidChange : function (item, props) {
+
+                var self = this;
+
+                this.updatedItems.push({
+                    item : item,
+                    changes : props
+                });
+
+                props.forEach(function (p) {
+                    self.propertyDidChange('@each.' + p);
+                });
             },
 
             contentDidChange : function () {
                 this.propertyDidChange('length');
                 this.propertyDidChange('@each');
             }
-
         });
 
         return Arr;

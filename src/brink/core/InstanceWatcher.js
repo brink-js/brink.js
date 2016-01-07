@@ -3,11 +3,12 @@ $b(
     [
         '../config',
         './CoreObject',
+        './Array',
         './RunLoop',
         '../utils/intersect'
     ],
 
-    function (config, CoreObject, RunLoop, intersect) {
+    function (config, CoreObject, BrinkArray, RunLoop, intersect) {
 
         'use strict';
 
@@ -134,13 +135,13 @@ $b(
                 instances = manager.instances;
                 chProps = manager.changedProps;
                 chInstances = manager.changedInstances;
-                looped = [];
 
                 k = 0;
 
                 while (chInstances.length) {
                     iid = chInstances[k];
                     instance = instances[iid];
+                    looped = [];
 
                     if (!instance) {
                         chProps.splice(k, 1);
@@ -151,7 +152,6 @@ $b(
                     meta = instance.__meta;
                     references = meta.references;
                     referenceKeys = meta.referenceKeys;
-
                     changed = chProps[k];
                     this.processBindings(instance, changed, meta);
 
@@ -178,12 +178,17 @@ $b(
                                 continue;
                             }
                             watched = this.processBindings(reference, changed.concat(), meta2, key);
-                            manager.propertiesDidChange(reference, watched);
+                            manager.propertiesDidChange(reference, watched, instance);
+
+                            if (reference instanceof BrinkArray) {
+                                reference.itemDidChange(instance, changed.concat());
+                            }
                         }
                     }
 
                     i = meta.watchers.fns.length;
                     instance.willNotifyWatchers.call(instance);
+
                     while (i--) {
                         fn = meta.watchers.fns[i];
                         watched = meta.watchers.props[i];

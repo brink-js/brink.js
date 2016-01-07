@@ -167,7 +167,7 @@ describe('mutations', function () {
         a = $b.Array.create([1, 2, 3]);
 
         a.watch('@each', function () {
-            expect(a.getChanges().added.length).to.equal(3);
+            expect(a.changes.added.length).to.equal(3);
             a.destroy();
             done();
         });
@@ -182,11 +182,48 @@ describe('mutations', function () {
         a = $b.Array.create([1, 2, 3]);
 
         a.watch('@each', function () {
-            expect(a.getChanges().removed[0].item).to.equal(1);
+            expect(a.changes.removed[0].item).to.equal(1);
             a.destroy();
             done();
         });
 
         a.removeAt(0);
+    });
+
+    it('should call watchers when @each.* properties change', function (done) {
+
+        var a,
+            o1,
+            o2,
+            o3;
+
+        o1 = $b.Object.create({
+            test : 'test1'
+        });
+
+        o2 = $b.Object.create({
+            test : 'test2'
+        });
+
+        o3 = $b.Object.create({
+            test : 'test3'
+        });
+
+        a = $b.Array.create([o1, o2, o3]);
+
+        a.watch('@each.test', function () {
+
+            var updates = a.changes.updated.map(function (tmp) {
+                if (tmp.changes.indexOf('test') > -1) {
+                    return tmp.item.test;
+                }
+            });
+
+            expect(updates).to.have.members(['zzz', 'yyy']);
+            done();
+        });
+
+        o3.test = 'zzz';
+        o2.test = 'yyy';
     });
 });
