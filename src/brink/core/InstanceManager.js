@@ -164,6 +164,8 @@ $b(
 
                 meta.watchers.props[idx] = merge(meta.watchers.props[idx] || [], props);
                 meta.watchedProps = flatten(meta.watchers.props);
+
+                return fn;
             },
 
             unwatch : function (obj, fns) {

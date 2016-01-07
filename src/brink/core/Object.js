@@ -580,7 +580,7 @@ $b(
                         props = expandProps([].concat(props));
                     }
 
-                    $b.instanceManager.watch(this, props, fn);
+                    return $b.instanceManager.watch(this, props, fn);
                 }
 
                 else {
