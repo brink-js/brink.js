@@ -5956,7 +5956,7 @@
                             props = expandProps([].concat(props));
                         }
     
-                        $b.instanceManager.watch(this, props, fn);
+                        return $b.instanceManager.watch(this, props, fn);
                     }
     
                     else {
@@ -6017,6 +6017,93 @@
     
                 toString : function () {
                     return '[instance ' + this.constructor.__meta.name + ']';
+                },
+    
+                /**
+                * Add pseudo event listener
+                */
+                on : function (name, fn) {
+                    var listeners;
+                    this.__meta.listeners = this.__meta.listeners || {};
+                    listeners = this.__meta.listeners[name] = this.__meta.listeners[name] || [];
+                    listeners.push(fn);
+                    return fn;
+                },
+    
+                /**
+                * Add a on-time-only pseudo event listener
+                */
+                once : function (name, fn) {
+    
+                    var fn2,
+                        self;
+    
+                    self = this;
+                    fn2 = this.on(name, function () {
+                        fn.apply(null, arguments);
+                        self.off(name, fn2);
+                    });
+                },
+    
+                /**
+                * Remove pseudo event listener
+                */
+                off : function (name, fn) {
+    
+                    var i,
+                        listeners;
+    
+                    this.__meta.listeners = this.__meta.listeners || {};
+                    listeners = this.__meta.listeners[name];
+    
+                    if (listeners) {
+    
+                        if (!fn) {
+                            this.__meta.listeners[name] = [];
+                            return true;
+                        }
+    
+                        i = listeners.indexOf(fn);
+                        while (i > -1) {
+                            listeners.splice(i, 1);
+                            i = listeners.indexOf(fn);
+                        }
+                        return true;
+                    }
+                },
+    
+                /**
+                * Trigger pseudo event
+                */
+                trigger : function (name, data) {
+    
+                    var i,
+                        l,
+                        evt,
+                        tmp,
+                        listeners;
+    
+                    tmp = name.split(':');
+    
+                    while (tmp.length) {
+    
+                        evt = tmp.join(':');
+                        this.__meta.listeners = this.__meta.listeners || {};
+                        listeners = this.__meta.listeners[name];
+    
+                        if (listeners && listeners.length) {
+    
+                            for (i = 0, l = listeners.length; i < l; i ++) {
+                                listeners[i].call(null, {
+                                    name : evt,
+                                    data : data || null,
+                                    currentTarget : this
+                                });
+                            }
+                        }
+    
+                        tmp.pop();
+                    }
                 },
     
                 /***********************************************************************
@@ -7630,6 +7717,8 @@
     
                     meta.watchers.props[idx] = merge(meta.watchers.props[idx] || [], props);
                     meta.watchedProps = flatten(meta.watchers.props);
+    
+                    return fn;
                 },
     
                 unwatch : function (obj, fns) {
@@ -9091,6 +9180,7 @@
                 save : function () {
     
                     var self,
+                        dirty,
                         isNew;
     
                     self = this;
@@ -9101,8 +9191,16 @@
                         self.store.add(self);
                     }
     
+                    dirty = get(this, 'dirtyAttributes.content');
+    
                     return this.adapter.saveRecord(this).then(function (json) {
+    
+                        self.trigger('saved', {
+                            updated : dirty
+                        });
+    
                         self.deserialize(json, true);
+    
                         set(self, 'dirtyAttributes.content', []);
                         set(self, 'isSaving', false);
                         set(self, 'isLoaded', true);
@@ -9132,6 +9230,9 @@
                     return this.adapter.fetchRecord(this).then(function (json) {
     
                         self.deserialize(json, !!override);
+    
+                        self.trigger('fetched');
+    
                         if (!!override) {
                             set(self, 'dirtyAttributes.content', []);
                         }
@@ -9159,6 +9260,8 @@
                     set(this, 'isDeleting', true);
     
                     return this.adapter.deleteRecord(this).then(function () {
+    
+                        self.trigger('deleted');
     
                         if (self.store) {
                             self.store.remove(self);
@@ -9231,6 +9334,8 @@
                             pMeta.revert.call(this, revertRelationships);
                         }
                     }
+    
+                    this.trigger('reverted');
     
                     return this;
                 }
