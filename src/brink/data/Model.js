@@ -455,6 +455,7 @@ $b(
             save : function () {
 
                 var self,
+                    dirty,
                     isNew;
 
                 self = this;
@@ -465,8 +466,16 @@ $b(
                     self.store.add(self);
                 }
 
+                dirty = get(this, 'dirtyAttributes.content');
+
                 return this.adapter.saveRecord(this).then(function (json) {
+
+                    self.trigger('saved', {
+                        updated : dirty
+                    });
+
                     self.deserialize(json, true);
+
                     set(self, 'dirtyAttributes.content', []);
                     set(self, 'isSaving', false);
                     set(self, 'isLoaded', true);
@@ -496,6 +505,9 @@ $b(
                 return this.adapter.fetchRecord(this).then(function (json) {
 
                     self.deserialize(json, !!override);
+
+                    self.trigger('fetched');
+
                     if (!!override) {
                         set(self, 'dirtyAttributes.content', []);
                     }
@@ -523,6 +535,8 @@ $b(
                 set(this, 'isDeleting', true);
 
                 return this.adapter.deleteRecord(this).then(function () {
+
+                    self.trigger('deleted');
 
                     if (self.store) {
                         self.store.remove(self);
@@ -595,6 +609,8 @@ $b(
                         pMeta.revert.call(this, revertRelationships);
                     }
                 }
+
+                this.trigger('reverted');
 
                 return this;
             }
