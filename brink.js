@@ -5656,10 +5656,15 @@
                     return !!~meta.references.indexOf(obj);
                 },
     
-                __addReference : function (obj, key) {
+                __addReference : function (obj, key, bubbleEvents) {
                     var meta = this.__meta;
                     meta.references.push(obj);
                     meta.referenceKeys.push(key);
+    
+                    if (bubbleEvents) {
+                        meta.eventParents = meta.eventParents || [];
+                        meta.eventParents.push(obj);
+                    }
                 },
     
                 __removeReference : function (obj) {
@@ -6075,7 +6080,7 @@
                 /**
                 * Trigger pseudo event
                 */
-                trigger : function (name, data) {
+                trigger : function (name, data, target) {
     
                     var i,
                         l,
@@ -6084,6 +6089,7 @@
                         listeners;
     
                     tmp = name.split(':');
+                    target = target || this;
     
                     while (tmp.length) {
     
@@ -6097,12 +6103,18 @@
                                 listeners[i].call(null, {
                                     name : evt,
                                     data : data || null,
-                                    currentTarget : this
+                                    currentTarget : target
                                 });
                             }
                         }
     
                         tmp.pop();
+                    }
+    
+                    if (target === this && this.__meta.eventParents) {
+                        for (i = 0, l = this.__meta.eventParents.length; i < l; i ++) {
+                            this.__meta.eventParents[i].trigger(name, data, target);
+                        }
                     }
                 },
     
@@ -6622,7 +6634,7 @@
     
                     content.forEach(function (item) {
                         if (isBrinkObject(item)) {
-                            item.__addReference(self, '@item.' + item.__meta.iid);
+                            item.__addReference(self, '@item.' + item.__meta.iid, true);
                         }
                     });
     
@@ -6836,6 +6848,10 @@
     
                 willNotifyWatchers : function () {
     
+                    var addedListeners,
+                        movedListeners,
+                        removedListeners;
+    
                     this.getChanges = function () {
     
                         var i,
@@ -6919,20 +6935,36 @@
                         };
     
                         changes.added.forEach(function (tmp) {
+                            self.trigger('added', tmp);
                             if (isBrinkObject(tmp.item)) {
-                                tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid);
+                                tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid, true);
                             }
                         });
     
                         changes.removed.forEach(function (tmp) {
+                            self.trigger('removed', tmp);
                             if (isBrinkObject(tmp.item)) {
                                 tmp.item.__removeReference(self);
                             }
                         });
     
+                        changes.moved.forEach(function (tmp) {
+                            self.trigger('moved', tmp);
+                        });
+    
                         return changes;
     
                     }.bind(this);
+    
+                    this.__meta.listeners = this.__meta.listeners || {};
+    
+                    addedListeners = this.__meta.listeners.added || [];
+                    movedListeners = this.__meta.listeners.moved || [];
+                    removedListeners = this.__meta.listeners.removed || [];
+    
+                    if (addedListeners.length || movedListeners.length || removedListeners.length) {
+                        this.getChanges();
+                    }
                 },
     
                 didNotifyWatchers : function () {
