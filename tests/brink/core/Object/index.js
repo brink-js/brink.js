@@ -21,6 +21,7 @@ describe('Brink.Object', function () {
     require('./bindings');
     require('./watchers');
     require('./computed');
+    require('./events');
 
     after(function () {
 
