@@ -232,12 +232,14 @@ $b(
                     item,
                     model,
                     record,
+                    adapter,
                     primaryKey;
 
                 model = this.modelFor(mKey);
                 primaryKey = model.primaryKey;
+                adapter = this.getAdapterFor(model);
 
-                return model.prototype.adapter.fetchAll(model).then(function (json) {
+                return adapter.fetchAll(model).then(function (json) {
 
                     json = Array.isArray(json) ? json : [json];
 
