@@ -104,8 +104,6 @@
                     "brink/utils/set",
                     "brink/utils/trim",
                     "brink/utils/unbound",
-                    "brink/utils/registerModel",
-                    "brink/utils/unregisterModel",
                     "brink/core/CoreObject",
                     "brink/utils/bindFunction",
                     "brink/core/Object",
@@ -5131,88 +5129,6 @@
     ).attach('$b');
     
 
-    $b('brink/utils/registerModel', 
-    
-        [],
-    
-        /***********************************************************************
-        @class Brink
-        ************************************************************************/
-        function () {
-    
-            'use strict';
-    
-            $b.__models = {};
-    
-            /***********************************************************************
-            @method registerModel
-            @param {Brink.Model} Model
-            ************************************************************************/
-            return function (model) {
-    
-                var mKey,
-                    cKey;
-    
-                mKey = model.modelKey;
-                cKey = model.collectionKey;
-    
-                if ($b.__models[mKey]) {
-                    throw new Error('`modelKey` already registered : "' + mKey +  '".');
-                }
-    
-                else if ($b.__models[cKey]) {
-                    throw new Error('`collectionKey` already registered : "' + cKey +  '".');
-                }
-    
-                $b.__models[mKey] = model;
-                $b.__models[cKey] = model;
-            };
-        }
-    
-    ).attach('$b');
-    
-
-    $b('brink/utils/unregisterModel', 
-    
-        [],
-    
-        /***********************************************************************
-        @class Brink
-        ************************************************************************/
-        function () {
-    
-            'use strict';
-    
-            $b.__models = {};
-    
-            /***********************************************************************
-            @method unregisterModel
-            @param {Brink.Model} Model
-            ************************************************************************/
-            return function (model) {
-    
-                var mKey,
-                    cKey;
-    
-                mKey = model.modelKey;
-                cKey = model.collectionKey;
-    
-                if (!$b.__models[mKey]) {
-                    throw new Error('`modelKey` not registered : "' + mKey +  '".');
-                }
-    
-                else if (!$b.__models[cKey]) {
-                    throw new Error('`collectionKey` not registered : "' + cKey +  '".');
-                }
-    
-                $b.__models[mKey] = null;
-                $b.__models[cKey] = null;
-            };
-        }
-    
-    ).attach('$b');
-    
-
     $b('brink/core/CoreObject', 
     
         [
@@ -8188,7 +8104,10 @@
     
                     get : function (key) {
     
-                        var val;
+                        var val,
+                            store;
+    
+                        store = this.store;
     
                         if (typeof this.__meta.data[key] === 'undefined') {
     
@@ -8197,7 +8116,7 @@
                             }
     
                             else if (options.embedded) {
-                                val = $b.__models[mKey].create();
+                                val = store.__registry[mKey].create();
                             }
     
                             if (typeof val !== 'undefined') {
@@ -8252,7 +8171,7 @@
                             }
                         }
     
-                        if (store && val && !(val instanceof $b.__models[mKey])) {
+                        if (store && val && !(val instanceof store.__registry[mKey])) {
     
                             if (typeof val !== 'string' && typeof val !== 'number') {
                                 val = String(val);
@@ -8264,7 +8183,7 @@
                         else if (val) {
                             $b.assert(
                                 'Must be a model of type "' + mKey + '".',
-                                val instanceof $b.__models[mKey]
+                                val instanceof store.__registry[mKey]
                             );
                         }
     
@@ -8283,14 +8202,16 @@
     
                         var key,
                             val,
-                            meta;
+                            meta,
+                            store;
     
                         meta = belongsTo.meta();
                         key = meta.key;
+                        store = this.store;
     
                         val = get(this, key);
     
-                        if (val && val instanceof $b.__models[mKey]) {
+                        if (val && val instanceof store.__registry[mKey]) {
     
                             if (options.embedded) {
                                 val = val.serialize(filter);
@@ -8311,14 +8232,16 @@
     
                         var key,
                             meta,
+                            store,
                             record;
     
                         meta = belongsTo.meta();
                         key = meta.key;
+                        store = this.store;
     
                         if (options.embedded) {
     
-                            record = get(this, key) || $b.__models[mKey].create();
+                            record = get(this, key) || store.__registry[mKey].create();
     
                             if (val && typeof val === 'object') {
                                 val = record.deserialize(val, override, filter);
@@ -8688,25 +8611,13 @@
                             if (val && val[i]) {
     
                                 if (options.embedded && typeof val[i] === 'object') {
-    
-                                    record = $b.__models[mKey].create();
-    
-                                    if (store) {
-                                        store.add(mKey, record);
-                                    }
-    
+                                    record = store.modelFor(mKey).create();
+                                    store.add(mKey, record);
                                     record.deserialize(val[i], override, filter);
                                 }
     
                                 else {
-    
-                                    if (!store) {
-                                        record = $b.__models[mKey].create({pk : val[i]});
-                                    }
-    
-                                    else {
-                                        record = store.findOrCreate(mKey, val[i]);
-                                    }
+                                    record = store.findOrCreate(mKey, val[i]);
                                 }
     
                                 records.push(record);
@@ -8858,24 +8769,24 @@
                 ************************************************************************/
     
                 /***********************************************************************
-                The Store instance this model uses. You should only have one Store instance used
-                across your entire project and models.
+                The Store instance this model uses. This will only be defined if you
+                have called addModel on a Store.
     
                 @property store
                 @type Brink.Store
                 @default null
                 ************************************************************************/
     
-                store : null,
-    
                 /***********************************************************************
-                The Adapter instance you want to use for this model.
+                The Adapter assigned to this model.
     
                 @property adapter
                 @type Brink.Adapter
                 @default null
                 ************************************************************************/
-                adapter : null,
+                adapter : computed(function () {
+                    return this.store.getAdapterFor(this.constructor);
+                }, 'store'),
     
                 /***********************************************************************
                 The modelKey you want to use for the model. This will likely influence your adapter.
@@ -9399,20 +9310,9 @@
     
                     SubClass.modelKey = proto.modelKey;
                     SubClass.collectionKey = proto.collectionKey;
-    
-                    $b.registerModel(SubClass);
-                }
-    
-                if (proto.adapter) {
-                    SubClass.adapter = proto.adapter;
-                    proto.adapter.registerModel(SubClass);
                 }
     
                 return SubClass;
-            };
-    
-            Model.unregister = function () {
-                $b.unregisterModel(this);
             };
     
             return Model;
@@ -9495,8 +9395,76 @@
                 ************************************************************************/
     
                 init : function () {
-                    this.__registry = $b.__models;
+                    this.__adapters = {};
+                    this.__registry = {};
                     this.__store = {};
+                },
+    
+                getAdapterFor : function (model) {
+    
+                    var adapter;
+    
+                    model = this.modelFor(model);
+                    adapter = this.__adapters[model.collectionKey] || this.defaultAdapter;
+    
+                    if (!adapter) {
+                        throw new Error('No adapter found for ' + model.collectionKey);
+                    }
+                    return adapter;
+                },
+    
+                addModel : function (model, adapter) {
+    
+                    var mKey,
+                        cKey;
+    
+                    mKey = model.modelKey;
+                    cKey = model.collectionKey;
+    
+                    if (this.__registry[mKey]) {
+                        throw new Error('`modelKey` already registered : "' + mKey +  '".');
+                    }
+    
+                    else if (this.__registry[cKey]) {
+                        throw new Error('`collectionKey` already registered : "' + cKey +  '".');
+                    }
+    
+                    if (model.prototype.store) {
+                        throw new Error(mKey + ' model is already assigned to another store');
+                    }
+    
+                    model.prototype.store = this;
+    
+                    this.__registry[mKey] = model;
+                    this.__registry[cKey] = model;
+    
+                    adapter = adapter || this.defaultAdapter;
+    
+                    if (adapter) {
+                        adapter.registerModel(model);
+                        this.__adapters[model.collectionKey] = adapter;
+                    }
+                },
+    
+                addModels : function () {
+    
+                    var i;
+    
+                    for (i = 0; i < arguments.length; i ++) {
+                        this.addModel(arguments[i]);
+                    }
+                },
+    
+                setAdapter : function (models, adapter) {
+    
+                    var i,
+                        model;
+    
+                    for (i = 0; i < models.length; i ++) {
+                        model = this.modelFor(models[i]);
+                        adapter.registerModel(model);
+                        this.__adapters[model.collectionKey] = adapter;
+                    }
                 },
     
                 /***********************************************************************
@@ -9528,7 +9496,8 @@
                     var i,
                         l,
                         record,
-                        collection;
+                        collection,
+                        isInRegistry;
     
                     if (arguments.length === 1) {
                         records = mKey;
@@ -9540,11 +9509,18 @@
                         records = Array.isArray(records) ? records : [records];
                     }
     
-                    collection = this.getCollection(mKey);
+                    isInRegistry = !!this.modelFor(mKey);
     
                     for (i = 0, l = records.length; i < l; i ++) {
     
                         record = records[i];
+    
+                        if (!collection) {
+                            if (!isInRegistry) {
+                                this.addModel(record.constructor);
+                            }
+                            collection = this.getCollection(mKey);
+                        }
     
                         if (!~collection.indexOf(record)) {
                             set(record, 'store', this);
@@ -9625,7 +9601,7 @@
                     model = this.modelFor(mKey);
                     primaryKey = model.primaryKey;
     
-                    return model.adapter.fetchAll(model).then(function (json) {
+                    return model.prototype.adapter.fetchAll(model).then(function (json) {
     
                         json = Array.isArray(json) ? json : [json];
     
@@ -9821,6 +9797,10 @@
                         for (p in this.__store) {
                             this.__store[p].destroy(true);
                         }
+                    }
+    
+                    for (p in this.__registry) {
+                        this.__registry[p].prototype.store = null;
                     }
     
                     this.__registry = null;

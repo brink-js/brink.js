@@ -101,24 +101,24 @@ $b(
             ************************************************************************/
 
             /***********************************************************************
-            The Store instance this model uses. You should only have one Store instance used
-            across your entire project and models.
+            The Store instance this model uses. This will only be defined if you
+            have called addModel on a Store.
 
             @property store
             @type Brink.Store
             @default null
             ************************************************************************/
 
-            store : null,
-
             /***********************************************************************
-            The Adapter instance you want to use for this model.
+            The Adapter assigned to this model.
 
             @property adapter
             @type Brink.Adapter
             @default null
             ************************************************************************/
-            adapter : null,
+            adapter : computed(function () {
+                return this.store.getAdapterFor(this.constructor);
+            }, 'store'),
 
             /***********************************************************************
             The modelKey you want to use for the model. This will likely influence your adapter.
@@ -642,20 +642,9 @@ $b(
 
                 SubClass.modelKey = proto.modelKey;
                 SubClass.collectionKey = proto.collectionKey;
-
-                $b.registerModel(SubClass);
-            }
-
-            if (proto.adapter) {
-                SubClass.adapter = proto.adapter;
-                proto.adapter.registerModel(SubClass);
             }
 
             return SubClass;
-        };
-
-        Model.unregister = function () {
-            $b.unregisterModel(this);
         };
 
         return Model;

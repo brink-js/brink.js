@@ -200,25 +200,13 @@ $b(
                         if (val && val[i]) {
 
                             if (options.embedded && typeof val[i] === 'object') {
-
-                                record = $b.__models[mKey].create();
-
-                                if (store) {
-                                    store.add(mKey, record);
-                                }
-
+                                record = store.modelFor(mKey).create();
+                                store.add(mKey, record);
                                 record.deserialize(val[i], override, filter);
                             }
 
                             else {
-
-                                if (!store) {
-                                    record = $b.__models[mKey].create({pk : val[i]});
-                                }
-
-                                else {
-                                    record = store.findOrCreate(mKey, val[i]);
-                                }
+                                record = store.findOrCreate(mKey, val[i]);
                             }
 
                             records.push(record);

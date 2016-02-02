@@ -22,8 +22,6 @@ describe('add + remove', function () {
         store.add('test', instances);
 
         expect(store.__store.tests.content).to.deep.equal(instances);
-
-        Model.unregister();
     });
 
     it('should properly remove records.', function () {
@@ -54,7 +52,5 @@ describe('add + remove', function () {
 
         store.remove('test', instances);
         expect(store.__store.tests.content).to.not.deep.equal(instances);
-
-        Model.unregister();
     });
 });

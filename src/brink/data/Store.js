@@ -31,8 +31,76 @@ $b(
             ************************************************************************/
 
             init : function () {
-                this.__registry = $b.__models;
+                this.__adapters = {};
+                this.__registry = {};
                 this.__store = {};
+            },
+
+            getAdapterFor : function (model) {
+
+                var adapter;
+
+                model = this.modelFor(model);
+                adapter = this.__adapters[model.collectionKey] || this.defaultAdapter;
+
+                if (!adapter) {
+                    throw new Error('No adapter found for ' + model.collectionKey);
+                }
+                return adapter;
+            },
+
+            addModel : function (model, adapter) {
+
+                var mKey,
+                    cKey;
+
+                mKey = model.modelKey;
+                cKey = model.collectionKey;
+
+                if (this.__registry[mKey]) {
+                    throw new Error('`modelKey` already registered : "' + mKey +  '".');
+                }
+
+                else if (this.__registry[cKey]) {
+                    throw new Error('`collectionKey` already registered : "' + cKey +  '".');
+                }
+
+                if (model.prototype.store) {
+                    throw new Error(mKey + ' model is already assigned to another store');
+                }
+
+                model.prototype.store = this;
+
+                this.__registry[mKey] = model;
+                this.__registry[cKey] = model;
+
+                adapter = adapter || this.defaultAdapter;
+
+                if (adapter) {
+                    adapter.registerModel(model);
+                    this.__adapters[model.collectionKey] = adapter;
+                }
+            },
+
+            addModels : function () {
+
+                var i;
+
+                for (i = 0; i < arguments.length; i ++) {
+                    this.addModel(arguments[i]);
+                }
+            },
+
+            setAdapter : function (models, adapter) {
+
+                var i,
+                    model;
+
+                for (i = 0; i < models.length; i ++) {
+                    model = this.modelFor(models[i]);
+                    adapter.registerModel(model);
+                    this.__adapters[model.collectionKey] = adapter;
+                }
             },
 
             /***********************************************************************
@@ -64,7 +132,8 @@ $b(
                 var i,
                     l,
                     record,
-                    collection;
+                    collection,
+                    isInRegistry;
 
                 if (arguments.length === 1) {
                     records = mKey;
@@ -76,11 +145,18 @@ $b(
                     records = Array.isArray(records) ? records : [records];
                 }
 
-                collection = this.getCollection(mKey);
+                isInRegistry = !!this.modelFor(mKey);
 
                 for (i = 0, l = records.length; i < l; i ++) {
 
                     record = records[i];
+
+                    if (!collection) {
+                        if (!isInRegistry) {
+                            this.addModel(record.constructor);
+                        }
+                        collection = this.getCollection(mKey);
+                    }
 
                     if (!~collection.indexOf(record)) {
                         set(record, 'store', this);
@@ -161,7 +237,7 @@ $b(
                 model = this.modelFor(mKey);
                 primaryKey = model.primaryKey;
 
-                return model.adapter.fetchAll(model).then(function (json) {
+                return model.prototype.adapter.fetchAll(model).then(function (json) {
 
                     json = Array.isArray(json) ? json : [json];
 
@@ -357,6 +433,10 @@ $b(
                     for (p in this.__store) {
                         this.__store[p].destroy(true);
                     }
+                }
+
+                for (p in this.__registry) {
+                    this.__registry[p].prototype.store = null;
                 }
 
                 this.__registry = null;

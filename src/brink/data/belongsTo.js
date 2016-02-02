@@ -26,7 +26,10 @@ $b(
 
                 get : function (key) {
 
-                    var val;
+                    var val,
+                        store;
+
+                    store = this.store;
 
                     if (typeof this.__meta.data[key] === 'undefined') {
 
@@ -35,7 +38,7 @@ $b(
                         }
 
                         else if (options.embedded) {
-                            val = $b.__models[mKey].create();
+                            val = store.__registry[mKey].create();
                         }
 
                         if (typeof val !== 'undefined') {
@@ -90,7 +93,7 @@ $b(
                         }
                     }
 
-                    if (store && val && !(val instanceof $b.__models[mKey])) {
+                    if (store && val && !(val instanceof store.__registry[mKey])) {
 
                         if (typeof val !== 'string' && typeof val !== 'number') {
                             val = String(val);
@@ -102,7 +105,7 @@ $b(
                     else if (val) {
                         $b.assert(
                             'Must be a model of type "' + mKey + '".',
-                            val instanceof $b.__models[mKey]
+                            val instanceof store.__registry[mKey]
                         );
                     }
 
@@ -121,14 +124,16 @@ $b(
 
                     var key,
                         val,
-                        meta;
+                        meta,
+                        store;
 
                     meta = belongsTo.meta();
                     key = meta.key;
+                    store = this.store;
 
                     val = get(this, key);
 
-                    if (val && val instanceof $b.__models[mKey]) {
+                    if (val && val instanceof store.__registry[mKey]) {
 
                         if (options.embedded) {
                             val = val.serialize(filter);
@@ -149,14 +154,16 @@ $b(
 
                     var key,
                         meta,
+                        store,
                         record;
 
                     meta = belongsTo.meta();
                     key = meta.key;
+                    store = this.store;
 
                     if (options.embedded) {
 
-                        record = get(this, key) || $b.__models[mKey].create();
+                        record = get(this, key) || store.__registry[mKey].create();
 
                         if (val && typeof val === 'object') {
                             val = record.deserialize(val, override, filter);

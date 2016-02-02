@@ -25,7 +25,6 @@ describe('find + filter', function () {
         expect(store.all('test').content).to.deep.equal(instances);
 
         store.destroy(true);
-        Model.unregister();
     });
 
     it('should clear all records with clear().', function () {
@@ -56,7 +55,6 @@ describe('find + filter', function () {
         expect(store.all('test').content).to.deep.equal([]);
 
         store.destroy(true);
-        Model.unregister();
     });
 
     it('should properly find records.', function () {
@@ -86,7 +84,6 @@ describe('find + filter', function () {
         expect(record).to.equal(instances[5]);
 
         store.destroy(true);
-        Model.unregister();
     });
 
     it('should properly find records by primary key.', function () {
@@ -115,7 +112,6 @@ describe('find + filter', function () {
         expect(record).to.equal(instances[3]);
 
         store.destroy(true);
-        Model.unregister();
     });
 
     it('should properly find records with a function.', function (done) {
@@ -147,7 +143,6 @@ describe('find + filter', function () {
         expect(record).to.equal(instances[4]);
 
         store.destroy(true);
-        Model.unregister();
 
         done();
     });
@@ -186,7 +181,6 @@ describe('find + filter', function () {
         expect(records.content[4]).to.equal(instances[9]);
 
         store.destroy(true);
-        Model.unregister();
 
         done();
     });
@@ -227,6 +221,5 @@ describe('find + filter', function () {
         expect(records.content[4]).to.equal(instances[4]);
 
         store.destroy(true);
-        Model.unregister();
     });
 });

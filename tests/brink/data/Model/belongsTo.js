@@ -53,9 +53,6 @@ describe('belongsTo', function () {
         expect(switchInstance.light.isOn).to.equal(false);
         switchInstance.flip();
         expect(switchInstance.light.isOn).to.equal(true);
-
-        Light.unregister();
-        LightSwitch.unregister();
     });
 
     it('should properly serialize belongsTos.', function () {
@@ -101,9 +98,6 @@ describe('belongsTo', function () {
         json = switchInstance.serialize();
 
         expect(json).to.deep.equal({light : 1});
-
-        Light.unregister();
-        LightSwitch.unregister();
     });
 
     it('should properly deserialize embedded belongsTos.', function () {
@@ -134,6 +128,8 @@ describe('belongsTo', function () {
             }
         });
 
+        store.addModels(Light, LightSwitch);
+
         switchInstance = LightSwitch.create();
         store.add('lightSwitch', switchInstance);
 
@@ -147,9 +143,6 @@ describe('belongsTo', function () {
         expect(switchInstance.light.isOn).to.equal(true);
         switchInstance.flip();
         expect(switchInstance.light.isOn).to.equal(false);
-
-        Light.unregister();
-        LightSwitch.unregister();
     });
 
     it('should properly serialize embedded belongsTos.', function () {
@@ -182,6 +175,8 @@ describe('belongsTo', function () {
             }
         });
 
+        store.addModels(Light, LightSwitch);
+
         switchInstance = LightSwitch.create();
         store.add('lightSwitch', switchInstance);
 
@@ -200,9 +195,6 @@ describe('belongsTo', function () {
                 isOn : false
             }
         });
-
-        Light.unregister();
-        LightSwitch.unregister();
     });
 
     it('should allow filtering.', function () {
@@ -238,6 +230,8 @@ describe('belongsTo', function () {
             }
         });
 
+        store.addModels(Light, LightSwitch);
+
         switchInstance = LightSwitch.create();
         store.add('lightSwitch', switchInstance);
 
@@ -270,8 +264,5 @@ describe('belongsTo', function () {
             },
             linkedToNull : null
         });
-
-        Light.unregister();
-        LightSwitch.unregister();
     });
 });

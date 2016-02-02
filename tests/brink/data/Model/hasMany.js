@@ -73,6 +73,7 @@ describe('hasMany', function () {
             showTo: [],
             views: []
         };
+        store.addModels(Post, User, Comment, Permission);
     });
 
     afterEach(function () {
@@ -80,9 +81,6 @@ describe('hasMany', function () {
     });
 
     after(function () {
-        Post.unregister();
-        User.unregister();
-        Comment.unregister();
     });
 
     it('should properly deserialize and serialize hasManys.', function () {
