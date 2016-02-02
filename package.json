@@ -2,7 +2,7 @@
   "name": "brink",
   "version": "0.5.0",
   "description": "",
-  "main": "./brink.js",
+  "main": "./src/brink/node.js",
   "directories": {
     "lib": "./brink"
   },
