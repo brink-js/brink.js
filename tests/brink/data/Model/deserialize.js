@@ -169,6 +169,31 @@ describe('deserialize', function () {
         instance.destroy();
     });
 
+    it('should not mark properties as dirty when set via deserialize()', function () {
+
+        var json,
+            Model,
+            instance;
+
+        Model = $b.Model({
+            a : $b.attr(),
+            b : $b.attr(),
+            c : $b.attr()
+        });
+
+        instance = Model.create({a : 0, b : 0, c : 0});
+        expect(instance.dirtyAttributes.content.length).to.equal(0);
+
+        instance.deserialize({a : 1, c: 3});
+        expect(instance.dirtyAttributes.indexOf('a')).to.equal(-1);
+        expect(instance.dirtyAttributes.indexOf('c')).to.equal(-1);
+
+        instance.b = 2;
+        expect(instance.dirtyAttributes.indexOf('b')).to.not.equal(-1);
+
+        instance.destroy();
+    });
+
     it('should apply filterers to properties', function () {
         var json,
             Model,

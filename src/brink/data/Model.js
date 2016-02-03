@@ -392,6 +392,7 @@ $b(
 
                 var i,
                     p,
+                    di,
                     key,
                     val,
                     desc,
@@ -408,7 +409,7 @@ $b(
                     return this;
                 }
 
-                dirty = get(this, 'dirtyAttributes') || [];
+                dirty = (get(this, 'dirtyAttributes.content') || []).concat();
                 attributes = meta.attributes;
                 relationships = meta.relationships;
 
@@ -420,8 +421,13 @@ $b(
                     desc = this.prop(p);
                     pMeta = desc.meta();
 
-                    if (!override && ~dirty.indexOf(p)) {
-                        continue;
+                    di = dirty.indexOf(p);
+
+                    if (~di) {
+                        if (!override) {
+                            continue;
+                        }
+                        dirty.splice(i, 1);
                     }
 
                     key = pMeta.options.key || p;
@@ -437,6 +443,7 @@ $b(
                     set(this, 'pk', json[this.primaryKey]);
                 }
 
+                set(this, 'dirtyAttributes.content', dirty);
                 set(this, 'isLoaded', true);
 
                 return this;
