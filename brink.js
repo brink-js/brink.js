@@ -8811,8 +8811,6 @@
                 @default null
                 ************************************************************************/
     
-                collectionKey : null,
-    
                 /***********************************************************************
                 The property name of the primaryKey you are using for this Model.
     
