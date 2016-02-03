@@ -71,7 +71,10 @@ $b(
             @param  {Model} record The record you want to fetch.
             @return {Promise}
             ************************************************************************/
-            fetch : $b.F,
+            fetch : function () {
+                return this.fetchRecord.apply(this, arguments);
+            },
+            fetchRecord : $b.F,
 
             /***********************************************************************
             Fetches all records of a Model from the persistence layer.
