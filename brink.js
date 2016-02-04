@@ -5952,7 +5952,7 @@
                 },
     
                 /**
-                * Add a on-time-only pseudo event listener
+                * Add a one-time-only pseudo event listener
                 */
                 once : function (name, fn) {
     
@@ -6878,9 +6878,7 @@
                     movedListeners = this.__meta.listeners.moved || [];
                     removedListeners = this.__meta.listeners.removed || [];
     
-                    if (addedListeners.length || movedListeners.length || removedListeners.length) {
-                        this.getChanges();
-                    }
+                    this.getChanges();
                 },
     
                 didNotifyWatchers : function () {
@@ -8746,13 +8744,14 @@
         [
             '../core/Class',
             '../core/Array',
+            '../utils/Q',
             '../utils/get',
             '../utils/set',
             '../utils/bindTo',
             '../utils/computed'
         ],
     
-        function (Class, BrinkArray, get, set, bindTo, computed) {
+        function (Class, BrinkArray, Q, get, set, bindTo, computed) {
     
             'use strict';
     
@@ -9136,13 +9135,15 @@
     
                     self = this;
                     isNew = get(this, 'isNew');
+                    dirty = get(this, 'dirtyAttributes.content');
+    
+                    if (!isNew && !dirty.length) {return Q.resolve(this);}
+    
                     set(this, 'isSaving', true);
     
                     if (isNew && self.store) {
                         self.store.add(self);
                     }
-    
-                    dirty = get(this, 'dirtyAttributes.content');
     
                     return this.adapter.saveRecord(this).then(function (json) {
     
