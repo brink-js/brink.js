@@ -660,7 +660,7 @@ $b(
             },
 
             /**
-            * Add a on-time-only pseudo event listener
+            * Add a one-time-only pseudo event listener
             */
             once : function (name, fn) {
 

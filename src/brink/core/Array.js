@@ -377,9 +377,7 @@ $b(
                 movedListeners = this.__meta.listeners.moved || [];
                 removedListeners = this.__meta.listeners.removed || [];
 
-                if (addedListeners.length || movedListeners.length || removedListeners.length) {
-                    this.getChanges();
-                }
+                this.getChanges();
             },
 
             didNotifyWatchers : function () {
