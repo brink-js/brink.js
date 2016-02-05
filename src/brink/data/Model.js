@@ -451,6 +451,29 @@ $b(
             },
 
             /***********************************************************************
+            Patches a record, recursively.
+
+            @method patch
+            @param  {Boolean} recursive Whather you want to undirty all embedded relationships as well.
+            @return {Model}
+            ************************************************************************/
+
+            patch : function (obj) {
+                function updateRecursively (obj2, context) {
+                    var p;
+                    for (p in obj2) {
+                        if (typeof obj2[p] === 'object') {
+                            updateRecursively(obj2[p], context[p]);
+                            continue;
+                        }
+                        set(context, p, obj2[p]);
+                    }
+                }
+                updateRecursively(obj, this);
+                return this;
+            },
+
+            /***********************************************************************
             Marks all properties as clean.
 
             @method undirty
