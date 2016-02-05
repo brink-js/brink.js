@@ -8389,6 +8389,12 @@
                     });
                 },
     
+                undirty : function (recursive) {
+                    this.forEach(function (item) {
+                        item.undirty(recursive);
+                    });
+                },
+    
                 destroy : function (destroyRecords) {
     
                     var i;
@@ -9120,6 +9126,69 @@
                 },
     
                 /***********************************************************************
+                Patches a record, recursively.
+    
+                @method patch
+                @param  {Boolean} recursive Whather you want to undirty all embedded relationships as well.
+                @return {Model}
+                ************************************************************************/
+    
+                patch : function (obj) {
+                    function updateRecursively (obj2, context) {
+                        var p;
+                        for (p in obj2) {
+                            if (typeof obj2[p] === 'object') {
+                                updateRecursively(obj2[p], context[p]);
+                                continue;
+                            }
+                            set(context, p, obj2[p]);
+                        }
+                    }
+                    updateRecursively(obj, this);
+                    return this;
+                },
+    
+                /***********************************************************************
+                Marks all properties as clean.
+    
+                @method undirty
+                @param  {Boolean} recursive Whather you want to undirty all embedded relationships as well.
+                @return {Model}
+                ************************************************************************/
+    
+                undirty : function (recursive) {
+    
+                    var i,
+                        p,
+                        meta,
+                        desc,
+                        pMeta,
+                        relationships;
+    
+                    set(this, 'dirtyAttributes.content', []);
+    
+                    if (!recursive) {
+                        return this;
+                    }
+    
+                    meta = this.__meta;
+                    relationships = meta.relationships;
+    
+                    i = relationships.length;
+                    while (i--) {
+                        p = relationships[i];
+                        desc = this.prop(p);
+                        pMeta = desc.meta();
+    
+                        if (pMeta.options.embedded) {
+                            get(this, p).undirty(true);
+                        }
+                    }
+    
+                    return this;
+                },
+    
+                /***********************************************************************
                 Saves any changes to this record to the persistence layer (via the adapter).
                 Also adds this record to the store.
     
@@ -9137,8 +9206,6 @@
                     isNew = get(this, 'isNew');
                     dirty = get(this, 'dirtyAttributes.content');
     
-                    if (!isNew && !dirty.length) {return Q.resolve(this);}
-    
                     set(this, 'isSaving', true);
     
                     if (isNew && self.store) {
@@ -9153,7 +9220,7 @@
     
                         self.deserialize(json, true);
     
-                        set(self, 'dirtyAttributes.content', []);
+                        self.undirty(true);
                         set(self, 'isSaving', false);
                         set(self, 'isLoaded', true);
                         return self;
@@ -9186,7 +9253,7 @@
                         self.trigger('fetched');
     
                         if (!!override) {
-                            set(self, 'dirtyAttributes.content', []);
+                            self.undirty(true);
                         }
                         set(self, 'isFetching', false);
                         set(self, 'isLoaded', true);
