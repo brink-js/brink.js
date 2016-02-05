@@ -451,6 +451,46 @@ $b(
             },
 
             /***********************************************************************
+            Marks all properties as clean.
+
+            @method undirty
+            @param  {Boolean} recursive Whather you want to undirty all embedded relationships as well.
+            @return {Model}
+            ************************************************************************/
+
+            undirty : function (recursive) {
+
+                var i,
+                    p,
+                    meta,
+                    desc,
+                    pMeta,
+                    relationships;
+
+                set(this, 'dirtyAttributes.content', []);
+
+                if (!recursive) {
+                    return this;
+                }
+
+                meta = this.__meta;
+                relationships = meta.relationships;
+
+                i = relationships.length;
+                while (i--) {
+                    p = relationships[i];
+                    desc = this.prop(p);
+                    pMeta = desc.meta();
+
+                    if (pMeta.options.embedded) {
+                        get(this, p).undirty(true);
+                    }
+                }
+
+                return this;
+            },
+
+            /***********************************************************************
             Saves any changes to this record to the persistence layer (via the adapter).
             Also adds this record to the store.
 
@@ -468,8 +508,6 @@ $b(
                 isNew = get(this, 'isNew');
                 dirty = get(this, 'dirtyAttributes.content');
 
-                if (!isNew && !dirty.length) {return Q.resolve(this);}
-
                 set(this, 'isSaving', true);
 
                 if (isNew && self.store) {
@@ -484,7 +522,7 @@ $b(
 
                     self.deserialize(json, true);
 
-                    set(self, 'dirtyAttributes.content', []);
+                    self.undirty(true);
                     set(self, 'isSaving', false);
                     set(self, 'isLoaded', true);
                     return self;
@@ -517,7 +555,7 @@ $b(
                     self.trigger('fetched');
 
                     if (!!override) {
-                        set(self, 'dirtyAttributes.content', []);
+                        self.undirty(true);
                     }
                     set(self, 'isFetching', false);
                     set(self, 'isLoaded', true);

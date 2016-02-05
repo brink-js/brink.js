@@ -105,6 +105,12 @@ $b(
                 });
             },
 
+            undirty : function (recursive) {
+                this.forEach(function (item) {
+                    item.undirty(recursive);
+                });
+            },
+
             destroy : function (destroyRecords) {
 
                 var i;
