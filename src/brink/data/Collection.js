@@ -80,6 +80,13 @@ $b(
                 return this.length;
             },
 
+            remove : function (record) {
+                if (record.pk) {
+                    delete this.__recordsByPK[record.pk];
+                }
+                return BrinkArray.prototype.remove.apply(this, arguments);
+            },
+
             serialize : function (isEmbedded, filter) {
 
                 var a = [];
