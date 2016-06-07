@@ -539,9 +539,12 @@ $b(
 
                 return this.adapter.saveRecord(this).then(function (json) {
 
-                    self.trigger('saved', {
-                        updated : dirty
-                    });
+                    if (isNew) {
+                        self.trigger('save', {
+                            isNew : isNew,
+                            updates : dirty
+                        });
+                    }
 
                     self.deserialize(json, true);
 
@@ -575,7 +578,7 @@ $b(
 
                     self.deserialize(json, !!override);
 
-                    self.trigger('fetched');
+                    self.trigger('fetch');
 
                     if (!!override) {
                         self.undirty(true);
@@ -679,7 +682,7 @@ $b(
                     }
                 }
 
-                this.trigger('reverted');
+                this.trigger('revert');
 
                 return this;
             }

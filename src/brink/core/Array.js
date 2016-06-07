@@ -350,21 +350,21 @@ $b(
                     };
 
                     changes.added.forEach(function (tmp) {
-                        self.trigger('added', tmp);
+                        self.trigger('add', tmp);
                         if (isBrinkObject(tmp.item)) {
                             tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid, true);
                         }
                     });
 
                     changes.removed.forEach(function (tmp) {
-                        self.trigger('removed', tmp);
+                        self.trigger('remove', tmp);
                         if (isBrinkObject(tmp.item)) {
                             tmp.item.__removeReference(self);
                         }
                     });
 
                     changes.moved.forEach(function (tmp) {
-                        self.trigger('moved', tmp);
+                        self.trigger('move', tmp);
                     });
 
                     return changes;

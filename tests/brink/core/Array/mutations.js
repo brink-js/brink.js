@@ -183,7 +183,7 @@ describe('mutations', function () {
         a = $b.Array.create([1, 2, 3]);
         changes = [];
 
-        a.on('added', function (e) {
+        a.on('add', function (e) {
             expect(e.data.item).to.equal(4);
             done();
         });
@@ -214,7 +214,7 @@ describe('mutations', function () {
         a = $b.Array.create([1, 2, 3]);
         changes = [];
 
-        a.on('removed', function (e) {
+        a.on('remove', function (e) {
             expect(e.data.item).to.equal(2);
             done();
         });
@@ -252,7 +252,7 @@ describe('mutations', function () {
         moved = [];
         count = 0;
 
-        a.on('moved', function (e) {
+        a.on('move', function (e) {
 
             moved.push(e.data.item);
 
