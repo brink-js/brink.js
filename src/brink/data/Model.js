@@ -380,6 +380,61 @@ $b(
             },
 
             /***********************************************************************
+            Serialize the dirty attributes of a record.
+
+            @method serializeDirty
+            @param {Function} filter A custom function to filter out attributes as you see fit.
+            @return {Object}
+            ************************************************************************/
+
+            serializeDirty : function (filter) {
+
+                var i,
+                    l,
+                    p,
+                    pk,
+                    key,
+                    val,
+                    desc,
+                    json,
+                    meta,
+                    pMeta,
+                    props,
+                    dirty,
+                    attributes,
+                    relationships;
+
+                meta = this.__meta;
+
+                attributes = meta.attributes;
+                relationships = meta.relationships;
+
+                props = attributes.concat(relationships);
+                dirty = (get(this, 'dirtyAttributes.content') || []).concat();
+
+                json = {};
+
+                for (i = 0, l = props.length; i < l; i ++) {
+                    p = props[i];
+                    desc = this.prop(p);
+                    pMeta = desc.meta();
+                    key = pMeta.options.key || p;
+
+                    if (
+                        pMeta.isRelationship && pMeta.options.embedded ||
+                        pMeta.isAttribute && ~dirty.indexOf(p)
+                    ) {
+                        val = pMeta.serializeDirty.call(this, filter);
+                        if (typeof val !== 'undefined') {
+                            set(json, key, val);
+                        }
+                    }
+                }
+
+                return json;
+            },
+
+            /***********************************************************************
             De-serialize a record.
 
             @method deserialize
@@ -529,7 +584,7 @@ $b(
 
                 self = this;
                 isNew = get(this, 'isNew');
-                dirty = get(this, 'dirtyAttributes.content');
+                dirty = isNew ? {} : this.serializeDirty();
 
                 set(this, 'isSaving', true);
 
@@ -539,12 +594,10 @@ $b(
 
                 return this.adapter.saveRecord(this).then(function (json) {
 
-                    if (isNew) {
-                        self.trigger('save', {
-                            isNew : isNew,
-                            updates : dirty
-                        });
-                    }
+                    self.trigger('save', {
+                        isNew : isNew,
+                        updates : dirty
+                    });
 
                     self.deserialize(json, true);
 

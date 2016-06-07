@@ -285,7 +285,6 @@ describe('mutations', function () {
 
         arr.on('test', function (e) {
 
-            console.log(e.currentTarget.test);
             triggered.push(e.currentTarget);
 
             if (++count === 3) {

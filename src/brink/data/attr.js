@@ -102,6 +102,10 @@ $b(
                     }
                 },
 
+                serializeDirty : function (filter) {
+                    return attr.meta().serialize.call(this, filter, true);
+                },
+
                 deserialize : function (val) {
                     set(this, attr.meta().key, val);
                     return val;

@@ -87,14 +87,15 @@ $b(
                 return BrinkArray.prototype.remove.apply(this, arguments);
             },
 
-            serialize : function (isEmbedded, filter) {
+            serialize : function (isEmbedded, filter, dirty) {
 
-                var a = [];
+                var a = [],
+                    hasChanges;
 
                 this.forEach(function (item) {
 
                     if (isEmbedded) {
-                        a.push(item.serialize(filter));
+                        a.push(dirty ? item.serializeDirty(filter) : item.serialize(filter));
                     }
 
                     else {
@@ -102,6 +103,13 @@ $b(
                     }
 
                 });
+
+                if (isEmbedded && dirty) {
+                    a.forEach(item => {
+                        if (Object.keys(item).length) {hasChanges = true;}
+                    });
+                    if (!hasChanges) {return;}
+                }
 
                 return a;
             },

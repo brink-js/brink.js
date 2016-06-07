@@ -120,12 +120,13 @@ $b(
                 options : options,
                 relationshipKey : mKey,
 
-                serialize : function (filter) {
+                serialize : function (filter, dirty) {
 
                     var key,
                         val,
                         meta,
-                        store;
+                        store,
+                        undef;
 
                     meta = belongsTo.meta();
                     key = meta.key;
@@ -136,7 +137,8 @@ $b(
                     if (val && val instanceof store.__registry[mKey]) {
 
                         if (options.embedded) {
-                            val = val.serialize(filter);
+                            val = dirty ? val.serializeDirty(filter) : val.serialize(filter);
+                            if (dirty && Object.keys(val).length === 0){val = undef;}
                         }
 
                         else {
@@ -148,6 +150,10 @@ $b(
                     if (!filter || filter(meta, key, val)) {
                         return val;
                     }
+                },
+
+                serializeDirty : function (filter) {
+                    return belongsTo.meta().serialize.call(this, filter, true);
                 },
 
                 deserialize : function (val, override, filter) {

@@ -100,7 +100,7 @@ $b(
                 options : options,
                 relationshipKey : mKey,
 
-                serialize : function (filter) {
+                serialize : function (filter, dirty) {
 
                     var i,
                         val,
@@ -116,7 +116,7 @@ $b(
                     val = get(this, key);
 
                     if (val) {
-                        val = val.serialize(options.embedded, filter);
+                        val = val.serialize(options.embedded, filter, dirty);
                     }
 
                     if (val && options.map) {
@@ -141,7 +141,10 @@ $b(
                     if (!filter || filter(meta, key, val)) {
                         return val;
                     }
+                },
 
+                serializeDirty : function (filter) {
+                    return hasMany.meta().serialize.call(this, filter, true);
                 },
 
                 deserialize : function (val, override, filter) {
