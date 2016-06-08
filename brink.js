@@ -6851,21 +6851,21 @@
                         };
     
                         changes.added.forEach(function (tmp) {
-                            self.trigger('added', tmp);
+                            self.trigger('add', tmp);
                             if (isBrinkObject(tmp.item)) {
                                 tmp.item.__addReference(self, '@item.' + tmp.item.__meta.iid, true);
                             }
                         });
     
                         changes.removed.forEach(function (tmp) {
-                            self.trigger('removed', tmp);
+                            self.trigger('remove', tmp);
                             if (isBrinkObject(tmp.item)) {
                                 tmp.item.__removeReference(self);
                             }
                         });
     
                         changes.moved.forEach(function (tmp) {
-                            self.trigger('moved', tmp);
+                            self.trigger('move', tmp);
                         });
     
                         return changes;
@@ -8044,6 +8044,10 @@
                         }
                     },
     
+                    serializeDirty : function (filter) {
+                        return attr.meta().serialize.call(this, filter, true);
+                    },
+    
                     deserialize : function (val) {
                         set(this, attr.meta().key, val);
                         return val;
@@ -8199,12 +8203,13 @@
                     options : options,
                     relationshipKey : mKey,
     
-                    serialize : function (filter) {
+                    serialize : function (filter, dirty) {
     
                         var key,
                             val,
                             meta,
-                            store;
+                            store,
+                            undef;
     
                         meta = belongsTo.meta();
                         key = meta.key;
@@ -8215,7 +8220,8 @@
                         if (val && val instanceof store.__registry[mKey]) {
     
                             if (options.embedded) {
-                                val = val.serialize(filter);
+                                val = dirty ? val.serializeDirty(filter) : val.serialize(filter);
+                                if (dirty && Object.keys(val).length === 0){val = undef;}
                             }
     
                             else {
@@ -8227,6 +8233,10 @@
                         if (!filter || filter(meta, key, val)) {
                             return val;
                         }
+                    },
+    
+                    serializeDirty : function (filter) {
+                        return belongsTo.meta().serialize.call(this, filter, true);
                     },
     
                     deserialize : function (val, override, filter) {
@@ -8364,14 +8374,22 @@
                     return this.length;
                 },
     
-                serialize : function (isEmbedded, filter) {
+                remove : function (record) {
+                    if (record.pk) {
+                        delete this.__recordsByPK[record.pk];
+                    }
+                    return BrinkArray.prototype.remove.apply(this, arguments);
+                },
     
-                    var a = [];
+                serialize : function (isEmbedded, filter, dirty) {
+    
+                    var a = [],
+                        hasChanges;
     
                     this.forEach(function (item) {
     
                         if (isEmbedded) {
-                            a.push(item.serialize(filter));
+                            a.push(dirty ? item.serializeDirty(filter) : item.serialize(filter));
                         }
     
                         else {
@@ -8379,6 +8397,13 @@
                         }
     
                     });
+    
+                    if (isEmbedded && dirty) {
+                        a.forEach(item => {
+                            if (Object.keys(item).length) {hasChanges = true;}
+                        });
+                        if (!hasChanges) {return;}
+                    }
     
                     return a;
                 },
@@ -8518,7 +8543,7 @@
                     options : options,
                     relationshipKey : mKey,
     
-                    serialize : function (filter) {
+                    serialize : function (filter, dirty) {
     
                         var i,
                             val,
@@ -8534,7 +8559,7 @@
                         val = get(this, key);
     
                         if (val) {
-                            val = val.serialize(options.embedded, filter);
+                            val = val.serialize(options.embedded, filter, dirty);
                         }
     
                         if (val && options.map) {
@@ -8559,7 +8584,10 @@
                         if (!filter || filter(meta, key, val)) {
                             return val;
                         }
+                    },
     
+                    serializeDirty : function (filter) {
+                        return hasMany.meta().serialize.call(this, filter, true);
                     },
     
                     deserialize : function (val, override, filter) {
@@ -9055,6 +9083,61 @@
                 },
     
                 /***********************************************************************
+                Serialize the dirty attributes of a record.
+    
+                @method serializeDirty
+                @param {Function} filter A custom function to filter out attributes as you see fit.
+                @return {Object}
+                ************************************************************************/
+    
+                serializeDirty : function (filter) {
+    
+                    var i,
+                        l,
+                        p,
+                        pk,
+                        key,
+                        val,
+                        desc,
+                        json,
+                        meta,
+                        pMeta,
+                        props,
+                        dirty,
+                        attributes,
+                        relationships;
+    
+                    meta = this.__meta;
+    
+                    attributes = meta.attributes;
+                    relationships = meta.relationships;
+    
+                    props = attributes.concat(relationships);
+                    dirty = (get(this, 'dirtyAttributes.content') || []).concat();
+    
+                    json = {};
+    
+                    for (i = 0, l = props.length; i < l; i ++) {
+                        p = props[i];
+                        desc = this.prop(p);
+                        pMeta = desc.meta();
+                        key = pMeta.options.key || p;
+    
+                        if (
+                            pMeta.isRelationship && pMeta.options.embedded ||
+                            pMeta.isAttribute && ~dirty.indexOf(p)
+                        ) {
+                            val = pMeta.serializeDirty.call(this, filter);
+                            if (typeof val !== 'undefined') {
+                                set(json, key, val);
+                            }
+                        }
+                    }
+    
+                    return json;
+                },
+    
+                /***********************************************************************
                 De-serialize a record.
     
                 @method deserialize
@@ -9204,7 +9287,7 @@
     
                     self = this;
                     isNew = get(this, 'isNew');
-                    dirty = get(this, 'dirtyAttributes.content');
+                    dirty = isNew ? {} : this.serializeDirty();
     
                     set(this, 'isSaving', true);
     
@@ -9214,8 +9297,9 @@
     
                     return this.adapter.saveRecord(this).then(function (json) {
     
-                        self.trigger('saved', {
-                            updated : dirty
+                        self.trigger('save', {
+                            isNew : isNew,
+                            updates : dirty
                         });
     
                         self.deserialize(json, true);
@@ -9250,7 +9334,7 @@
     
                         self.deserialize(json, !!override);
     
-                        self.trigger('fetched');
+                        self.trigger('fetch');
     
                         if (!!override) {
                             self.undirty(true);
@@ -9354,7 +9438,7 @@
                         }
                     }
     
-                    this.trigger('reverted');
+                    this.trigger('revert');
     
                     return this;
                 }
