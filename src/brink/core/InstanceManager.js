@@ -16,10 +16,6 @@ $b(
         var InstanceManager,
             IID = 1;
 
-        if (typeof window !== 'undefined') {
-            window.count = 0;
-        }
-
         InstanceManager = CoreObject.extend({
 
             instances : null,
@@ -50,7 +46,7 @@ $b(
             },
 
             remove : function (instance) {
-                this.instances[instance.__meta.iid] = null;
+                delete this.instances[instance.__meta.iid];
             },
 
             getChangedProps : function (obj) {

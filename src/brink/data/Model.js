@@ -738,6 +738,43 @@ $b(
                 this.trigger('revert');
 
                 return this;
+            },
+
+            destroy : function () {
+                var i,
+                    p,
+                    key,
+                    val,
+                    desc,
+                    meta,
+                    pMeta,
+                    dirty,
+                    relationships;
+
+                if (this.isDestroyed) {
+                    return;
+                }
+
+                meta = this.__meta;
+                dirty = get(this, 'dirtyAttributes');
+
+                relationships = meta.relationships;
+                i = relationships.length;
+                while (i--) {
+                    p = relationships[i];
+                    desc = this.prop(p);
+                    pMeta = desc.meta();
+
+                    key = pMeta.options.key || p;
+
+                    if (pMeta.options.embedded) {
+                        val =  get(this, key);
+                        if (val) {val.destroy();}
+                    }
+                }
+
+                if (dirty) {dirty.destroy();}
+                return this._super.apply(this, arguments);
             }
         });
 
