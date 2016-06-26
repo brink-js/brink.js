@@ -5595,6 +5595,10 @@
                         meta.references.splice(idx, 1);
                         meta.referenceKeys.splice(idx, 1);
                     }
+                    idx = meta.eventParents ? meta.eventParents.indexOf(obj) : -1;
+                    if (~idx) {
+                        meta.eventParents.splice(idx, 1);
+                    }
                 },
     
                 /***********************************************************************
@@ -7515,10 +7519,6 @@
             var InstanceManager,
                 IID = 1;
     
-            if (typeof window !== 'undefined') {
-                window.count = 0;
-            }
-    
             InstanceManager = CoreObject.extend({
     
                 instances : null,
@@ -7549,7 +7549,7 @@
                 },
     
                 remove : function (instance) {
-                    this.instances[instance.__meta.iid] = null;
+                    delete this.instances[instance.__meta.iid];
                 },
     
                 getChangedProps : function (obj) {
@@ -9441,6 +9441,45 @@
                     this.trigger('revert');
     
                     return this;
+                },
+    
+                destroy : function () {
+                    var i,
+                        p,
+                        key,
+                        val,
+                        desc,
+                        meta,
+                        pMeta,
+                        dirty,
+                        relationships;
+    
+                    if (this.isDestroyed) {
+                        return;
+                    }
+    
+                    meta = this.__meta;
+                    dirty = get(this, 'dirtyAttributes');
+    
+                    relationships = meta.relationships;
+                    i = relationships.length;
+                    while (i--) {
+                        p = relationships[i];
+                        desc = this.prop(p);
+                        pMeta = desc.meta();
+    
+                        key = pMeta.options.key || p;
+    
+                        if (pMeta.options.embedded) {
+                            val =  get(this, key);
+                            if (val) {val.destroy();}
+                        }
+                    }
+    
+                    if (dirty) {dirty.destroy();}
+                    if (this.store) {this.store.remove(this);}
+    
+                    return this._super.apply(this, arguments);
                 }
             });
     
