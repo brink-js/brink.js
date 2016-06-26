@@ -303,6 +303,10 @@ $b(
                     meta.references.splice(idx, 1);
                     meta.referenceKeys.splice(idx, 1);
                 }
+                idx = meta.eventParents ? meta.eventParents.indexOf(obj) : -1;
+                if (~idx) {
+                    meta.eventParents.splice(idx, 1);
+                }
             },
 
             /***********************************************************************

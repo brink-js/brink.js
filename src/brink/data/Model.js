@@ -774,6 +774,8 @@ $b(
                 }
 
                 if (dirty) {dirty.destroy();}
+                if (this.store) {this.store.remove(this);}
+
                 return this._super.apply(this, arguments);
             }
         });
